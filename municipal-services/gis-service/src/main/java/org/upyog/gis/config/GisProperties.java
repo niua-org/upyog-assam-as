@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Configuration properties for GIS service
+ * Configuration properties for GIS service like WMS/WFS URLs and Filestore settings.
  */
 @Data
 @Component
@@ -19,6 +19,11 @@ public class GisProperties {
     private String wfsGeometryColumn = "the_geom";
     private String wfsDistrictAttribute = "STATE_NAME";
     private String wfsZoneAttribute = "STATE_ABBR";
+    
+    // HTTP timeout configuration
+    private int connectionTimeoutSeconds = 10;
+    private int readTimeoutSeconds = 30;
+    private int maxRetries = 2;
     
     // Filestore configuration from different property sources
     @Value("${egov.filestore.host}")

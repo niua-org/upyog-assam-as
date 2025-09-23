@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Main Spring Boot application class for gis service
+ * Transaction management is enabled for database operations so that they can be rolled back in case of errors
  */
 @SpringBootApplication
 @EnableTransactionManagement

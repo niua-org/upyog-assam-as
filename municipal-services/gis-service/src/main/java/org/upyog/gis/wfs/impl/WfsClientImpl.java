@@ -3,6 +3,7 @@ package org.upyog.gis.wfs.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.upyog.gis.config.GisProperties;
+import org.upyog.gis.model.WfsResponse;
 import org.upyog.gis.wfs.WfsClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class HttpWfsClient implements WfsClient {
+public class WfsClientImpl implements WfsClient {
 
     /** Reactive HTTP client for making WFS requests */
     private final WebClient webClient;
@@ -67,7 +68,7 @@ public class HttpWfsClient implements WfsClient {
      * @throws Exception if WFS query fails or response cannot be parsed
      */
     @Override
-    public JsonNode queryFeatures(String polygonWkt) throws Exception {
+    public WfsResponse queryFeatures(String polygonWkt) throws Exception {
         log.info("Starting WFS query for polygon intersection");
         
         String geomAttr = Optional.ofNullable(gisProperties.getWfsGeometryColumn()).orElse("the_geom");
@@ -77,7 +78,7 @@ public class HttpWfsClient implements WfsClient {
         log.debug("WFS query parameters - URL: {}, typeName: {}, geomAttr: {}", baseUrl, typeName, geomAttr);
 
         // Execute initial WFS query
-        JsonNode result = executeWfsQuery(baseUrl, typeName, geomAttr, polygonWkt);
+        WfsResponse result = executeWfsQuery(baseUrl, typeName, geomAttr, polygonWkt);
         
         // If empty results, try with swapped axes
         if (isEmptyFeatureCollection(result)) {
@@ -88,7 +89,7 @@ public class HttpWfsClient implements WfsClient {
         }
         
         log.info("WFS query completed, found {} features", 
-                result != null && result.has("features") ? result.get("features").size() : 0);
+                result != null && result.getFeatures() != null ? result.getFeatures().size() : 0);
         
         return result;
     }
@@ -103,10 +104,10 @@ public class HttpWfsClient implements WfsClient {
      * @param typeName the feature type name to query
      * @param geomAttr the geometry attribute name for spatial filtering
      * @param polygonWkt the polygon geometry in WKT format for intersection
-     * @return JsonNode containing the WFS response
+     * @return WfsResponse containing the WFS response with typed features
      * @throws RuntimeException if WFS request fails or returns error status
      */
-    private JsonNode executeWfsQuery(String baseUrl, String typeName, String geomAttr, String polygonWkt) {
+    private WfsResponse executeWfsQuery(String baseUrl, String typeName, String geomAttr, String polygonWkt) {
         try {
             // Construct CQL filter for spatial intersection
             String cql = String.format("INTERSECTS(%s, %s)", geomAttr, polygonWkt);
@@ -127,17 +128,20 @@ public class HttpWfsClient implements WfsClient {
             log.info("Executing WFS query: {}", uri);
             log.debug("CQL Filter: {}", cql);
 
-            // Execute reactive HTTP request with error handling
+            // Execute reactive HTTP request with error handling and retry logic
             String body = webClient.get()
                 .uri(uri)
                 .retrieve()
                 .onStatus(status -> status.isError(), resp -> resp.bodyToMono(String.class)
                     .flatMap(msg -> Mono.error(new RuntimeException("WFS error: " + resp.statusCode() + " - " + msg))))
                 .bodyToMono(String.class)
+                .retry(gisProperties.getMaxRetries()) // Configurable retry count
+                .timeout(java.time.Duration.ofSeconds(gisProperties.getReadTimeoutSeconds())) // Configurable timeout
                 .block();
 
             log.debug("WFS response received, parsing JSON");
-            return new ObjectMapper().readTree(body);
+            JsonNode jsonNode = new ObjectMapper().readTree(body);
+            return new ObjectMapper().convertValue(jsonNode, WfsResponse.class);
             
         } catch (WebClientResponseException w) {
             log.error("WFS HTTP error: {} - {}", w.getRawStatusCode(), w.getMessage());
@@ -154,28 +158,26 @@ public class HttpWfsClient implements WfsClient {
      * <p>A feature collection is considered empty if:</p>
      * <ul>
      *   <li>The response is null</li>
-     *   <li>The features array is empty or missing</li>
-     *   <li>The totalFeatures count is 0 or missing</li>
+     *   <li>The features list is empty or null</li>
+     *   <li>The totalFeatures count is 0 or null</li>
      * </ul>
      *
-     * @param node the WFS response as JsonNode
+     * @param response the WFS response as WfsResponse
      * @return true if the feature collection is empty, false otherwise
      */
-    private boolean isEmptyFeatureCollection(JsonNode node) {
-        if (node == null) {
+    private boolean isEmptyFeatureCollection(WfsResponse response) {
+        if (response == null) {
             log.debug("WFS response is null, considering empty");
             return true;
         }
         
-        JsonNode features = node.get("features");
-        if (features != null && features.isArray() && features.size() > 0) {
-            log.debug("Found {} features in response", features.size());
+        if (response.getFeatures() != null && !response.getFeatures().isEmpty()) {
+            log.debug("Found {} features in response", response.getFeatures().size());
             return false;
         }
         
-        JsonNode total = node.get("totalFeatures");
-        if (total != null && total.asInt(0) > 0) {
-            log.debug("Total features count: {}", total.asInt());
+        if (response.getTotalFeatures() != null && response.getTotalFeatures() > 0) {
+            log.debug("Total features count: {}", response.getTotalFeatures());
             return false;
         }
         

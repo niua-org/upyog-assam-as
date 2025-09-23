@@ -26,7 +26,7 @@ import java.net.URI;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RestFilestoreClient implements FilestoreClient {
+public class FilestoreClientImpl implements FilestoreClient {
 
     private final RestTemplate restTemplate;
     private final GisProperties gisProperties;

@@ -10,6 +10,8 @@ import org.upyog.gis.entity.GisLog;
 import org.upyog.gis.model.GISResponse;
 import org.upyog.gis.model.GISRequestWrapper;
 import org.upyog.gis.model.GISRequest;
+import org.upyog.gis.model.WfsFeature;
+import org.upyog.gis.model.WfsResponse;
 import org.egov.common.contract.response.ResponseInfo;
 import org.upyog.gis.repository.GisLogRepository;
 import org.upyog.gis.service.GisService;
@@ -91,7 +93,7 @@ public class GisServiceImpl implements GisService {
 
             // Query WFS for district/zone information
             log.info("Querying WFS for district/zone information");
-            JsonNode wfsResponse = wfsClient.queryFeatures(polygonWkt);
+            WfsResponse wfsResponse = wfsClient.queryFeatures(polygonWkt);
             log.info("WFS query completed successfully");
 
             // Extract district and zone from WFS response
@@ -196,18 +198,21 @@ public class GisServiceImpl implements GisService {
     }
 
     /**
-     * Extracts district information from WFS response
+     * Extracts district information from WFS response using typed objects.
+     * 
+     * <p>This method provides type-safe access to WFS feature properties
+     * and extracts the district information from the first matching feature.</p>
+     *
+     * @param wfsResponse the WFS response containing features with properties
+     * @return district name or "Unknown" if not found
      */
-    private String extractDistrict(JsonNode wfsResponse) {
-        if (wfsResponse != null && wfsResponse.has("features")) {
-            JsonNode features = wfsResponse.get("features");
-            if (features.isArray() && !features.isEmpty()) {
-                JsonNode firstFeature = features.get(0);
-                if (firstFeature.has("properties")) {
-                    JsonNode properties = firstFeature.get("properties");
-                    if (properties.has(gisProperties.getWfsDistrictAttribute())) {
-                        return properties.get(gisProperties.getWfsDistrictAttribute()).asText();
-                    }
+    private String extractDistrict(WfsResponse wfsResponse) {
+        if (wfsResponse != null && wfsResponse.getFeatures() != null && !wfsResponse.getFeatures().isEmpty()) {
+            WfsFeature firstFeature = wfsResponse.getFeatures().get(0);
+            if (firstFeature.getProperties() != null) {
+                Object districtValue = firstFeature.getProperties().get(gisProperties.getWfsDistrictAttribute());
+                if (districtValue != null) {
+                    return districtValue.toString();
                 }
             }
         }
@@ -215,18 +220,21 @@ public class GisServiceImpl implements GisService {
     }
 
     /**
-     * Extracts zone information from WFS response
+     * Extracts zone information from WFS response using typed objects.
+     * 
+     * <p>This method provides type-safe access to WFS feature properties
+     * and extracts the zone information from the first matching feature.</p>
+     *
+     * @param wfsResponse the WFS response containing features with properties
+     * @return zone name or "Unknown" if not found
      */
-    private String extractZone(JsonNode wfsResponse) {
-        if (wfsResponse != null && wfsResponse.has("features")) {
-            JsonNode features = wfsResponse.get("features");
-            if (features.isArray() && !features.isEmpty()) {
-                JsonNode firstFeature = features.get(0);
-                if (firstFeature.has("properties")) {
-                    JsonNode properties = firstFeature.get("properties");
-                    if (properties.has(gisProperties.getWfsZoneAttribute())) {
-                        return properties.get(gisProperties.getWfsZoneAttribute()).asText();
-                    }
+    private String extractZone(WfsResponse wfsResponse) {
+        if (wfsResponse != null && wfsResponse.getFeatures() != null && !wfsResponse.getFeatures().isEmpty()) {
+            WfsFeature firstFeature = wfsResponse.getFeatures().get(0);
+            if (firstFeature.getProperties() != null) {
+                Object zoneValue = firstFeature.getProperties().get(gisProperties.getWfsZoneAttribute());
+                if (zoneValue != null) {
+                    return zoneValue.toString();
                 }
             }
         }
@@ -234,9 +242,15 @@ public class GisServiceImpl implements GisService {
     }
 
     /**
-     * Cleans WFS response for client consumption - only essential fields
+     * Cleans WFS response for client consumption using typed objects.
+     * 
+     * <p>This method creates a simplified JSON response containing only essential
+     * information from the WFS features, excluding demographic data and geometry objects.</p>
+     *
+     * @param wfsResponse the typed WFS response containing features
+     * @return cleaned JsonNode with only essential properties
      */
-    private JsonNode cleanWfsResponse(JsonNode wfsResponse) {
+    private JsonNode cleanWfsResponse(WfsResponse wfsResponse) {
         if (wfsResponse == null) {
             return objectMapper.createObjectNode();
         }
@@ -245,44 +259,40 @@ public class GisServiceImpl implements GisService {
         ObjectNode cleanResponse = objectMapper.createObjectNode();
         cleanResponse.put("type", "FeatureCollection");
 
-        if (wfsResponse.has("features")) {
+        if (wfsResponse.getFeatures() != null && !wfsResponse.getFeatures().isEmpty()) {
         ArrayNode cleanFeatures = objectMapper.createArrayNode();
-            JsonNode features = wfsResponse.get("features");
 
-            if (features.isArray()) {
-            for (JsonNode feature : features) {
+            for (WfsFeature feature : wfsResponse.getFeatures()) {
                 ObjectNode cleanFeature = objectMapper.createObjectNode();
                 cleanFeature.put("type", "Feature");
 
-                    // Only include essential properties, exclude demographic and geometric data
-                    if (feature.has("properties")) {
-                        JsonNode properties = feature.get("properties");
+                // Only include essential properties, exclude demographic and geometric data
+                if (feature.getProperties() != null) {
                 ObjectNode cleanProperties = objectMapper.createObjectNode();
-                        
-                        // Only include district and zone related fields
-                        if (properties.has("STATE_NAME")) {
-                            cleanProperties.put("STATE_NAME", properties.get("STATE_NAME").asText());
-                        }
-                        if (properties.has("STATE_ABBR")) {
-                            cleanProperties.put("STATE_ABBR", properties.get("STATE_ABBR").asText());
-                        }
-                        if (properties.has("STATE_FIPS")) {
-                            cleanProperties.put("STATE_FIPS", properties.get("STATE_FIPS").asText());
+                    
+                    // Only include state-related fields as per requirements
+                    if (feature.getProperties().containsKey("STATE_NAME")) {
+                        cleanProperties.put("STATE_NAME", feature.getProperties().get("STATE_NAME").toString());
+                    }
+                    if (feature.getProperties().containsKey("STATE_ABBR")) {
+                        cleanProperties.put("STATE_ABBR", feature.getProperties().get("STATE_ABBR").toString());
+                    }
+                    if (feature.getProperties().containsKey("STATE_FIPS")) {
+                        cleanProperties.put("STATE_FIPS", feature.getProperties().get("STATE_FIPS").toString());
                 }
 
                 cleanFeature.set("properties", cleanProperties);
-                    }
-                    
-                    // Exclude geometry object entirely as requested
-                    // cleanFeature.set("geometry", null);
+                }
+                
+                // Exclude geometry object entirely as requested
+                // cleanFeature.set("geometry", null);
 
                 cleanFeatures.add(cleanFeature);
             }
+
+            cleanResponse.set("features", cleanFeatures);
         }
 
-        cleanResponse.set("features", cleanFeatures);
-        }
-        
         return cleanResponse;
     }
 
