@@ -474,7 +474,7 @@ public class BPAService {
             enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
             wfIntegrator.callWorkFlow(bpaRequest);
             repository.update(bpaRequest, BPAConstants.UPDATE_ALL_BUILDING_PLAN);
-            landService.updateLandInfo(bpaRequest);
+//            landService.updateLandInfo(bpaRequest);
             return bpaRequest.getBPA();
         }
 
