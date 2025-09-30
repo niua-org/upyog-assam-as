@@ -36,7 +36,7 @@ const useBPAV2Search = (tenantId, filters = {}, config = {}) => {
   const userInformation = userInfo?.value?.info;
 
   if (window.location.href.includes("/citizen") && window.location.href.includes("/search")) {
-    if (!filters?.createdBy && !window.location.href.includes("obpsv2-application")) filters.createdBy = userInformation?.uuid;
+    //if (!filters?.createdBy && !window.location.href.includes("obpsv2-application")) filters.createdBy = userInformation?.uuid;
     if (!filters?.applicationType) filters.applicationType = "NEW_CONSTRUCTION";
     // if (!filters?.serviceType) filters.serviceType = "NEW_CONSTRUCTION";
   }
@@ -45,7 +45,7 @@ const useBPAV2Search = (tenantId, filters = {}, config = {}) => {
   
   const client = useQueryClient();
   return {...useQuery(['BPA_SEARCH', tenantId, filters], async () => {
-    const response = await OBPSV2Services.search(tenantId, { ...filters });
+    const response = await OBPSV2Services.search({tenantId, filters });
     
     let tenantMap = {}, processInstanceArray = [], appNumbers = [];
     response?.bpa?.forEach(item => {

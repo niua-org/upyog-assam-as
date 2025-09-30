@@ -8,7 +8,7 @@ const Search = ({ path }) => {
   const userInformation = userInfo?.value?.info;
 
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const location = useLocation();
   const details = () => {
     return "NEW_CONSTRUCTION"
