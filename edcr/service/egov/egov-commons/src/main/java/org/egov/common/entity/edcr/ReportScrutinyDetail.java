@@ -76,8 +76,17 @@ public class ReportScrutinyDetail {
 
     @ReportScrutinyField("Side Number")
     private String sideNumber;
+    
+    @ReportScrutinyField("Unit")
+    private Integer unitNumber;
 
-    public String getRuleNo(){
+    public Integer getUnitNumber() {
+		return unitNumber;
+	}
+	public void setUnitNumber(Integer unitNumber) {
+		this.unitNumber = unitNumber;
+	}
+	public String getRuleNo(){
         return ruleNo;
     }
     public void setRuleNo(String ruleNo) {

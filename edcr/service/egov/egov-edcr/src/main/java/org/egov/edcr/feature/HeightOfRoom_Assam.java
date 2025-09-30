@@ -125,20 +125,22 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 						scrutinyDetail.addColumnHeading(1, RULE_NO);
 						scrutinyDetail.addColumnHeading(2, DESCRIPTION);
 						scrutinyDetail.addColumnHeading(3, FLOOR);
-						scrutinyDetail.addColumnHeading(4, Room);
-						scrutinyDetail.addColumnHeading(5, REQUIRED);
-						scrutinyDetail.addColumnHeading(6, PROVIDED);
-						scrutinyDetail.addColumnHeading(7, STATUS);
+						scrutinyDetail.addColumnHeading(4, UNIT);
+						scrutinyDetail.addColumnHeading(5, Room);
+						scrutinyDetail.addColumnHeading(6, REQUIRED);
+						scrutinyDetail.addColumnHeading(7, PROVIDED);
+						scrutinyDetail.addColumnHeading(8, STATUS);
 						scrutinyDetail.setKey(BLOCK + block.getNumber() + UNDERSCORE + MdmsFeatureConstants.ROOM_AREA);
 
 						ScrutinyDetail scrutinyDetail2 = new ScrutinyDetail();
 						scrutinyDetail2.addColumnHeading(1, RULE_NO);
 						scrutinyDetail2.addColumnHeading(2, DESCRIPTION);
 						scrutinyDetail2.addColumnHeading(3, FLOOR);
-						scrutinyDetail2.addColumnHeading(4, Room);
-						scrutinyDetail2.addColumnHeading(5, REQUIRED);
-						scrutinyDetail2.addColumnHeading(6, PROVIDED);
-						scrutinyDetail2.addColumnHeading(7, STATUS);
+						scrutinyDetail2.addColumnHeading(4, UNIT);
+						scrutinyDetail2.addColumnHeading(5, Room);
+						scrutinyDetail2.addColumnHeading(6, REQUIRED);
+						scrutinyDetail2.addColumnHeading(7, PROVIDED);
+						scrutinyDetail2.addColumnHeading(8, STATUS);
 						scrutinyDetail2.setKey(BLOCK + block.getNumber() + UNDERSCORE + MdmsFeatureConstants.DOORS);
 
 						ScrutinyDetail scrutinyDetail5 = new ScrutinyDetail();
@@ -207,6 +209,11 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 								.setKey(BLOCK + block.getNumber() + UNDERSCORE + MdmsFeatureConstants.ROOM_WISE_DOOR_AREA);
 
 						for (Floor floor : block.getBuilding().getFloors()) {
+						    // iterate units inside each floor
+						    for (FloorUnit unit : floor.getUnits()) {
+						        // Your processing logic goes here
+						        LOG.debug("Processing Floor [{}], Unit [{}]", floor.getNumber());
+
 						    LOG.info("Processing Floor: {} for Block: {}", floor.getNumber(), block.getName());
 
 						    List<BigDecimal> roomAreas = new ArrayList<>();
@@ -227,18 +234,18 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 
 						    LOG.info("Using room color: {} for Occupancy: {}", color, mostRestrictiveOccupancy.getType().getCode());
 
-						    if (floor.getAcRooms() != null && !floor.getAcRooms().isEmpty()) {
+						    if (unit.getAcRooms() != null && !unit.getAcRooms().isEmpty()) {
 						        LOG.info("Processing AC rooms for Floor: {}", floor.getNumber());
-						        processAcRooms(floor, block, color, mostRestrictiveOccupancy, heightOfRoomFeaturesColor,
+						        processAcRooms(floor, unit, block, color, mostRestrictiveOccupancy, heightOfRoomFeaturesColor,
 						                roomAreas, roomWidths, pl, errors);
 						    }
 
 						    LOG.info("Processing Regular rooms for Floor: {}", floor.getNumber());
-						    processRegularRooms(pl, floor, block, color, mostRestrictiveOccupancy,
+						    processRegularRooms(pl, floor, unit, block, color, mostRestrictiveOccupancy,
 						            heightOfRoomFeaturesColor, scrutinyDetail, errors);
 
 						    LOG.info("Processing Non-Inhabitational rooms for Floor: {}", floor.getNumber());
-						    processNonInhabitationalRooms(pl, floor, block, color, mostRestrictiveOccupancy,
+						    processNonInhabitationalRooms(pl, floor, unit, block, color, mostRestrictiveOccupancy,
 						            heightOfRoomFeaturesColor, scrutinyDetail8, errors);
 
 						    if (!roomAreas.isEmpty()) {
@@ -246,30 +253,30 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 						        BigDecimal minRoomWidth = roomWidths.stream().reduce(BigDecimal::min).get();
 						        LOG.info("Floor: {} total room area: {}, minimum room width: {}", floor.getNumber(), totalArea, minRoomWidth);
 
-						        evaluateFirstRoomDetails(pl, floor, roomAreas, roomWidths, subRule, RULE_REGULAR_ROOM,
+						        evaluateFirstRoomDetails(pl, floor, unit, roomAreas, roomWidths, subRule, RULE_REGULAR_ROOM,
 						                scrutinyDetail);
 
-						        evaluateRemainingRoomDetails(pl, floor, roomAreas, roomWidths, subRule, RULE_REGULAR_ROOM,
+						        evaluateRemainingRoomDetails(pl, floor, unit, roomAreas, roomWidths, subRule, RULE_REGULAR_ROOM,
 						                scrutinyDetail1);
 						    }
 
 						    LOG.info("Evaluating doors for Floor: {}", floor.getNumber());
-						    evaluateDoorsForFloor(pl, floor, scrutinyDetail2);
+						    evaluateDoorsForFloor(pl, floor, unit, scrutinyDetail2);
 
 						    LOG.info("Evaluating Non-Habitational doors for Floor: {}", floor.getNumber());
-						    evaluateNonHabitationalDoors(pl, floor, scrutinyDetail5);
+						    evaluateNonHabitationalDoors(pl, floor, unit, scrutinyDetail5);
 
 						    LOG.info("Evaluating windows for Floor: {}", floor.getNumber());
-						    evaluateWindows(pl, floor, scrutinyDetail3);
+						    evaluateWindows(pl, floor, unit, scrutinyDetail3);
 
 						    if (floor.getRegularRooms() != null) {
-						        for (Room room : floor.getRegularRooms()) {
+						        for (Room room : unit.getRegularRooms()) {
 						            LOG.info("Evaluating room ventilation for Room: {} on Floor: {}", floor.getNumber());
-						            evaluateRoomVentilation(pl, floor, room, scrutinyDetail4, scrutinyDetail6);
+						            evaluateRoomVentilation(pl, floor, unit, room, scrutinyDetail4, scrutinyDetail6);
 						        }
 						    }
 
-						    for (Room room : floor.getRegularRooms()) {
+						    for (Room room : unit.getRegularRooms()) {
 						        BigDecimal roomArea = calculateRoomArea(room);
 						        BigDecimal requiredVentilationArea = getRequiredVentilationArea(roomArea, ventilationPercentage);
 						        BigDecimal totalDoorArea = calculateTotalDoorArea(room);
@@ -277,13 +284,14 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 						        LOG.info("Evaluating door dimensions for Room: {}. RoomArea: {}, RequiredVentArea: {}, TotalDoorArea: {}",
 						                roomArea, requiredVentilationArea, totalDoorArea);
 
-						        evaluateDoorDimensions(pl, room, floor, requiredVentilationArea, totalDoorArea, scrutinyDetail8);
+						        evaluateDoorDimensions(pl, room, floor, unit, requiredVentilationArea, totalDoorArea, scrutinyDetail8);
 						    }
 
 						    LOG.info("Completed processing Floor: {} for Block: {}", floor.getNumber(), block.getName());
 						}
 
 					}
+				}
 				}
 			}
 		}
@@ -299,12 +307,12 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param floor           The floor object containing door details.
 	 * @param scrutinyDetail  The scrutiny detail to which results are recorded.
 	 */
-	private void evaluateDoorsForFloor(Plan pl, Floor floor, ScrutinyDetail scrutinyDetail) {
-	    if (floor.getDoors() == null || floor.getDoors().isEmpty()) return;
+	private void evaluateDoorsForFloor(Plan pl, Floor floor, FloorUnit unit, ScrutinyDetail scrutinyDetail) {
+	    if (unit.getDoors() == null || unit.getDoors().isEmpty()) return;
 
-	    for (Door door : floor.getDoors()) {
+	    for (Door door : unit.getDoors()) {
 	        if (door != null) {
-	            evaluateSingleDoor(pl, floor, door, scrutinyDetail);
+	            evaluateSingleDoor(pl, floor, unit, door, scrutinyDetail);
 	        }
 	    }
 	}
@@ -317,7 +325,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param door            The door object to evaluate.
 	 * @param scrutinyDetail  The scrutiny detail to record the result.
 	 */
-	private void evaluateSingleDoor(Plan pl, Floor floor, Door door, ScrutinyDetail scrutinyDetail) {
+	private void evaluateSingleDoor(Plan pl, Floor floor, FloorUnit unit, Door door, ScrutinyDetail scrutinyDetail) {
 	    BigDecimal doorWidth = door.getDoorWidth();
 	    LOG.info("Evaluating door on Floor: {}. Provided door width: {}", floor.getNumber(), doorWidth);
 
@@ -344,7 +352,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 
 	    LOG.info("Door evaluation result: {}. Requirement: {}, Provided: {}", result, requirement, provided);
 
-	    setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), requirement, provided, EMPTY_STRING, result, scrutinyDetail);
+	    setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), unit.getUnitNumber(), requirement, provided, EMPTY_STRING, result, scrutinyDetail);
 	}
 
 
@@ -406,7 +414,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param scrutinyDetail8       The scrutiny detail to record the result.
 	 */
 
-	private void evaluateDoorDimensions(Plan pl, Room room, Floor floor, BigDecimal requiredVentilationArea,
+	private void evaluateDoorDimensions(Plan pl, Room room, Floor floor, FloorUnit unit, BigDecimal requiredVentilationArea,
 	        BigDecimal totalDoorArea, ScrutinyDetail scrutinyDetail8) {
 
 	    BigDecimal minDoorWidth = BigDecimal.ZERO;
@@ -446,12 +454,12 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        LOG.info("Door evaluation result for Room {}: {}", room.getNumber(), result);
 
 	        if (doorHeight.compareTo(minDoorHeight) >= 0 && doorWidth.compareTo(minDoorWidth) >= 0) {
-	            setReportOutputDetails(pl, subRuleDoor, subRuleDesc4, floor.getNumber().toString(), room.getNumber(),
+	            setReportOutputDetails(pl, subRuleDoor, subRuleDesc4, floor.getNumber().toString(), unit.getUnitNumber(), room.getNumber(),
 	                    HEIGHT + minDoorHeight + COMMA_WIDTH_STRING + GREATER_THAN_EQUAL + minDoorWidth,
 	                    HEIGHT_STRING + IS_EQUAL_TO + doorHeight + COMMA_WIDTH_STRING + IS_EQUAL_TO + doorWidth,
 	                    result, scrutinyDetail8);
 	        } else {
-	            setReportOutputDetails(pl, subRule, subRuleDesc4, floor.getNumber().toString(), room.getNumber(),
+	            setReportOutputDetails(pl, subRule, subRuleDesc4, floor.getNumber().toString(), unit.getUnitNumber(), room.getNumber(),
 	                    HEIGHT + minDoorHeight + COMMA_WIDTH_STRING + GREATER_THAN_EQUAL + minDoorWidth,
 	                    HEIGHT_STRING + IS_EQUAL_TO + doorHeight + COMMA_WIDTH_STRING + IS_EQUAL_TO + doorWidth,
 	                    result, scrutinyDetail8);
@@ -487,12 +495,12 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param floor           The floor containing windows.
 	 * @param scrutinyDetail  The scrutiny detail to record the results.
 	 */
-	private void evaluateWindows(Plan pl, Floor floor, ScrutinyDetail scrutinyDetail) {
+	private void evaluateWindows(Plan pl, Floor floor, FloorUnit unit, ScrutinyDetail scrutinyDetail) {
 	    if (floor.getWindows() == null || floor.getWindows().isEmpty()) return;
 
 	    for (Window window : floor.getWindows()) {
 	        if (window != null) {
-	            evaluateSingleWindow(pl, floor, window, scrutinyDetail);
+	            evaluateSingleWindow(pl, floor, unit, window, scrutinyDetail);
 	        }
 	    }
 	}
@@ -507,7 +515,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param ventilationDetail Scrutiny detail for ventilation compliance.
 	 * @param windowDetail      Scrutiny detail for individual window checks.
 	 */
-	private void evaluateRoomVentilation(Plan pl, Floor floor, Room room, ScrutinyDetail ventilationDetail,
+	private void evaluateRoomVentilation(Plan pl, Floor floor, FloorUnit unit, Room room, ScrutinyDetail ventilationDetail,
 	        ScrutinyDetail windowDetail) {
 
 	    BigDecimal roomArea = calculateRoomArea(room);
@@ -527,12 +535,12 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        String result = totalWindowArea.compareTo(requiredVentilationArea) >= 0 ? Result.Accepted.getResultVal()
 	                : Result.Not_Accepted.getResultVal();
 
-	        setReportOutputDetails(pl, RULE9, subRuleDesc1, floor.getNumber().toString(), EMPTY_STRING + room.getNumber(),
+	        setReportOutputDetails(pl, RULE9, subRuleDesc1, floor.getNumber().toString(), unit.getUnitNumber(), EMPTY_STRING + room.getNumber(),
 	                VENTILATION_REQUIRED + GREATER_THAN_EQUAL + requiredVentilationArea, AREA_PROVIDED + totalWindowArea, result,
 	                ventilationDetail);
 	    }
 
-	    validateIndividualWindows(pl, floor, room, windowDetail);
+	    validateIndividualWindows(pl, floor, unit, room, windowDetail);
 	}
 
 
@@ -606,7 +614,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param room            The room to evaluate.
 	 * @param scrutinyDetail  The scrutiny detail to record the result.
 	 */
-	private void validateIndividualWindows(Plan pl, Floor floor, Room room, ScrutinyDetail scrutinyDetail) {
+	private void validateIndividualWindows(Plan pl, Floor floor, FloorUnit unit, Room room, ScrutinyDetail scrutinyDetail) {
 	    if (room.getWindows() == null)
 	        return;
 	    String subRuleDesc2 = SUB_RULE_DESC_2;
@@ -619,7 +627,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        LOG.info("Validating window for Room: {}, Floor: {} - Height: {}, Width: {}", 
 	                 room.getNumber(), floor.getNumber(), height, width);
 
-	        setReportOutputDetails(pl, subRule, subRuleDesc2, floor.getNumber().toString(), room.getNumber(), EMPTY_STRING,
+	        setReportOutputDetails(pl, subRule, subRuleDesc2, floor.getNumber().toString(), unit.getUnitNumber(), room.getNumber(), EMPTY_STRING,
 	                HEIGHT_STRING + IS_EQUAL_TO + height + COMMA_WIDTH_STRING + IS_EQUAL_TO + width, Result.Accepted.getResultVal(), scrutinyDetail);
 	    }
 	}
@@ -634,7 +642,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param window          The window to evaluate.
 	 * @param scrutinyDetail  The scrutiny detail to record the result.
 	 */
-	private void evaluateSingleWindow(Plan pl, Floor floor, Window window, ScrutinyDetail scrutinyDetail) {
+	private void evaluateSingleWindow(Plan pl, Floor floor, FloorUnit unit, Window window, ScrutinyDetail scrutinyDetail) {
 	    BigDecimal windowHeight = window.getWindowHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
 	    BigDecimal windowWidth = window.getWindowWidth().setScale(2, BigDecimal.ROUND_HALF_UP);
 
@@ -653,7 +661,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	            ? Result.Accepted.getResultVal()
 	            : Result.Not_Accepted.getResultVal();
 
-	    setReportOutputDetails(pl, EMPTY_STRING, subRuleDesc3, floor.getNumber().toString(), "-", requirement, provided, result, scrutinyDetail);
+	    setReportOutputDetails(pl, EMPTY_STRING, subRuleDesc3, floor.getNumber().toString(), unit.getUnitNumber(),  "-", requirement, provided, result, scrutinyDetail);
 	}
 
 
@@ -668,7 +676,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param subRuleDesc     The subrule description.
 	 * @param scrutinyDetail  The scrutiny detail to record the result.
 	 */
-	private void evaluateFirstRoomDetails(Plan pl, Floor floor, List<BigDecimal> roomAreas, List<BigDecimal> roomWidths,
+	private void evaluateFirstRoomDetails(Plan pl, Floor floor, FloorUnit unit, List<BigDecimal> roomAreas, List<BigDecimal> roomWidths,
 	        String subRule, String subRuleDesc, ScrutinyDetail scrutinyDetail) {
 
 	    if (roomAreas.size() >= 1) {
@@ -691,7 +699,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 
 	        LOG.info("First room evaluation result: {}", result);
 
-	        setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), EMPTY_STRING, requirement, provided,
+	        setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), unit.getUnitNumber(), EMPTY_STRING, requirement, provided,
 	                result, scrutinyDetail);
 	    }
 	}
@@ -709,7 +717,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param subRuleDesc     description of the sub-rule
 	 * @param scrutinyDetail  scrutiny details where results are to be recorded
 	 */
-	private void evaluateRemainingRoomDetails(Plan pl, Floor floor, List<BigDecimal> roomAreas,
+	private void evaluateRemainingRoomDetails(Plan pl, Floor floor, FloorUnit unit,  List<BigDecimal> roomAreas,
 	        List<BigDecimal> roomWidths, String subRule, String subRuleDesc, ScrutinyDetail scrutinyDetail) {
 
 	    BigDecimal minimumArea = MINIMUM_AREA_7_5;
@@ -730,7 +738,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	                && width.compareTo(minWidth) >= 0) ? Result.Accepted.getResultVal()
 	                        : Result.Not_Accepted.getResultVal();
 
-	        setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), EMPTY_STRING, requirement, provided,
+	        setReportOutputDetails(pl, subRule, subRuleDesc, floor.getNumber().toString(), unit.getUnitNumber(), EMPTY_STRING, requirement, provided,
 	                result, scrutinyDetail);
 	    }
 	}
@@ -744,12 +752,12 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param floor           the floor being evaluated
 	 * @param scrutinyDetail  scrutiny object to collect validation results
 	 */
-	private void evaluateNonHabitationalDoors(Plan pl, Floor floor, ScrutinyDetail scrutinyDetail) {
-	    if (floor.getNonaHabitationalDoors() == null || floor.getNonaHabitationalDoors().isEmpty()) return;
+	private void evaluateNonHabitationalDoors(Plan pl, Floor floor, FloorUnit unit, ScrutinyDetail scrutinyDetail) {
+	    if (unit.getNonaHabitationalDoors() == null || unit.getNonaHabitationalDoors().isEmpty()) return;
 
-	    for (Door door : floor.getNonaHabitationalDoors()) {
+	    for (Door door : unit.getNonaHabitationalDoors()) {
 	        if (door != null) {
-	            evaluateSingleNonHabitationalDoor(pl, floor, door, scrutinyDetail);
+	            evaluateSingleNonHabitationalDoor(pl, floor, unit, door, scrutinyDetail);
 	        }
 	    }
 	}
@@ -763,7 +771,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param door            the Door object to evaluate
 	 * @param scrutinyDetail  scrutiny object to record the results
 	 */
-	private void evaluateSingleNonHabitationalDoor(Plan pl, Floor floor, Door door, ScrutinyDetail scrutinyDetail) {
+	private void evaluateSingleNonHabitationalDoor(Plan pl, Floor floor, FloorUnit unit, Door door, ScrutinyDetail scrutinyDetail) {
 	    BigDecimal doorHeight = door.getNonHabitationDoorHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
 	    BigDecimal doorWidth = door.getNonHabitationDoorWidth().setScale(2, BigDecimal.ROUND_HALF_UP);
 
@@ -795,7 +803,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	            ? Result.Accepted.getResultVal()
 	            : Result.Not_Accepted.getResultVal();
 
-	    setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), "-", requirement, provided, result, scrutinyDetail);
+	    setReportOutputDetails(pl, subRuleDoor, subRuleDesc6, floor.getNumber().toString(), unit.getUnitNumber(),  "-", requirement, provided, result, scrutinyDetail);
 	}
 
 	/**
@@ -812,11 +820,11 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param pl                         the Plan object
 	 * @param errors                     map to record any processing errors
 	 */
-	private void processAcRooms(Floor floor, Block block, String color, OccupancyTypeHelper mostRestrictiveOccupancy,
+	private void processAcRooms(Floor floor, FloorUnit unit,  Block block, String color, OccupancyTypeHelper mostRestrictiveOccupancy,
 	        Map<String, Integer> heightOfRoomFeaturesColor, List<BigDecimal> roomAreas, List<BigDecimal> roomWidths,
 	        Plan pl, Map<String, String> errors) {
 
-	    LOG.info("Processing AC Rooms for Floor: {}, Block: {}, Color: {}", floor.getNumber(), block.getNumber(), color);
+	    LOG.info("Processing AC Rooms for Floor: {}, Block: {}, Unit: {}, Color: {}", floor.getNumber(), block.getNumber(), unit.getUnitNumber(), color);
 
 	    List<BigDecimal> residentialAcRoomHeights = new ArrayList<>();
 	    List<RoomHeight> acHeights = new ArrayList<>();
@@ -826,7 +834,13 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	    BigDecimal commercialACRoomHeight = BigDecimal.ZERO;
 
 	    // Collect all AC room heights and measurements
-	    for (Room room : floor.getAcRooms()) {
+		/*
+		 * for (Room room : floor.getAcRooms()) { if (room.getHeights() != null) {
+		 * acHeights.addAll(room.getHeights()); } if (room.getRooms() != null) {
+		 * acRooms.addAll(room.getRooms()); } }
+		 */
+	    
+	    for (Room room : unit.getAcRooms()) {
 	        if (room.getHeights() != null) {
 	            acHeights.addAll(room.getHeights());
 	        }
@@ -887,8 +901,8 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor,
 	                isTypicalRepititiveFloor);
 
-	        buildResult(pl, floor, minimumHeight, subRule, subRuleDesc, minHeight, valid, typicalFloorValues);
-	        buildRoomHeightResult(pl, floor, block, mostRestrictiveOccupancy, residentialAcRoomHeights, heightOfRoomFeaturesColor,
+	        buildResult(pl, floor, unit, minimumHeight, subRule, subRuleDesc, minHeight, valid, typicalFloorValues);
+	        buildRoomHeightResult(pl, floor, unit, block, mostRestrictiveOccupancy, residentialAcRoomHeights, heightOfRoomFeaturesColor,
 	        		color, errors);
 
 	    } else {
@@ -916,7 +930,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param errors                     map to record any processing errors
 	 */
 	
-	private void processNonInhabitationalRooms(Plan pl, Floor floor, Block block, String color, OccupancyTypeHelper mostRestrictiveOccupancy,
+	private void processNonInhabitationalRooms(Plan pl, Floor floor, FloorUnit unit, Block block, String color, OccupancyTypeHelper mostRestrictiveOccupancy,
 	        Map<String, Integer> heightOfRoomFeaturesColor, ScrutinyDetail scrutinyDetail, Map<String, String> errors) {
 
 	    if (floor.getNonInhabitationalRooms() == null || floor.getNonInhabitationalRooms().isEmpty())
@@ -929,7 +943,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	    List<Measurement> rooms = new ArrayList<>();
 
 	    collectHeightsAndRoomsFromNonInhabitationalRooms(floor, heights, rooms);
-	    populateRoomNumberForMeasurements(floor.getNonInhabitationalRooms());
+	    populateRoomNumberForMeasurements(unit.getNonInhabitationalRooms());
 
 	    LOG.info("Collected Heights: {}, Rooms: {}", heights, rooms);
 
@@ -970,7 +984,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 
 	            LOG.info("Validating Non-Inhabitational Room: {} with Area: {}, Width: {}, MinArea: {}, MinWidth: {}", room.getRoomNumber(), roomArea, roomWidth, minArea, minWidth);
 
-	            validateAndReportNonInhabitattionalRoom(pl, floor, room, scrutinyDetail, minArea, minWidth, roomArea, roomWidth);
+	            validateAndReportNonInhabitattionalRoom(pl, floor, unit, room, scrutinyDetail, minArea, minWidth, roomArea, roomWidth);
 	        }
 	    }
 	}
@@ -989,20 +1003,23 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param scrutinyDetail             scrutiny detail to store validation output
 	 * @param errors                     map to record processing errors
 	 */
-	private void processRegularRooms(Plan pl, Floor floor, Block block, String color, OccupancyTypeHelper mostRestrictiveOccupancy,
+	private void processRegularRooms(Plan pl, Floor floor,  FloorUnit unit, Block block, String color, OccupancyTypeHelper mostRestrictiveOccupancy,
 	        Map<String, Integer> heightOfRoomFeaturesColor, ScrutinyDetail scrutinyDetail, Map<String, String> errors) {
 
-	    if (floor.getRegularRooms() == null || floor.getRegularRooms().isEmpty())
+//	    if (floor.getRegularRooms() == null || floor.getRegularRooms().isEmpty())
+//	        return;
+	    
+	    if (unit.getRegularRooms() == null || unit.getRegularRooms().isEmpty())
 	        return;
 
-	    LOG.info("Processing Regular Rooms for Floor: {}, Block: {}, Color: {}", floor.getNumber(), block.getNumber(), color);
+	    LOG.info("Processing Regular Rooms for Floor: {}, Block: {}, Color: {}", floor.getNumber(), block.getNumber(), unit.getUnitNumber(), color);
 
 	    List<BigDecimal> residentialRoomHeights = new ArrayList<>();
 	    List<RoomHeight> heights = new ArrayList<>();
 	    List<Measurement> rooms = new ArrayList<>();
 
-	    collectHeightsAndRoomsFromRegularRooms(floor, heights, rooms);
-	    populateRoomNumberForMeasurements(floor.getRegularRooms());
+	    collectHeightsAndRoomsFromRegularRooms(floor, unit, heights, rooms);
+	    populateRoomNumberForMeasurements(unit.getRegularRooms());
 
 	    LOG.info("Collected Heights: {}, Rooms: {}", heights, rooms);
 
@@ -1012,7 +1029,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        }
 	    }
 
-       buildRoomHeightResult(pl, floor, block, mostRestrictiveOccupancy, residentialRoomHeights,
+       buildRoomHeightResult(pl, floor, unit, block, mostRestrictiveOccupancy, residentialRoomHeights,
     		   heightOfRoomFeaturesColor, color, errors);
 	    LOG.info("Filtered Residential Regular Room Heights: {}", residentialRoomHeights);
 
@@ -1038,7 +1055,8 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 
 	  
 	 // Validate minimum area and width per room
-	    for (Room regularRoom : floor.getRegularRooms()) {
+	   // for (Room regularRoom : floor.getRegularRooms()) {
+	      for (Room regularRoom : unit.getRegularRooms()) {
 	        for (Measurement room : regularRoom.getRooms()) {
 	            BigDecimal roomArea = room.getArea().setScale(2, BigDecimal.ROUND_HALF_UP);
 
@@ -1057,7 +1075,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	            LOG.info("Validating Regular Room: {} with Area: {}, Width(from Room): {}, MinArea: {}, MinWidth: {}",
 	                    room.getRoomNumber(), roomArea, roomWidth, minArea, minWidth);
 
-	            validateAndReportRoom(pl, floor, room, scrutinyDetail, minArea, minWidth, roomArea, roomWidth);
+	            validateAndReportRoom(pl, floor, unit, room, scrutinyDetail, minArea, minWidth, roomArea, roomWidth);
 	        }
 	      }
 	    }
@@ -1071,9 +1089,9 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param heights output list to collect RoomHeight objects
 	 * @param rooms   output list to collect Measurement objects (room area/width)
 	 */
-	private void collectHeightsAndRoomsFromRegularRooms(Floor floor, List<RoomHeight> heights,
+	private void collectHeightsAndRoomsFromRegularRooms(Floor floor, FloorUnit unit, List<RoomHeight> heights,
 			List<Measurement> rooms) {
-		for (Room room : floor.getRegularRooms()) {
+		for (Room room : unit.getRegularRooms()) {
 			if (room.getHeights() != null)
 				heights.addAll(room.getHeights());
 			if (room.getRooms() != null)
@@ -1124,14 +1142,14 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param roomArea       actual room area
 	 * @param roomWidth      actual room width
 	 */
-	private void validateAndReportRoom(Plan pl, Floor floor, Measurement room, ScrutinyDetail scrutinyDetail,
+	private void validateAndReportRoom(Plan pl, Floor floor,  FloorUnit unit, Measurement room, ScrutinyDetail scrutinyDetail,
 			BigDecimal minArea, BigDecimal minWidth, BigDecimal roomArea, BigDecimal roomWidth) {
 
 		String result = (roomArea.compareTo(minArea) >= 0 && roomWidth.compareTo(minWidth) >= 0)
 				? Result.Accepted.getResultVal()
 				: Result.Not_Accepted.getResultVal();
 
-		setReportOutputDetails(pl, RULE_4_4_4_I, RULE_REGULAR_ROOM, floor.getNumber().toString(),
+		setReportOutputDetails(pl, RULE_4_4_4_I, RULE_REGULAR_ROOM, floor.getNumber().toString(), unit.getUnitNumber(),
 				String.valueOf(room.getRoomNumber()), AREA + GREATER_THAN_EQUAL + minArea + COMMA_WIDTH_STRING + GREATER_THAN_EQUAL + minWidth,
 				AREA + IS_EQUAL_TO+ roomArea + COMMA_WIDTH_STRING + IS_EQUAL_TO + roomWidth, result, scrutinyDetail);
 	}
@@ -1149,14 +1167,14 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param roomArea       actual room area
 	 * @param roomWidth      actual room width
 	 */
-	private void validateAndReportNonInhabitattionalRoom(Plan pl, Floor floor, Measurement room, ScrutinyDetail scrutinyDetail,
+	private void validateAndReportNonInhabitattionalRoom(Plan pl, Floor floor, FloorUnit unit, Measurement room, ScrutinyDetail scrutinyDetail,
 			BigDecimal minArea, BigDecimal minWidth, BigDecimal roomArea, BigDecimal roomWidth) {
 
 		String result = (roomArea.compareTo(minArea) >= 0 && roomWidth.compareTo(minWidth) >= 0)
 				? Result.Accepted.getResultVal()
 				: Result.Not_Accepted.getResultVal();
 
-		setReportOutputDetails(pl, RULE_4_4_4_I, RULE_ROOM_DESC, floor.getNumber().toString(),
+		setReportOutputDetails(pl, RULE_4_4_4_I, RULE_ROOM_DESC, floor.getNumber().toString(), unit.getUnitNumber(),
 				String.valueOf(room.getRoomNumber()), AREA + GREATER_THAN_EQUAL + minArea + COMMA_WIDTH_STRING + GREATER_THAN_EQUAL + minWidth,
 				AREA + IS_EQUAL_TO+ roomArea + COMMA_WIDTH_STRING + IS_EQUAL_TO + roomWidth, result, scrutinyDetail);
 	}
@@ -1175,7 +1193,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param color                     color code to match against
 	 * @param errors                    map to record any errors during processing
 	 */
-	private void buildRoomHeightResult(Plan pl, Floor floor, Block block, OccupancyTypeHelper mostRestrictiveOccupancy,
+	private void buildRoomHeightResult(Plan pl, Floor floor, FloorUnit unit, Block block, OccupancyTypeHelper mostRestrictiveOccupancy,
 	        List<BigDecimal> residentialRoomHeights, Map<String, Integer> heightOfRoomFeaturesColor, String color,
 	        Map<String, String> errors) {
 
@@ -1206,7 +1224,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	            BigDecimal minimumHeight = roomHeight;
 	            Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor, false);
 	            LOG.info("Building result for Hilly Area Room with minimum height: {}", minimumHeight);
-	            buildResult(pl, floor, minimumHeight, RULE, "Hilly Area Room Height Rule", roomHeight, false, typicalFloorValues);
+	            buildResult(pl, floor, unit, minimumHeight, RULE, "Hilly Area Room Height Rule", roomHeight, false, typicalFloorValues);
 	            return; // Once hilly is handled, exit method
 	        }
 	    }
@@ -1232,7 +1250,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        LOG.info("Actual minimum residential room height for commercial occupancy: {}", actualMinHeight);
 
 	        Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor, false);
-	        buildResult(pl, floor, requiredHeight, RULEROOMHTC, "Commercial Room Height Rule", actualMinHeight, false, typicalFloorValues);
+	        buildResult(pl, floor, unit, requiredHeight, RULEROOMHTC, "Commercial Room Height Rule", actualMinHeight, false, typicalFloorValues);
 	        return;
 	    }
 
@@ -1256,10 +1274,10 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        LOG.info("Minimum Residential Regular Room Height required is set to: {}", minimumHeight);
 
 	        Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor, false);
-	        buildResult(pl, floor, minimumHeight, RULEROOMHT, RULE_REGULAR_DESC, minHeight, false, typicalFloorValues);
+	        buildResult(pl, floor, unit, minimumHeight, RULEROOMHT, RULE_REGULAR_DESC, minHeight, false, typicalFloorValues);
 
 	    } else {
-	        String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(), floor.getNumber(), REGULAR_ROOM);
+	        String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(), floor.getNumber(), unit.getUnitNumber(), REGULAR_ROOM);
 	        LOG.warn("No Residential Room Heights defined for layer: {}", layerName);
 	        errors.put(layerName, ROOM_HEIGHT_NOTDEFINED + layerName);
 	        pl.addErrors(errors);
@@ -1267,7 +1285,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	}
 
 
-	private void buildResult(Plan pl, Floor floor, BigDecimal expected, String subRule, String subRuleDesc,
+	private void buildResult(Plan pl, Floor floor, FloorUnit unit, BigDecimal expected, String subRule, String subRuleDesc,
 			BigDecimal actual, boolean valid, Map<String, Object> typicalFloorValues) {
 		if (!(Boolean) typicalFloorValues.get(IS_TYPICAL_REP_FLOOR)
 				&& expected.compareTo(BigDecimal.valueOf(0)) > 0 && subRule != null && subRuleDesc != null) {
@@ -1278,18 +1296,18 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 					? (String) typicalFloorValues.get(TYPICAL_FLOOR)
 					: FLOOR_SPACED + floor.getNumber();
 			if (valid) {
-				setReportOutputDetails(pl, subRule, subRuleDesc, value, EMPTY_STRING, expected + DcrConstants.IN_METER,
+				setReportOutputDetails(pl, subRule, subRuleDesc, value, unit.getUnitNumber(), EMPTY_STRING, expected + DcrConstants.IN_METER,
 						actual + DcrConstants.IN_METER, Result.Accepted.getResultVal(), scrutinyDetail);
 				LOG.info("Room Height Validation True: (Expected/Actual) " + expected + "/" + actual);
 			} else {
-				setReportOutputDetails(pl, subRule, subRuleDesc, value, EMPTY_STRING, expected + DcrConstants.IN_METER,
+				setReportOutputDetails(pl, subRule, subRuleDesc, value, unit.getUnitNumber(), EMPTY_STRING, expected + DcrConstants.IN_METER,
 						actual + DcrConstants.IN_METER, Result.Not_Accepted.getResultVal(), scrutinyDetail);
 				LOG.info("Room Height Validation False: (Expected/Actual) " + expected + "/" + actual);
 			}
 		}
 	}
 
-	private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String floor, String room,
+	private void setReportOutputDetails(Plan pl, String ruleNo, String ruleDesc, String floor, Integer unit, String room,
 			String expected, String actual, String status, ScrutinyDetail scrutinyDetail) {
 		ReportScrutinyDetail detail = new ReportScrutinyDetail();
 		detail.setRuleNo(ruleNo);
@@ -1299,6 +1317,7 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 		detail.setRequired(expected);
 		detail.setProvided(actual);
 		detail.setStatus(status);
+		detail.setUnitNumber(unit);
 
 		Map<String, String> details = mapReportDetails(detail);
 		addScrutinyDetailtoPlan(scrutinyDetail, pl, details);
