@@ -206,7 +206,8 @@ export const bpaEditPayload = async (formData) => {
       totalPlotArea: formData.land.totalPlotArea ?? updated.landInfo.totalPlotArea,
       units: formData.land.units ?? updated.landInfo.units,
       documents: formData.land.documents ?? updated.landInfo.documents,
-      address: formData.land.address ?? updated.landInfo.address
+      address: formData.land.address ?? updated.landInfo.address,
+      ownerAddresses:[]
     };
   }
   if (formData?.applicant && updated.landInfo?.owners?.length > 0) {

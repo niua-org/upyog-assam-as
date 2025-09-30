@@ -53,11 +53,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             Cell: ({row}) => row?.original?.mobileNumber
             },
         {
-            Header: t("ES_INBOX_LOCALITY"),
-            accessor: (row) => t(row?.original?.locality),
-            Cell: ({row}) => row?.original?.locality,
-        },
-        {
             Header: t("WARD_NUMBER"),
             accessor: "wardNo",
             Cell: ({row}) => row?.original?.wardNo

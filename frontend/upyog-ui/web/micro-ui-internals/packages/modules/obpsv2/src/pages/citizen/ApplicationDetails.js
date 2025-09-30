@@ -118,6 +118,12 @@ import {
     setAssignResponse(response);
     setToast(true);
     setLoader(true);
+    
+    // Refresh data to show updated state
+    await refetch();
+    const updatedWorkflowDetails = await Digit.WorkflowService.getByBusinessId(tenantId, acknowledgementIds);
+    setWorkflowDetails(updatedWorkflowDetails);
+    
     setTimeout(() => setToast(false), 10000);
   } catch (err) {
     console.error("Error while assigning:", err);
@@ -222,7 +228,16 @@ import {
 
         redirectToPage(redirectingUrl);    
         break;
+      case "APPLY_FOR_SCRUTINY":
+        let scrutinyurl=window.location.href;
+        let scrutinyRedirectingUrl= scrutinyurl.split("/application/")[0] + "/rtp/apply/home";
+        redirectToPage(scrutinyRedirectingUrl);
+        break;
       case "APPROVE":
+        setPopup(true);
+        setDisplayMenu(false);
+        break;
+      case "VALIDATE_GIS":
         setPopup(true);
         setDisplayMenu(false);
         break;
@@ -508,12 +523,14 @@ import {
       actionCancelLabel={t("CS_COMMON_CANCEL")}
       actionCancelOnSubmit={() => setPopup(false)}
       actionSaveLabel={
-         t("CS_COMMON_CONFIRM")
+         t("CS_COMMON_SUBMIT")
       }
       actionSaveOnSubmit={() => {
         if(selectedAction==="APPROVE")
         //setActionError(t("CS_MANDATORY_REASON"));
            onAssign(selectedAction, comments, "Edit");
+      if(selectedAction==="VALIDATE_GIS")
+        onAssign(selectedAction, comments);
       if(!oldRTPName)
         setActionError(t("CS_OLD_RTP_NAME_MANDATORY"))
       if(!newRTPName)
@@ -540,7 +557,7 @@ import {
         <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>
           {comments.length}/500
         </div>
-        <CardLabel>{t("CS_ACTION_SUPPORTING_DOCUMENTS76")}</CardLabel>
+        <CardLabel>{t("CS_ACTION_SUPPORTING_DOCUMENTS")}</CardLabel>
         <CardLabelDesc>{t("CS_UPLOAD_RESTRICTIONS")}</CardLabelDesc>
         <UploadFile
           id="pgr-doc"
@@ -555,6 +572,22 @@ import {
         />
       </div>
     )}
+  {selectedAction === "VALIDATE_GIS" && (
+        <div>
+         <CardLabel>{t("CS_ACTION_UPLOAD_LOCATION_FILE")}</CardLabel>
+          <UploadFile
+            id="pgr-doc"
+            accept=".jpg"
+            onUpload={selectfile}
+            onDelete={() => setUploadedFile(null)}
+            message={
+              uploadedFile
+                ? `1 ${t("CS_ACTION_FILEUPLOADED")}`
+                : t("CS_ACTION_NO_FILEUPLOADED")
+            }
+          />
+        </div>
+      )}
 
     {selectedAction === "NEW_RTP" && (
       <div>
