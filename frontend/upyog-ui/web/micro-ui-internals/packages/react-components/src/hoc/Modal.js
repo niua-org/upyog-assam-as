@@ -34,9 +34,16 @@ const Modal = ({
    */
   const mobileView = Digit.Utils.browser.isMobile() ? true : false;
   useEffect(() => {
-    document.body.style.overflowY = "hidden";
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = "hidden";
+    
     return () => {
-      document.body.style.overflowY = "auto";
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
     };
   }, []);
   return (

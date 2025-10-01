@@ -50,6 +50,34 @@ export const checkForNA = (value = "") => {
   return checkForNotNull(value) ? value : "CS_NA";
 };
 
+export const showHidingLinksForStakeholder = (roles = []) => {
+  let userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+  const userInfo = userInfos ? JSON.parse(userInfos) : {};
+  let checkedRoles = [];
+  const rolearray = roles?.map((role) => {
+    userInfo?.value?.info?.roles?.map((item) => {
+      if (item.code === role.code && item.tenantId === role.tenantId) {
+        checkedRoles.push(item);
+      }
+    });
+  });
+  return checkedRoles?.length;
+};
+
+export const showHidingLinksForBPA = (roles = []) => {
+  const userInfo = Digit.UserService.getUser();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  let checkedRoles = [];
+  const rolearray = roles?.map((role) => {
+    userInfo?.info?.roles?.map((item) => {
+      if (item.code == role && item.tenantId === tenantId) {
+        checkedRoles.push(item);
+      }
+    });
+  });
+  return checkedRoles?.length;
+};
+
 export const bpaPayload = async(data) => {
 
 
@@ -103,7 +131,7 @@ export const bpaPayload = async(data) => {
         todAcknowledgement: data?.land?.todAcknowledgement,
       },
       areaMapping: {
-        buildingPermitAuthority: "GMC",
+        buildingPermitAuthority: data?.areaMapping?.bpAuthority?.code,
         district: data?.areaMapping?.district?.code,
         mouza: data?.areaMapping?.mouza?.code || data?.areaMapping?.mouza,
         planningArea: data?.areaMapping?.planningArea?.code,

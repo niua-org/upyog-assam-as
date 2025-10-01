@@ -1,12 +1,12 @@
 import React, { Fragment, useCallback, useMemo, useReducer } from "react";
 import { InboxComposer, CaseIcon, Header } from "@upyog/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import FilterFormFieldsComponent from "../../../../../obps/src/pages/employee/Inbox/FilterFormFieldsComponent";
-import SearchFormFieldsComponents from "../../../../../obps/src/pages/employee/Inbox/SearchFormFieldsComponent";
-import useInboxTableConfig from "../../../../../obps/src/pages/employee/Inbox/useInboxTableConfig";
-import useInboxMobileCardsData from "../../../../../obps/src/pages/employee/Inbox/useInboxMobileCardsData";
+import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
+import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
+import useInboxTableConfig from "./useInboxTableConfig";
+import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { Link } from "react-router-dom";
-import useBPAInbox from "../../../../../../libraries/src/hooks/obps/useBPAInbox";
+import useBPAInbox from "../../../../../../libraries/src/hooks/obpsv2/useBPAV2Inbox";
 
 const Inbox = ({ parentRoute }) => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -29,22 +29,23 @@ const Inbox = ({ parentRoute }) => {
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set("OBPS.INBOX", { ...state, searchForm: payload.data });
+        Digit.SessionStorage.set("OBPSV2.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
       case "mutateFilterForm":
-        Digit.SessionStorage.set("OBPS.INBOX", { ...state, filterForm: payload.data });
+        Digit.SessionStorage.set("OBPSV2.INBOX", { ...state, filterForm: payload.data });
         return { ...state, filterForm: payload.data };
       case "mutateTableForm":
-        Digit.SessionStorage.set("OBPS.INBOX", { ...state, tableForm: payload.data });
+        Digit.SessionStorage.set("OBPSV2.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
       default:
         break;
     }
   }
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("OBPS.INBOX");
+  const InboxObjectInSessionStorage = Digit.SessionStorage.get("OBPSV2.INBOX");
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null);
     setSearchFormValue("applicationNo", null);
+    setSearchFormValue("applicantName", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
   };
 
@@ -118,9 +119,9 @@ const Inbox = ({ parentRoute }) => {
     links: [
       {
         text: t("BPA_SEARCH_PAGE_TITLE"),
-        link: window.location.href.includes("/citizen") ? "/upyog-ui/citizen/obps/search/application" : "/upyog-ui/employee/obps/search/application",
-        businessService: "BPA",
-        roles: ["BPAREG_EMPLOYEE", "BPAREG_APPROVER", "BPAREG_DOC_VERIFIER", "BPAREG_DOC_VERIFIER"],
+        link: window.location.href.includes("/citizen") ? "/upyog-ui/citizen/obpsv2/search/application" : "/upyog-ui/employee/obpsv2/search/application",
+        businessService: "bpa-services",
+        roles: ["CHB_CEMP"],
       },
     ],
   };
@@ -185,14 +186,14 @@ const Inbox = ({ parentRoute }) => {
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 
     return (
-    <>
+    <Fragment>
       <Header>
         {t("ES_COMMON_INBOX")}
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
       </Header>
       {Digit.Utils.browser.isMobile() &&
         <div style={{marginLeft: "12px"}}>
-          <Link to={window.location.href.includes("/citizen") ? "/upyog-ui/citizen/obps/search/application" : "/upyog-ui/employee/obps/search/application"}>
+          <Link to={window.location.href.includes("/citizen") ? "/upyog-ui/citizen/obpsv2/search/application" : "/upyog-ui/employee/obpsv2/search/application"}>
             <span className="link">{t("BPA_SEARCH_PAGE_TITLE")}</span>
           </Link>
         </div>
@@ -209,7 +210,7 @@ const Inbox = ({ parentRoute }) => {
           formState,
         }}
       ></InboxComposer>
-    </>
+    </Fragment>
   );
 };
 

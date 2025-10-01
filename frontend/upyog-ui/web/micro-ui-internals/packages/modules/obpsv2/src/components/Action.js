@@ -14,13 +14,11 @@ import {
 import { OBPSV2Services } from "../../../../libraries/src/services/elements/OBPSV2";
 import { useTranslation } from "react-i18next";
 
-const Action = ({ selectedAction, applicationNo, closeModal }) => {
+const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, setToastMessage, setShowToast: parentSetShowToast }) => {
   const { t } = useTranslation();
   const [comments, setComments] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
   const [actionError, setActionError] = useState(null);
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
   const [toast, setToast] = useState(false);
   const [oldRTPName, setOldRTPName] = useState();
   const [newRTPName, setNewRTPName] = useState();
@@ -30,14 +28,23 @@ const Action = ({ selectedAction, applicationNo, closeModal }) => {
   const [assignResponse, setAssignResponse] = useState(null);
   const tenantId =  Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   useEffect(() => {
-    if (showToast || error) {
+    if (toast || error) {
       const timer = setTimeout(() => {
         setToast(false);
-        setError(null)
+        setError(null);
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [showToast, error]);
+  }, [toast, error]);
+
+  // Cleanup effect when component unmounts
+  useEffect(() => {
+    return () => {
+      setPopup(false);
+      setError(null);
+      setToast(false);
+    };
+  }, []);
   useEffect(() => {
     if (selectedAction) {
       switch (selectedAction) {
@@ -61,9 +68,7 @@ const Action = ({ selectedAction, applicationNo, closeModal }) => {
             setPopup(true);
             break;
         case "EDIT":
-
-          const url = window.location.href;
-          const redirectingUrl =`${window.location.origin}/upyog-ui/citizen/obpsv2/editApplication/${applicationNo}`;;
+          const redirectingUrl = `${window.location.origin}/upyog-ui/citizen/obpsv2/editApplication/${applicationNo}`;
           redirectToPage(redirectingUrl);
           break;
           case "APPLY_FOR_SCRUTINY":
@@ -145,38 +150,65 @@ const Action = ({ selectedAction, applicationNo, closeModal }) => {
             };
             try {
                 const response = await OBPSV2Services.update({BPA : bpaDetails?.bpa[0]}, tenantId);
-                setToast(true);
-                setPopup(false)
-        
+                setAssignResponse(response);
+                
+                // Close popup first
+                setPopup(false);
+                
+                // Then show toast after a small delay
+                setTimeout(() => {
+                    if (setToastMessage && typeof setToastMessage === 'function') {
+                        setToastMessage(`${selectedAction} action completed successfully`);
+                    }
+                    if (typeof parentSetShowToast === 'function') {
+                        parentSetShowToast(true);
+                    }
+                    // Reset selected action to hide modal
+                    if (setSelectedAction && typeof setSelectedAction === 'function') {
+                        setSelectedAction(null);
+                    }
+                }, 100);
+                
+                // Refresh data if refetch function is available
+                if (typeof refetch === 'function') {
+                    await refetch();
+                }
                 
                 return response;
             }
             catch(error){
-                setError(error?.response?.data?.Errors[0].message)
-                throw new Error(error?.response?.data?.Errors[0].message);
+                setError(error?.response?.data?.Errors?.[0]?.message || 'An error occurred');
+                setPopup(false); // Close popup on error
+                console.error('Update error:', error);
             }
-
-            
         }
-        setAssignResponse(response);
-        setToast(true)
-        await refetch();
-    const updatedWorkflowDetails = await Digit.WorkflowService.getByBusinessId(tenantId, acknowledgementIds);
-    setWorkflowDetails(updatedWorkflowDetails);
       
-      setTimeout(() => setShowToast(false), 5000);
-      closeModal(setPopup(false));
+
+      if (closeModal && typeof closeModal === 'function') {
+        closeModal();
+      }
   }
 
   return (
     <React.Fragment>
       {selectedAction && popup && (
         <Modal
-          headerBarMain={<Heading label={t(selectedAction)} />}
-          headerBarEnd={<CloseBtn onClick={() => setPopup(false)} />}
+            headerBarMain={<Heading label={t(`CS_ACTION_${selectedAction}`)} />}
+            headerBarEnd={<CloseBtn onClick={() => {
+            setPopup(false);
+            if (setSelectedAction && typeof setSelectedAction === 'function') {
+              setSelectedAction(null);
+            }
+          }} />}
           actionCancelLabel={t("CS_COMMON_CANCEL")}
-          actionCancelOnSubmit={() => setPopup(false)}
+          actionCancelOnSubmit={() => {
+            setPopup(false);
+            if (setSelectedAction && typeof setSelectedAction === 'function') {
+              setSelectedAction(null);
+            }
+          }}
           actionSaveLabel={t("CS_COMMON_CONFIRM")}
+          popupStyles={{ zIndex: 1001 }}
           actionSaveOnSubmit={() => {
         if(selectedAction==="APPROVE"||selectedAction==="SEND"||selectedAction==="REJECT"||selectedAction==="SEND_BACK_TO_RTP"||selectedAction==="VALIDATE_GIS")
         //setActionError(t("CS_MANDATORY_REASON"));

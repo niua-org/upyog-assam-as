@@ -1,14 +1,12 @@
 import React, { Fragment, useCallback, useMemo, useReducer } from "react";
-import { CaseIcon, Header } from "@upyog/digit-ui-react-components";
+import { InboxComposer, CaseIcon, Header } from "@upyog/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import useBPAV2Inbox from "../../../../../../libraries/src/hooks/obpsv2/useBPAV2Inbox";
-import useSearchApplicationTableConfig from "../../../components/SearchApplication/useTableConfig";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
-import InboxComposer from "../../../../../../react-components/src/hoc/InboxComposer"
 const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
   const { t } = useTranslation();
@@ -51,11 +49,12 @@ const Inbox = ({ parentRoute }) => {
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null);
     setSearchFormValue("applicationNo", null);
+    setSearchFormValue("applicantName", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
   };
 
   const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "OBPSV2");
+    setFilterFormValue("moduleName", "bpa-services");
     setFilterFormValue("applicationStatus", "");
     setFilterFormValue("locality", []);
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
@@ -194,6 +193,17 @@ const Inbox = ({ parentRoute }) => {
 
   return (
     <>
+      <style>
+        {`
+          @media (min-width: 780px) {
+            .filter-form-field-container { height: auto !important; min-height: auto !important; max-height: 300px !important; }
+            .filter-form { height: auto !important; min-height: auto !important; max-height: 300px !important; }
+            .inbox-search-wrapper .filter-form-field-container { height: auto !important; max-height: 300px !important; }
+            .inbox-search-wrapper .filter-form { height: auto !important; max-height: 300px !important; }
+            .rtp-filter-container { height: auto !important; min-height: auto !important; max-height: 300px !important; }
+          }
+        `}
+      </style>
       <Header>
         {t("ES_COMMON_INBOX")}
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}

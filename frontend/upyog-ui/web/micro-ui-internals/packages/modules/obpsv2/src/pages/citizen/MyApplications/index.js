@@ -33,8 +33,19 @@ export const BPAMyApplications = () => {
       status: status?.code || undefined,
     };
 
-    // Update the filters state to trigger refetch
     setFilters(searchFilters);
+  };
+
+  const handleLoadMore = () => {
+    const newFilters = {
+      limit: "50",
+      sortOrder: "ASC", 
+      sortBy: "createdTime",
+      offset: t1.toString(),
+      tenantId,
+      mobileNumber: user?.mobileNumber
+    };
+    setFilters(newFilters);
   };
 
   if (isLoading) {
@@ -130,8 +141,8 @@ export const BPAMyApplications = () => {
         {filteredApplications.length !== 0 && data?.count > t1 && (
           <div>
             <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-              <span className="link">
-                <Link to={`/upyog-ui/citizen/obpsv2/${t1}`}>{t("BPA_LOAD_MORE_MSG")}</Link>
+              <span className="link" onClick={handleLoadMore}>
+                {t("BPA_LOAD_MORE_MSG")}
               </span>
             </p>
           </div>

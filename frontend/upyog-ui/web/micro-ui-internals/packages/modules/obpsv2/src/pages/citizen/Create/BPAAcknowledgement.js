@@ -69,7 +69,7 @@ const BPAAcknowledgement = ({ data, onSuccess }) => {
   }, [showToast]);
 
   Digit.Hooks.useCustomBackNavigation({
-    redirectPath: `upyog-ui/citizen`
+    redirectPath: `/upyog-ui/citizen`
   });
 
   // const handleDownloadPdf = async () => {
@@ -92,19 +92,24 @@ const BPAAcknowledgement = ({ data, onSuccess }) => {
       <StatusTable>
          {mutation.isSuccess && (
             <Row
+            label={t(mutation.data?.bpa?.[0]?.status)}
             rowContainerStyle={rowContainerStyle}
             last       
-            textStyle={{ whiteSpace: "pre", width: "60%" }}
+            textStyle={{ 
+              whiteSpace: "pre", 
+              width: "60%", 
+              fontWeight: "bold" 
+            }}
             />
         )}
       </StatusTable>
       {/* {mutation.isSuccess && <SubmitBar label={t("BPA_DOWNLOAD_ACKNOWLEDGEMENT")} onSubmit={handleDownloadPdf} />} */}
       {user?.type === "CITIZEN" ? (
-        <Link to={`upyog-ui/citizen`}>
+        <Link to={`/upyog-ui/citizen`}>
           <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
       ) : (
-        <Link to={`upyog-ui/employee`}>
+        <Link to={`/upyog-ui/employee`}>
           <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
       )}

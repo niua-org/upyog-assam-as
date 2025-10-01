@@ -45,7 +45,7 @@ const useBPAV2Search = (tenantId, filters = {}, config = {}) => {
   
   const client = useQueryClient();
   return {...useQuery(['BPA_SEARCH', tenantId, filters], async () => {
-    const response = await OBPSV2Services.search({tenantId, filters });
+    const response = await OBPSV2Services.search(tenantId, { ...filters });
     
     let tenantMap = {}, processInstanceArray = [], appNumbers = [];
     response?.bpa?.forEach(item => {

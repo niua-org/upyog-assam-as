@@ -9,8 +9,8 @@ const BPAApplication = ({ application, tenantId, buttonLabel }) => {
   return (
     <Card> 
       <KeyNote keyValue={t("BPA_APPLICATION_NO")} note={application?.applicationNo} />
-      <KeyNote keyValue={t("BPA_TYPE_OF_CONSTRUCTION")} note={application?.additionalDetails?.constructionType} />
-      <KeyNote keyValue={t("BPA_OCCUPANCY_TYPE")} note={application?.landInfo?.units[0]?.occupancyType} />
+      <KeyNote keyValue={t("BPA_TYPE_OF_CONSTRUCTION")} note={t(application?.additionalDetails?.constructionType)} />
+      <KeyNote keyValue={t("BPA_OCCUPANCY_TYPE")} note={t(application?.landInfo?.units[0]?.occupancyType)} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(application?.status)} />
       
       {application?.slaDaysRemaining && (

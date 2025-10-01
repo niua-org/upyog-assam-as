@@ -17,15 +17,6 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
     { code: "TRANSITION_ZONE", name: "Transition Zone", i18nKey: "BPA_TRANSITION_ZONE" }
   ];
 
-  // Occupancy Type Options
-  const occupancyTypeOptions = [
-    { code: "TYPE1", name: "Type 1", i18nKey: "BPA_TYPE1" },
-    { code: "TYPE2", name: "Type 2", i18nKey: "BPA_TYPE2" },
-    { code: "TYPE3", name: "Type 3", i18nKey: "BPA_TYPE3" },
-    { code: "TYPE4", name: "Type 4" , i18nKey: "BPA_TYPE4"},
-    { code: "TYPE5", name: "Type 5" , i18nKey: "BPA_TYPE5"},
-  ];
-
   // Registered Technical Person Options
   const rtpOptions = [
     { code: "RTP001", name: "Ranjit +91 9988888890, ranjit@gmail.com", i18nKey: "BPA_RTP001" },
@@ -42,7 +33,8 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
     "BPA", 
     [
       { name: "constructionTypes" }, 
-      { name: "rtpCategories" }
+      { name: "rtpCategories" },
+      { name:"PermissibleZone"}
     ],
     {
       select: (data) => {
@@ -54,6 +46,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   // State for dropdown options
   const [constructionTypeOptions, setConstructionTypeOptions] = useState([]);
   const [rtpCategoryOptions, setRtpCategoryOptions] = useState([]);
+  const [occupancyTypeOptions, setOccupancyTypeOptions] = useState([]);
   
     // Initialize districts from MDMS data
     useEffect(() => {
@@ -73,6 +66,14 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           i18nKey: rtpCategories.code,
         }));
         setRtpCategoryOptions(formattedRtpCategories);
+      }
+      if(mdmsData?.PermissibleZone){
+        const formattedOccupancyTypes = mdmsData.PermissibleZone.map((occupancyTypes) => ({
+          code: occupancyTypes.code,
+          name: occupancyTypes.name,
+          i18nKey: occupancyTypes.name,
+        }));
+        setOccupancyTypeOptions(formattedOccupancyTypes);
       }
     }, [mdmsData]);
 
@@ -328,7 +329,10 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           />
 
           {/* Total Plot Area */}
-          <CardLabel>{`${t("BPA_TOTAL_PLOT_AREA")}`} <span className="check-page-link-button">*</span></CardLabel>
+          <CardLabel>
+            {`${t("BPA_TOTAL_PLOT_AREA")}`} <span className="check-page-link-button">*</span>
+            {totalPlotArea && <span style={{ color: "#666", fontSize: "12px", marginLeft: "8px" }}>({totalPlotArea} sq m)</span>}
+            </CardLabel>          
           <TextInput
             t={t}
             type="number"
@@ -353,7 +357,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             ValidationRequired={true}
           />
 
-          <CardLabel>{`${t("BPA_SOUTH_OWNER")}`}</CardLabel>
+          <CardLabel>{`${t("BPA_SOUTH_OWNER")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
             type="text"
@@ -363,7 +367,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             onChange={(e) => setSouthOwner(e.target.value)}
           />
 
-          <CardLabel>{`${t("BPA_EAST_OWNER")}`}</CardLabel>
+          <CardLabel>{`${t("BPA_EAST_OWNER")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
             type="text"
@@ -373,7 +377,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             onChange={(e) => setEastOwner(e.target.value)}
           />
 
-          <CardLabel>{`${t("BPA_WEST_OWNER")}`}</CardLabel>
+          <CardLabel>{`${t("BPA_WEST_OWNER")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
             type="text"
@@ -468,6 +472,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             selected={occupancyType}
             optionKey="i18nKey"
             select={setOccupancyType}
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={t("BPA_SELECT_OCCUPANCY_TYPE")}
           />
 
@@ -577,7 +582,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           {todBenefits?.code === "YES" && (
               <CheckBox
                 label={t("BPA_TOD_ACKNOWLEDGEMENT")}
-                value={todAcknowledgement}
+                checked={todAcknowledgement}
                 onChange={(e) => setTodAcknowledgement(e.target.checked)}
               />
           )}

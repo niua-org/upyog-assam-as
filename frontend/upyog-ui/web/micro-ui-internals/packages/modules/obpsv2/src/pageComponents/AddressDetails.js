@@ -197,7 +197,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
       >
         <div>
           {/* Permanent Address Section */}
-          <CardHeader>{t("BPA_PERMANENT_ADDRESS")}</CardHeader>
+          <CardHeader>{t("BPA_SITE_ADDRESS")}</CardHeader>
           
           {/* House No */}
           <CardLabel>{`${t("BPA_HOUSE_NO")}`}</CardLabel>
@@ -253,6 +253,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
             option={districtOptions}
             selected={permanentDistrict}
             optionKey="i18nKey"
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             select={(value) => setPermanentDistrict(value)}
             placeholder={t("BPA_SELECT_DISTRICT")}
           />
@@ -264,6 +265,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
             option={permanentCityOptions}
             selected={permanentCity}
             optionKey="i18nKey"
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             select={(value) => setPermanentCity(value)}
             placeholder={!permanentDistrict ? t("BPA_SELECT_DISTRICT_FIRST") : t("BPA_SELECT_CITY")}
             disable={!permanentDistrict}
@@ -290,7 +292,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
           {/* Same as Permanent Address Checkbox */}
           <CheckBox
             label={t("BPA_SAME_AS_PERMANENT")}
-            value={sameAsPermanent}
+            checked={sameAsPermanent}
             onChange={(e) => setSameAsPermanent(e.target.checked)}
           />
 
@@ -354,6 +356,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
               option={districtOptions}
               selected={correspondenceDistrict}
               optionKey="i18nKey"
+              optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
               select={(value) => setCorrespondenceDistrict(value)}
               placeholder={t("BPA_SELECT_DISTRICT")}
               disable={sameAsPermanent}
@@ -366,6 +369,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
               option={correspondenceCityOptions}
               selected={correspondenceCity}
               optionKey="i18nKey"
+              optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
               select={(value) => setCorrespondenceCity(value)}
               placeholder={!correspondenceDistrict ? t("BPA_SELECT_DISTRICT_FIRST") : t("BPA_SELECT_CITY")}
               disable={sameAsPermanent || !correspondenceDistrict}

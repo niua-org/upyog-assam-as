@@ -40,7 +40,6 @@ export const buildingPermitConfig = [
           hideInEmployee: true,
           isMandatory: true,
           texts: {
-            header:"APPLICANT_ADDRESS_DETAILS",
             submitBarLabel: "CS_COMMON_NEXT",
           },
         },

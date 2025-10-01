@@ -10,14 +10,15 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
   const [bpAuthorities, setBpAuthorities] = useState([]);
   const [revenueVillages, setRevenueVillages] = useState([]);
   const [mouzas, setMouzas] = useState([]);
+  
   // State for all dropdown values
-  const [district, setDistrict] = useState(formData?.areaMapping?.district ||  "");
-  const [planningArea, setPlanningArea] = useState(null);
-  const [ppAuthority, setPpAuthority] = useState(null);
-  const [bpAuthority, setBpAuthority] = useState(null);
-  const [revenueVillage, setRevenueVillage] = useState(null);
-  const [mouza, setMouza] = useState(mouzas.find(opt=>opt.code ===searchResult?.areaMapping?.mouza)|| formData?.areaMapping?.mouza || "");
-  const [ward, setWard] = useState(searchResult?.areaMapping?.ward || formData?.areaMapping?.ward || "");  
+  const [district, setDistrict] = useState(formData?.areaMapping?.district || "");
+  const [planningArea, setPlanningArea] = useState(formData?.areaMapping?.planningArea || "");
+  const [ppAuthority, setPpAuthority] = useState(formData?.areaMapping?.ppAuthority || "");
+  const [bpAuthority, setBpAuthority] = useState(formData?.areaMapping?.bpAuthority || "");
+  const [revenueVillage, setRevenueVillage] = useState(formData?.areaMapping?.revenueVillage || "");
+  const [mouza, setMouza] = useState(formData?.areaMapping?.mouza || "");
+  const [ward, setWard] = useState(searchResult?.areaMapping?.ward || formData?.areaMapping?.ward || "");
 
   // Fetch data from MDMS
   const { data: areaMappingData, isLoading } = Digit.Hooks.useEnabledMDMS(
@@ -48,111 +49,124 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
         i18nKey: district.districtCode,
       }));
       setDistricts(formattedDistricts);
-      if (searchResult?.areaMapping?.district) {
-        const selected = formattedDistricts.find(d => d.i18nKey === searchResult.areaMapping.district);
-        if (selected) setDistrict(selected);
-      }
     }
-  }, [areaMappingData, searchResult]);
+  }, [areaMappingData]);
 
   // Update planning areas when district changes
   useEffect(() => {
     if (district && areaMappingData?.planningAreas) {
-      // Filter planning areas based on selected district
       const filteredPlanningAreas = areaMappingData.planningAreas
-      .filter(area => area.districtCode === district?.code)
-      .map(area => ({
-        code: area.planningAreaCode,
-        name: area.planningAreaName,
-        i18nKey: area.planningAreaCode,
-      }));
+        .filter(area => area.districtCode === district?.code)
+        .map(area => ({
+          code: area.planningAreaCode,
+          name: area.planningAreaName,
+          i18nKey: area.planningAreaCode,
+        }));
       setPlanningAreas(filteredPlanningAreas);
-
-      if (searchResult?.areaMapping?.planningArea) {
-        const selected = filteredPlanningAreas.find(p => p.i18nKey === searchResult.areaMapping.planningArea);
-        if (selected) setPlanningArea(selected);
-      } else setPlanningArea(null);
+    } else {
+      setPlanningAreas([]);
     }
-  }, [district, areaMappingData, searchResult]);
+  }, [district, areaMappingData]);
 
   // Update PP authorities when planning area changes
   useEffect(() => {
     if (planningArea && areaMappingData?.ppAuthorities) {
-      // Filter PP authorities based on selected planning area
-        const filteredPpAuthorities = areaMappingData.ppAuthorities
+      const filteredPpAuthorities = areaMappingData.ppAuthorities
         .filter(authority => authority.planningAreaCode === planningArea?.code)
         .map(authority => ({
           code: authority.ppAuthorityCode,
           name: authority.ppAuthorityName,
           i18nKey: authority.ppAuthorityCode,
         }));
-
       setPpAuthorities(filteredPpAuthorities);
-
-      if (searchResult?.areaMapping?.planningPermitAuthority) {
-        const selected = filteredPpAuthorities.find(p => p.i18nKey === searchResult.areaMapping.planningPermitAuthority);
-        if (selected) setPpAuthority(selected);
-      } else setPpAuthority(null);
+    } else {
+      setPpAuthorities([]);
     }
-  }, [planningArea, areaMappingData, searchResult]);
+  }, [planningArea, areaMappingData]);
 
   // Update BP authorities when PP authority changes
   useEffect(() => {
     if (ppAuthority && areaMappingData?.bpAuthorities) {
-      // Filter BP authorities based on selected PP authority
       const filteredBpAuthorities = areaMappingData.bpAuthorities
-      .filter(authority => authority.ppAuthorityCode === ppAuthority?.code)
-      .map(authority => ({
-        code: authority.bpAuthorityCode,
-        name: authority.bpAuthorityName,
-        i18nKey: authority.bpAuthorityCode,
-      }));
+        .filter(authority => authority.ppAuthorityCode === ppAuthority?.code)
+        .map(authority => ({
+          code: authority.bpAuthorityCode,
+          name: authority.bpAuthorityName,
+          i18nKey: authority.bpAuthorityCode,
+        }));
       setBpAuthorities(filteredBpAuthorities);
-
-      if (searchResult?.areaMapping?.buildingPermitAuthority) {
-        const selected = filteredBpAuthorities.find(b => b.i18nKey === searchResult.areaMapping.buildingPermitAuthority);
-        if (selected) setBpAuthority(selected);
-      } else setBpAuthority(null);
+    } else {
+      setBpAuthorities([]);
     }
-  }, [ppAuthority, areaMappingData, searchResult]);
+  }, [ppAuthority, areaMappingData]);
 
   // Update revenue villages when BP authority changes
   useEffect(() => {
     if (bpAuthority && areaMappingData?.revenueVillages) {
       const filteredRevenueVillages = areaMappingData.revenueVillages
-      .filter(village => village.bpAuthorityCode === bpAuthority?.code)
-      .map(village => ({
-        code: village.revenueVillageCode,
-        name: village.revenueVillageName,
-        i18nKey: village.revenueVillageCode,
-      }));
+        .filter(village => village.bpAuthorityCode === bpAuthority?.code)
+        .map(village => ({
+          code: village.revenueVillageCode,
+          name: village.revenueVillageName,
+          i18nKey: village.revenueVillageCode,
+        }));
       setRevenueVillages(filteredRevenueVillages);
-
-      if (searchResult?.areaMapping?.revenueVillage) {
-        const selected = filteredRevenueVillages.find(r => r.i18nKey === searchResult.areaMapping.revenueVillage);
-        if (selected) setRevenueVillage(selected);
-      } else setRevenueVillage(null);
+    } else {
+      setRevenueVillages([]);
     }
-  }, [bpAuthority, areaMappingData, searchResult]);
+  }, [bpAuthority, areaMappingData]);
 
   // Update mouzas when revenue village changes
   useEffect(() => {
     if (revenueVillage && areaMappingData?.mouzas) {
-      // Filter mouzas based on selected revenue village
       const filteredMouzas = areaMappingData.mouzas
-      .filter(mouza => mouza.revenueVillageCode === revenueVillage?.code)
-      .map(mouza => ({
-        code: mouza.mouzaCode,
-        name: mouza.mouzaName,
-        i18nKey: mouza.mouzaCode,
-      }));
+        .filter(mouza => mouza.revenueVillageCode === revenueVillage?.code)
+        .map(mouza => ({
+          code: mouza.mouzaCode,
+          name: mouza.mouzaName,
+          i18nKey: mouza.mouzaCode,
+        }));
       setMouzas(filteredMouzas);
-      if (searchResult?.areaMapping?.mouza) {
-        const selected = filteredMouzas.find(m => m.i18nKey === searchResult.areaMapping.mouza);
-        if (selected) setMouza(selected);
-      } else setMouza(null);
+    } else {
+      setMouzas([]);
     }
-  }, [revenueVillage, areaMappingData, searchResult]);
+  }, [revenueVillage, areaMappingData]);
+
+  // Custom handlers for dropdown changes
+  const handleDistrictChange = (selectedDistrict) => {
+    setDistrict(selectedDistrict);
+    setPlanningArea("");
+    setPpAuthority("");
+    setBpAuthority("");
+    setRevenueVillage("");
+    setMouza("");
+  };
+
+  const handlePlanningAreaChange = (selectedPlanningArea) => {
+    setPlanningArea(selectedPlanningArea);
+    setPpAuthority("");
+    setBpAuthority("");
+    setRevenueVillage("");
+    setMouza("");
+  };
+
+  const handlePpAuthorityChange = (selectedPpAuthority) => {
+    setPpAuthority(selectedPpAuthority);
+    setBpAuthority("");
+    setRevenueVillage("");
+    setMouza("");
+  };
+
+  const handleBpAuthorityChange = (selectedBpAuthority) => {
+    setBpAuthority(selectedBpAuthority);
+    setRevenueVillage("");
+    setMouza("");
+  };
+
+  const handleRevenueVillageChange = (selectedRevenueVillage) => {
+    setRevenueVillage(selectedRevenueVillage);
+    setMouza("");
+  };
 
   // Go next
   const goNext = () => {
@@ -197,7 +211,8 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
             optionKey="i18nKey"
             id="district"
             selected={district}
-            select={setDistrict}
+            select={handleDistrictChange}
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={isLoading ? t("LOADING_DISTRICTS") : t("SELECT_DISTRICT")}
           />
 
@@ -208,7 +223,8 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
             option={planningAreas}
             optionKey="i18nKey" 
             selected={planningArea}
-            select={setPlanningArea} 
+            select={handlePlanningAreaChange} 
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={!district ? t("SELECT_DISTRICT_FIRST") : t("SELECT_PLANNING_AREA")} 
           />
 
@@ -219,7 +235,8 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
             option={ppAuthorities}
             optionKey="i18nKey"
             selected={ppAuthority}
-            select={setPpAuthority} 
+            select={handlePpAuthorityChange} 
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={!planningArea ? t("SELECT_PLANNING_AREA_FIRST") : t("SELECT_PP_AUTHORITY")}
           />
 
@@ -230,7 +247,8 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
             option={bpAuthorities}
             optionKey="i18nKey"
             selected={bpAuthority}
-            select={setBpAuthority}
+            select={handleBpAuthorityChange}
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={!ppAuthority ? t("SELECT_PP_AUTHORITY_FIRST") : t("SELECT_BP_AUTHORITY")}
           />
 
@@ -242,11 +260,12 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
             optionKey="i18nKey"
             id="revenueVillage"
             selected={revenueVillage}
-            select={setRevenueVillage}
+            select={handleRevenueVillageChange}
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={!bpAuthority ? t("SELECT_BP_AUTHORITY_FIRST") : t("SELECT_REVENUE_VILLAGE")}
           />
 
-          {/* Mouza - Either dropdown or text input based on available data */}
+          {/* Mouza */}
           <CardLabel>{`${t("MOUZA")}`} <span className="check-page-link-button">*</span></CardLabel>
           {mouzas.length > 0 ? (
             <Dropdown
@@ -254,7 +273,7 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
               option={mouzas}
               optionKey="i18nKey"
               selected={mouza}
-              
+              optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
               select={setMouza}
               placeholder={!revenueVillage ? t("SELECT_REVENUE_VILLAGE_FIRST") : t("SELECT_MOUZA")} 
             />
@@ -268,13 +287,15 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
             />
           )}
 
-          {/* Ward - Always a text input field */}
+          {/* Ward */}
           <CardLabel>{`${t("WARD")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
             name="ward"
             value={ward}
-            onChange={(e) => setWard(e.target.value)}
+            maxLength={3}
+            minLength={1}
+            onChange={(e) => setWard(e.target.value.replace(/[^0-9]/g, ""))}
             placeholder={`${t("ENTER_WARD_NUMBER")}`}
           />
         </div>

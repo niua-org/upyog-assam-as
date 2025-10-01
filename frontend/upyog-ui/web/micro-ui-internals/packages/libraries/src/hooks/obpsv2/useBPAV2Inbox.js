@@ -4,7 +4,7 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
     const { filterForm, searchForm , tableForm } = filters;
     const user = Digit.UserService.getUser();
     let { moduleName, businessService, applicationStatus, locality, assignee, applicationType } = filterForm;
-    const { mobileNumber, applicationNo } = searchForm;
+    const { mobileNumber, applicationNo, applicantName } = searchForm;
     const { sortBy, limit, offset, sortOrder } = tableForm;
     let applicationNumber = "";
     let _filters = {
@@ -17,11 +17,10 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
         },
         moduleSearchCriteria: {
           ...(mobileNumber ? {mobileNumber}: {}),
+          ...(applicantName ? {applicantName}: {}),
           ...(!applicationNumber ? applicationNo ? {applicationNo} : {} : (applicationNumber ? {applicationNumber} : {})),
-          //...(applicationNumber ? {} : {}),
           ...(sortOrder ? {sortOrder} : {}),
           ...(sortBy ? {sortBy} : {}),
-          // ...(applicationType?.length > 0 ? {applicationType: applicationType.map((item) => item.code).join(",")} : {}),
           ...(applicationType && applicationType?.length > 0 ? {applicationType} : {}),
           ...(locality?.length > 0 ? {locality: locality.map((item) => item.code.split("_").pop()).join(",")} : {}),
         },
@@ -39,11 +38,10 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
 
       return {
         statuses: data.statusMap,
-        table:
-          data?.items?.map((application) => ({
+        table: Array.isArray(data?.items) ? 
+          data.items.map((application) => ({
             applicationId:
-              application?.businessObject?.applicationNo || "NA",
-            // date: application?.businessObject?.auditDetails?.createdTime,
+              application?.businessObject?.applicationNo || application?.ProcessInstance?.businessId || "NA",
             applicantName:
               application?.businessObject?.landInfo?.owners?.[0]?.name || "NA",
             fatherOrHusbandName:
@@ -57,14 +55,15 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
                 ?.locality || "NA",
             wardNo:
               application?.businessObject?.areaMapping?.ward || "NA",
-            status: application?.businessObject?.status || "NA",
-            nextActions : application?.ProcessInstance,
-            sla: Math.round(
-              application?.ProcessInstance?.businesssServiceSla /
+            status: application?.businessObject?.status || application?.ProcessInstance?.state?.applicationStatus || "NA",
+            nextActions: application?.ProcessInstance,
+            sla: application?.ProcessInstance?.businesssServiceSla ? Math.round(
+              application.ProcessInstance.businesssServiceSla /
                 (24 * 60 * 60 * 1000)
-            ),
-            tenantId: application?.businessObject?.tenantId,
-          })) || [],
+            ) : 0,
+            tenantId: application?.businessObject?.tenantId || application?.ProcessInstance?.tenantId,
+            areaMapping: application?.businessObject?.areaMapping,
+          })) : [],
         totalCount: data?.totalCount,
         
         nearingSlaCount: data?.nearingSlaCount,

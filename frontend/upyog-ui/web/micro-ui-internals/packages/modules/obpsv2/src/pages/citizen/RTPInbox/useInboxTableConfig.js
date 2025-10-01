@@ -2,26 +2,43 @@ import React, { Fragment, useMemo, useState, useEffect } from "react"
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { Dropdown, Toast } from "@upyog/digit-ui-react-components";
+import { Dropdown, Toast, SubmitBar } from "@upyog/digit-ui-react-components";
 import { OBPSV2Services } from "../../../../../../libraries/src/services/elements/OBPSV2";
 import Action from "../../../components/Action";
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData}) => {
+
+const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table = [], dispatch, onSortingByData}) => {
     const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
     const GetStatusCell = (value) => value === "CS_NA" ? t(value) : value === "Active" || value>0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span> 
     const { t } = useTranslation()
     const [error, setError] = useState(null);
     const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
     const [selectedAction, setSelectedAction] = useState(null);
     const [applicationNo, setApplicationNo] = useState();
+    const [showActionMenu, setShowActionMenu] = useState(null);
+    
     useEffect(() => {
         if (showToast || error) {
           const timer = setTimeout(() => {
             setShowToast(false);
-            setError(null)
-          }, 2000); // Close toast after 2 seconds
-          return () => clearTimeout(timer); // Clear timer on cleanup
+            setError(null);
+            setToastMessage("");
+            setSelectedAction(null);
+            setApplicationNo(null);
+            window.location.reload(); // Reload page after toast
+          }, 3000);
+          return () => clearTimeout(timer);
         }
-      }, [showToast, error]);
+    }, [showToast, error]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setShowActionMenu(null);
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
     
     const tableColumnConfig = useMemo(() => {
         return [
@@ -30,7 +47,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             accessor: "applicationNo",
             disableSortBy: true,
             Cell: ({ row }) => {
-                
             return (
                 <div>
                 <Link to={window.location.href.includes("/citizen") ? `${parentRoute}/application/${row?.original["applicationId"]}/${row?.original["tenantId"]}` : `${parentRoute}/inbox/bpa/${row.original["applicationId"]}`}>
@@ -43,60 +59,126 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         {
             Header: t("APPLICANT_NAME"),
             accessor: "applicantName",
-            Cell: ({row}) => row?.original?.applicantName
-            },
-            {
-            Header: t("FATHERS_NAME"),
-            accessor: "fatherOrHusbandName",
-            Cell: ({row}) => row?.original?.fatherOrHusbandName
-            },
-            {
+            Cell: ({row}) => row?.original?.applicantName || "NA"
+        },
+        {
+            Header: t("DISTRICT"),
+            accessor: "district",
+            Cell: ({row}) => t(row?.original?.areaMapping?.district) || "NA"
+        },
+        {
             Header: t("MOBILE_NUMBER"),
             accessor: "mobileNumber",
-            Cell: ({row}) => row?.original?.mobileNumber
-            },
+            Cell: ({row}) => row?.original?.mobileNumber || "NA"
+        },
         {
-            Header: t("WARD_NUMBER"),
-            accessor: "wardNo",
-            Cell: ({row}) => row?.original?.wardNo
-            },
-        
-        {
-            Header: t("SLA"),
-            accessor: row => GetStatusCell(row?.original?.sla),
-            Cell: ({row}) => row?.original?.sla
+            Header: t("STATUS"),
+            accessor: "status",
+            Cell: ({row}) => t(row?.original?.status) || t("CS_NA")
         },
         {
             Header: t("ACTION"),
             accessor: "action",
             disableSortBy: true,
             Cell: ({ row }) => {
-                const options = row?.original?.nextActions?.nextActions?.map((action) => ({
+                const processInstance = row?.original;
+                const stateActions = processInstance?.nextActions?.nextActions || [];
+                const filteredActions = stateActions;
+                
+                const options = Array.isArray(filteredActions)
+                ? filteredActions.map((action) => ({
                     code: action?.action,
-                    i18nKey: action?.action
-                })) || [];
-
-                
-                
+                    i18nKey: `CS_ACTION_${action?.action}`
+                    }))
+                : [];
 
                 const handleSelect = (value) => {
                     setSelectedAction(value.code);
-                    let applicationId= row.original["applicationId"]
-                    setApplicationNo(applicationId)
+                    let applicationId = processInstance?.nextActions?.businessId || row.original["applicationId"];
+                    setApplicationNo(applicationId);
+                };
+
+                const closeModal = () => {
+                    setSelectedAction(null);
+                    setApplicationNo(null);
                 };
 
                 return (
                     <React.Fragment>
-                <Dropdown
-                    t={t}
-                    option={options}
-                    optionKey="i18nKey"
-                    id={`action-${row.original.applicationId}`}
-                    selected={null} // nothing selected by default
-                    select={handleSelect}
-                    placeholder={t("Take Action")}
-                />
-                {selectedAction && (
+                {options.length > 0 ? (
+                    <div style={{ minWidth: "140px", position: "relative" }}>
+                        <div
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                // Preserve scroll position
+                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                setShowActionMenu(showActionMenu === row.original.applicationId ? null : row.original.applicationId);
+                                // Restore scroll position after state update
+                                setTimeout(() => {
+                                    window.scrollTo(0, scrollTop);
+                                }, 0);
+                            }}
+                            onMouseDown={(e) => e.preventDefault()}
+                            style={{
+                                width: "100%",
+                                padding: "8px 12px",
+                                backgroundColor: "#a82227",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                outline: "none",
+                                textAlign: "center",
+                                userSelect: "none",
+                                display: "inline-block"
+                            }}
+                        >
+                            {t("Take Action")}
+                        </div>
+                        {showActionMenu === row.original.applicationId && (
+                            <div 
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                position: "absolute",
+                                top: "100%",
+                                left: 0,
+                                right: 0,
+                                backgroundColor: "white",
+                                border: "1px solid #ccc",
+                                borderRadius: "4px",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                                zIndex: 1000,
+                                marginTop: "2px"
+                            }}>
+                                {options.map(option => (
+                                    <div
+                                        key={option.code}
+                                        style={{
+                                            padding: "10px 12px",
+                                            cursor: "pointer",
+                                            borderBottom: options.length > 1 ? "1px solid #eee" : "none",
+                                            fontSize: "14px"
+                                        }}
+                                        onClick={() => {
+                                            handleSelect(option);
+                                            setShowActionMenu(null);
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = "#f5f5f5"}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = "white"}
+                                    >
+                                        {t(option.i18nKey)}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <span style={{ fontSize: "12px", color: "#666" }}>{t("No Actions Available")}</span>
+                )}
+                {selectedAction && applicationNo === (processInstance?.nextActions?.businessId || row.original["applicationId"]) && (
                     <Action
                         row={row}
                         selectedAction={selectedAction}
@@ -104,23 +186,26 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                         parentRoute={parentRoute}
                         setShowToast={setShowToast}
                         setError={setError}
+                        setToastMessage={setToastMessage}
+                        closeModal={closeModal}
+                        setSelectedAction={setSelectedAction}
                     />
                 )}
-                {(showToast||error) && (
+                {(showToast||error) && !selectedAction && (
                         <Toast
                           error={error ? error : null}
-                          
-                          label={error ? error : t(`ACTION_UPDATE_DONE_SUCCESSFULLY`)}
+                          label={error ? error : (toastMessage || t(`CS_ACTION_${selectedAction}_SUCCESS`))}
                           onClose={() => {
                             setShowToast(false);
+                            setError(null);
+                            setToastMessage("");
                           }}
                         />
-                      )}
-                      </React.Fragment>
+                )}
+                </React.Fragment>
                 );
             },
-            }
-
+        }
         ]
     })
 
@@ -141,14 +226,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         onPrevPage: () => dispatch({action: "mutateTableForm", data: {...formState.tableForm , offset: (parseInt(formState.tableForm?.offset) - parseInt(formState.tableForm?.limit)) }}),
         pageSizeLimit: formState.tableForm?.limit,
         onSort: onSortingByData,
-        // sortParams: [{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}],
         totalRecords: totalCount,
         onSearch: formState?.searchForm?.message,
         onLastPage: () => dispatch({action: "mutateTableForm", data: {...formState.tableForm , offset: (Math.ceil(totalCount / 10) * 10 - parseInt(formState.tableForm?.limit)) }}),
         onFirstPage: () => dispatch({action: "mutateTableForm", data: {...formState.tableForm , offset: 0 }}),
-        // globalSearch: {searchForItemsInTable},
-        // searchQueryForTable,
-        data: table,
+        data: table || [],
         columns: tableColumnConfig
     }
 }

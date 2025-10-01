@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, Fragment } from "react";
 import {
   Card,
   CardHeader,
@@ -49,7 +49,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
   const toggleExpanded = (key) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
-  const { applicant = {}, address = {}, land = {}, documents = {} } = value;
+  const {areaMapping={}, applicant = {}, address = {}, land = {}, documents = {} } = value;
   const flow = window.location.href.includes("editApplication") ? "editApplication" : "buildingPermit"
   const setDeclarationHandler = () => {
     setAgree(!agree);
@@ -173,6 +173,52 @@ const CheckPage = ({ onSubmit, value = {} }) => {
           }}
         >
           <CardSubHeader style={{ fontSize: "24px", marginTop: "24px" }}>
+            {t("BPA_AREA_MAPPING")}
+          </CardSubHeader>
+          <ActionButton
+            jumpTo={`/upyog-ui/citizen/obpsv2/building-permit/area-mapping`}
+          />
+        </div>
+
+        <StatusTable>
+          <Row
+            label={t("DISTRICT")}
+            text={checkForNA(areaMapping?.district?.name)}
+          />
+          <Row
+            label={t("PLANNING_AREA")}
+            text={checkForNA(areaMapping?.planningArea?.name)}
+          />
+          <Row
+            label={t("PP_AUTHORITY")}
+            text={checkForNA(areaMapping?.ppAuthority?.name)}
+          />
+          <Row
+            label={t("BP_AUTHORITY")}
+            text={checkForNA(areaMapping?.bpAuthority?.name)}
+          />
+          <Row
+            label={t("REVENUE_VILLAGE")}
+            text={checkForNA(areaMapping?.revenueVillage?.name)}
+          />
+          <Row
+            label={t("MOUZA")}
+            text={checkForNA(areaMapping?.mouza?.name || areaMapping?.mouza)}
+          />
+          <Row
+            label={t("WARD")}
+            text={checkForNA(areaMapping?.ward)}
+          />
+        </StatusTable>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "24px" }}>
             {t("BPA_APPLICANT_DETAILS")}
           </CardSubHeader>
           <ActionButton
@@ -240,7 +286,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
           }}
         >
           <CardSubHeader style={{ fontSize: "20px" }}>
-            {t("BPA_PERMANENT_ADDRESS")}
+            {t("BPA_SITE_ADDRESS")}
           </CardSubHeader>
         </div>
 
@@ -291,7 +337,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
         {address?.sameAsPermanent ? (
           <div style={{ marginTop: "16px" }}>
             <CheckBox
-              label={t("BPA_SAME_AS_PERMANENT")}
+              label={t("BPA_SAME_AS_SITE_ADDRESS")}
               checked={true}
               disabled={true}
             />
@@ -368,7 +414,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
           />
           <Row
             label={t("BPA_TOTAL_PLOT_AREA")}
-            text={land?.totalPlotArea ? `${land.totalPlotArea} sq. ft.` : ""}
+            text={land?.totalPlotArea ? `${land.totalPlotArea} sq. m.` : ""}
           />
         </StatusTable>
 
@@ -422,10 +468,22 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             label={t("BPA_VERTICAL_EXTENSION")}
             text={checkForNA(land?.futureProvisions?.verticalExtension?.name)}
           />
+          {land?.futureProvisions?.verticalExtension?.code === "YES" && (
+            <Row
+              label={t("BPA_VERTICAL_EXTENSION_AREA")}
+              text={`${land?.futureProvisions?.verticalExtensionArea} floors`}
+            />
+          )}
           <Row
             label={t("BPA_HORIZONTAL_EXTENSION")}
             text={checkForNA(land?.futureProvisions?.horizontalExtension?.name)}
           />
+          {land?.futureProvisions?.horizontalExtension?.code === "YES" && (
+            <Row
+              label={t("BPA_HORIZONTAL_EXTENSION_AREA")}
+              text={`${land?.futureProvisions?.horizontalExtensionArea} sq m`}
+            />
+          )}
         </StatusTable>
 
         <StatusTable style={{ marginTop: "16px" }}>
@@ -443,24 +501,42 @@ const CheckPage = ({ onSubmit, value = {} }) => {
           />
           <Row
             label={t("BPA_TOD_BENEFITS")}
-            text={
-              land?.todBenefits
-                ? `${t("CS_YES")}, ${land.todBenefits}`
-                : t("CS_NO")
-            }
+            text={checkForNA(land?.todBenefits?.name)}
           />
-          <Row
-            label={t("BPA_FORM_36")}
-            text={land?.form36 ? t("BPA_FILE_UPLOADED") : t("CS_NA")}
-          />
-          <Row
-            label={t("BPA_FORM_39")}
-            text={land?.form39 ? t("BPA_FILE_UPLOADED") : t("CS_NA")}
-          />
-          <Row
-            label={t("BPA_TOD_ZONE")}
-            text={checkForNA(land?.todZone?.name)}
-          />
+          {land?.todBenefits?.code === "YES" && (
+            <>
+              <Row
+                label={t("BPA_TOD_WITH_TDR")}
+                text={checkForNA(land?.todWithTdr?.name)}
+              />
+              <Row
+                label={t("BPA_TOD_ZONE")}
+                text={checkForNA(land?.todZone?.name)}
+              />
+            </>
+          )}
+          {land?.documents && land.documents.length > 0 && (
+            <div style={{ marginTop: "16px" }}>
+              <DocumentsPreview
+                documents={[{
+                  values: land.documents.map(doc => ({
+                    title: doc.documentType === "FORM_36" ? "Form 36" : "Form 39",
+                    url: `/filestore/v1/files/id?tenantId=${Digit.ULBService.getCurrentTenantId()}&fileStoreId=${doc.fileStoreId}`,
+                    documentType: doc.documentType
+                  }))
+                }]}
+                svgStyles={{}}
+                isSendBackFlow={false}
+                isHrLine={true}
+                titleStyles={{
+                  fontSize: "16px",
+                  lineHeight: "20px",
+                  fontWeight: 600,
+                  marginBottom: "8px",
+                }}
+              />
+            </div>
+          )}
         </StatusTable>
         {window.location.href.includes("editApplication") ? (
           <React.Fragment>
