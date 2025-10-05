@@ -155,7 +155,7 @@ public class BathRoomWaterClosets_Assam extends BathRoomWaterClosets {
         for (Floor floor : block.getBuilding().getFloors()) {
             if(floor.getUnits() != null && !floor.getUnits().isEmpty())
                 for (FloorUnit floorUnit : floor.getUnits()) {
-                    LOG.info("Processing Floor Number: {} and Unit Number: {} in Block Number: {}", floor.getNumber(), floorUnit.getNumber(), block.getNumber());
+                    LOG.info("Processing Floor Number: {} and Unit Number: {} in Block Number: {}", floor.getNumber(), floorUnit.getUnitNumber(), block.getNumber());
                     processFloor(plan, floor, floorUnit, reqArea, reqWidth, reqHeight, scrutinyDetail);
                 }
         }
@@ -169,7 +169,7 @@ public class BathRoomWaterClosets_Assam extends BathRoomWaterClosets {
         org.egov.common.entity.edcr.Room bathWC = floorUnit.getBathRoomWaterClosets();
         if (bathWC == null || bathWC.getHeights() == null || bathWC.getHeights().isEmpty()
             || bathWC.getRooms() == null || bathWC.getRooms().isEmpty()) {
-            LOG.info("Skipping Unit Number: {} in Floor Number: {} due to missing bathroom WC room or height details", floorUnit.getNumber(), floor.getNumber());
+            LOG.info("Skipping Unit Number: {} in Floor Number: {} due to missing bathroom WC room or height details", floorUnit.getUnitNumber(), floor.getNumber());
             return;
         }
 
@@ -207,7 +207,7 @@ public class BathRoomWaterClosets_Assam extends BathRoomWaterClosets {
 
         LOG.info("Bathroom WC validation on Floor Number: {} and Unit Number: {} - Min Height: {}, Total Area: {}, Min Width: {}, " +
                   "Required Height: {}, Required Area: {}, Required Width: {}, Accepted: {}",
-                floor.getNumber(), floorUnit.getNumber(), minHeight, totalArea, minWidth, reqHeight, reqArea, reqWidth, isAccepted);
+                floor.getNumber(), floorUnit.getUnitNumber(), minHeight, totalArea, minWidth, reqHeight, reqArea, reqWidth, isAccepted);
 
         Map<String, String> resultRow = createResultRow(floor, reqArea, reqWidth, reqHeight, totalArea, minWidth, minHeight, isAccepted);
         scrutinyDetail.getDetail().add(resultRow);

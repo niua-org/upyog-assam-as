@@ -129,7 +129,7 @@ public class BathRoom extends FeatureProcess {
         for (Floor floor : block.getBuilding().getFloors()) {
             if (floor.getUnits() != null || !floor.getUnits().isEmpty())
                 for (FloorUnit floorUnit : floor.getUnits()) {
-                    LOG.info("Processing Floor Unit: {} in Floor Number: {} in Block ID: {}", floorUnit.getNumber(), floor.getNumber(), block.getNumber());
+                    LOG.info("Processing Floor Unit: {} in Floor Number: {} in Block ID: {}", floorUnit.getUnitNumber(), floor.getNumber(), block.getNumber());
                     processFloor(plan, floor, floorUnit, permittedArea, permittedMinWidth, scrutinyDetail);
                 }
         }
@@ -194,7 +194,7 @@ public class BathRoom extends FeatureProcess {
 
         LOG.info("Validating bathroom for Floor Number: {} and Unit number : {} - Total Area: {}, Min Width: {}, Min Height: {}, " +
                         "Permitted Area: {}, Permitted Min Width: {}, Accepted: {}",
-                floor.getNumber(), floorUnit.getNumber(), totalArea, minWidth, minHeight, permittedArea, permittedMinWidth, isAccepted);
+                floor.getNumber(), floorUnit.getUnitNumber(), totalArea, minWidth, minHeight, permittedArea, permittedMinWidth, isAccepted);
 
         Map<String, String> resultRow = createResultRow(floor, permittedArea, permittedMinWidth, totalArea, minWidth, isAccepted);
         scrutinyDetail.getDetail().add(resultRow);

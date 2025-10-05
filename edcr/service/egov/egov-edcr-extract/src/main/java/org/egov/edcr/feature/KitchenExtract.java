@@ -140,8 +140,8 @@ public class KitchenExtract extends FeatureExtract {
         List<DXFLWPolyline> kitchenPolyLines = new ArrayList<>();
 
         String kitchenLayer = String.format(layerNames.getLayerName("LAYER_NAME_UNIT_KITCHEN"), block.getNumber(),
-                floor.getNumber(), floorUnit.getNumber());
-        // List<BigDecimal> kitchenHeight = Util.getListOfDimensionValueByLayer(pl, kitchenLayer);
+                floor.getNumber(), floorUnit.getUnitNumber());
+        // List<BigDecimal> kitchenHeight = Util.getListOfDimensionValueByLayer(plLAYER_NAME_UNIT_KITCHEN, kitchenLayer);
 
         List<BigDecimal> kitchenHeight = Util.getListOfDimensionByColourCode(pl, kitchenLayer, DxfFileConstants.KITCHEN_HEIGHT_COLOR);
         List<BigDecimal> kitchenWidth = Util.getListOfDimensionByColourCode(pl, kitchenLayer, DxfFileConstants.KITCHEN_WIDTH_COLOR);

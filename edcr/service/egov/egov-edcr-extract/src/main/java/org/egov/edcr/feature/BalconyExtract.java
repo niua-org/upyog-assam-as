@@ -58,7 +58,7 @@ public class BalconyExtract extends FeatureExtract {
                 for (FloorUnit floorUnit : floor.getUnits()) {
                     List<Balcony> balconies = new ArrayList<>();
 
-                    String balconylayerPattern = "BLK_" + block.getNumber() + "_FLR_" + floor.getNumber() + "_UNIT_" + floorUnit.getNumber() + "_BALCONY_" + "\\d{1,2}";
+                    String balconylayerPattern = "BLK_" + block.getNumber() + "_FLR_" + floor.getNumber() + "_UNIT_" + floorUnit.getUnitNumber() + "_BALCONY_" + "\\d{1,2}";
                     List<String> balconyLayers = Util.getLayerNamesLike(planDetail.getDoc(), balconylayerPattern);
 
                     for (String balconyLayer : balconyLayers) {
@@ -81,7 +81,7 @@ public class BalconyExtract extends FeatureExtract {
                     }
                     floorUnit.setBalconies(balconies);
                     LOG.debug("Total balconies found for block " + block.getNumber() + " floor " + floor.getNumber()
-                            + " unit " + floorUnit.getNumber() + " : " + balconies.size());
+                            + " unit " + floorUnit.getUnitNumber() + " : " + balconies.size());
                 }
             }
 

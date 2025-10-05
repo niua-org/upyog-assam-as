@@ -78,11 +78,11 @@ public class BathRoomExtract extends FeatureExtract {
                     if (f.getUnits() != null || !f.getUnits().isEmpty())
                         for (FloorUnit floorUnit : f.getUnits()) {
                             String layerName = String.format(layerNames.getLayerName("LAYER_NAME_BLK_FLR_UNIT_BATH"), block.getNumber(),
-                                    f.getNumber(), floorUnit.getNumber());
+                                    f.getNumber(), floorUnit.getUnitNumber());
 
                             String ventilationLayerName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
                                     + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + f.getNumber() + "_"
-                                    + layerNames.getLayerName("LAYER_NAME_UNIT_NAME_PREFIX") + floorUnit.getNumber() + "_"
+                                    + layerNames.getLayerName("LAYER_NAME_UNIT_NAME_PREFIX") + floorUnit.getUnitNumber() + "_"
                                     + layerNames.getLayerName("LAYER_NAME_BATH_STORE_VENTILATION");
                             ventilationBS = Util.getPolyLinesByLayer(planDetail.getDoc(), ventilationLayerName);
                             if (ventilationBS != null) {
@@ -104,7 +104,7 @@ public class BathRoomExtract extends FeatureExtract {
                             floorUnit.getBathRoom().setRooms(roomMeasurements);
                             roomHeights = Util.getListOfDimensionValueByLayer(planDetail,
                                     String.format(layerNames.getLayerName("LAYER_NAME_BLK_FLR_UNIT_BATH_HT"), block.getNumber(),
-                                            f.getNumber()));
+                                            f.getNumber(), floorUnit.getUnitNumber()));
                             roomHeightsList = new ArrayList<>();
                             for (BigDecimal h : roomHeights) {
                                 height = new RoomHeight();

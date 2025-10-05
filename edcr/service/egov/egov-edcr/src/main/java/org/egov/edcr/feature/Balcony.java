@@ -129,7 +129,7 @@ public class Balcony extends FeatureProcess {
 
         for (Floor floor : block.getBuilding().getFloors()) {
             for (FloorUnit floorUnit : floor.getUnits()) {
-                log.info("Processing Floor Unit {} of Floor {} in Block {}", floorUnit.getNumber(), floor.getNumber(), block.getNumber());
+                log.info("Processing Floor Unit {} of Floor {} in Block {}", floorUnit.getUnitNumber(), floor.getNumber(), block.getNumber());
                 processFloorBalconies(plan, block, floor, scrutinyDetail, floorUnit);
             }
         }
@@ -229,7 +229,7 @@ public class Balcony extends FeatureProcess {
 		detail.setProvided(minWidth.toString());
 		detail.setStatus(isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 		detail.setFloorNo(floorLabel);
-        detail.setUnitNo(floorUnit.getNumber().toString());
+        detail.setUnitNumber(floorUnit.getUnitNumber());
 
 		Map<String, String> details = mapReportDetails(detail);
 		scrutinyDetail.getDetail().add(details);

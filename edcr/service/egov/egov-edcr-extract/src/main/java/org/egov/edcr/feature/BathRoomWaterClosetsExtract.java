@@ -40,7 +40,7 @@ public class BathRoomWaterClosetsExtract extends FeatureExtract {
                     if(f.getUnits() != null && !f.getUnits().isEmpty())
                         for(FloorUnit floorUnit : f.getUnits()) {
                             String layerName = String.format(layerNames.getLayerName("LAYER_NAME_BLK_FLR_UNIT_WC_BATH"), block.getNumber(),
-                                    f.getNumber(), floorUnit.getNumber());
+                                    f.getNumber(), floorUnit.getUnitNumber());
                             rooms = Util.getPolyLinesByLayer(planDetail.getDoc(), layerName);
                             roomMeasurements = rooms.stream()
                                     .map(flightPolyLine -> new MeasurementDetail(flightPolyLine, true)).collect(Collectors.toList());
@@ -48,7 +48,7 @@ public class BathRoomWaterClosetsExtract extends FeatureExtract {
                             floorUnit.getBathRoomWaterClosets().setRooms(roomMeasurements);
                             roomHeights = Util.getListOfDimensionValueByLayer(planDetail,
                                     String.format(layerNames.getLayerName("LAYER_NAME_BLK_FLR_UNIT_WC_BATH_HT"), block.getNumber(),
-                                            f.getNumber(), floorUnit.getNumber()));
+                                            f.getNumber(), floorUnit.getUnitNumber()));
                             roomHeightsList = new ArrayList<>();
                             for (BigDecimal h : roomHeights) {
                                 height = new RoomHeight();

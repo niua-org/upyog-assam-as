@@ -193,7 +193,7 @@ public class Kitchen extends FeatureProcess {
             BigDecimal minHeight = kitchenHeights.stream().min(Comparator.naturalOrder()).get().setScale(2, BigDecimal.ROUND_HALF_UP);
             buildResult(pl, floor, floorUnit, rule.getKitchenHeight(), SUBRULE_41_III, SUBRULE_41_III_DESC, minHeight, false, ProcessHelper.getTypicalFloorValues(block, floor, false));
         } else {
-            String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(), floor.getNumber(), floorUnit.getNumber(), "KITCHEN");
+            String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(), floor.getNumber(), floorUnit.getUnitNumber(), "KITCHEN");
             pl.addError(layerName, ROOM_HEIGHT_NOTDEFINED + layerName);
         }
 
@@ -295,7 +295,7 @@ public class Kitchen extends FeatureProcess {
         detail.setRuleNo(ruleNo);
         detail.setDescription(ruleDesc);
         detail.setFloorNo(floor);
-        detail.setUnitNo(floorUnit.toString());
+        detail.setUnitNumber(floorUnit.getUnitNumber());
         detail.setRequired(expected);
         detail.setProvided(actual);
         detail.setStatus(status);

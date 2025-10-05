@@ -116,7 +116,7 @@ public class VentilationExtract extends FeatureExtract {
                              * Adding general light and ventilation at floor level
                              */
                             List<DXFLWPolyline> lightAndVentilations = Util.getPolyLinesByLayer(pl.getDoc(), String.format(
-                                    layerNames.getLayerName("LAYER_NAME_UNIT_LIGHT_VENTILATION"), b.getNumber(), f.getNumber(), floorUnit.getNumber()));
+                                    layerNames.getLayerName("LAYER_NAME_UNIT_LIGHT_VENTILATION"), b.getNumber(), f.getNumber(), floorUnit.getUnitNumber()));
                             if (!lightAndVentilations.isEmpty()) {
                                 List<Measurement> lightAndventilationMeasurements = lightAndVentilations.stream()
                                         .map(polyline -> new MeasurementDetail(polyline, true)).collect(Collectors.toList());
@@ -125,7 +125,7 @@ public class VentilationExtract extends FeatureExtract {
                                 floorUnit.getLightAndVentilation()
                                         .setHeightOrDepth((Util.getListOfDimensionValueByLayer(pl,
                                                 String.format(layerNames.getLayerName("LAYER_NAME_UNIT_LIGHT_VENTILATION"),
-                                                        b.getNumber(), f.getNumber(), floorUnit.getNumber()))));
+                                                        b.getNumber(), f.getNumber(), floorUnit.getUnitNumber()))));
 
                             }
                             /*
@@ -134,7 +134,7 @@ public class VentilationExtract extends FeatureExtract {
                             for (Room room : floorUnit.getRegularRooms()) {
                                 String regularRoomLayerName = String.format(
                                         layerNames.getLayerName("LAYER_NAME_UNIT_ROOM_LIGHT_VENTILATION"), b.getNumber(),
-                                        f.getNumber(), floorUnit.getNumber(), room.getNumber(), "+\\d");
+                                        f.getNumber(), floorUnit.getUnitNumber(), room.getNumber(), "+\\d");
 
                                 List<String> regularRoomLayers = Util.getLayerNamesLike(pl.getDoc(), regularRoomLayerName);
                                 if (!regularRoomLayers.isEmpty()) {
@@ -159,7 +159,7 @@ public class VentilationExtract extends FeatureExtract {
                             for (Room room : floorUnit.getAcRooms()) {
                                 String acRoomLayerName = String.format(
                                         layerNames.getLayerName("LAYER_NAME_UNIT_ACROOM_LIGHT_VENTILATION"), b.getNumber(),
-                                        f.getNumber(), floorUnit.getNumber(), room.getNumber(), "+\\d");
+                                        f.getNumber(), floorUnit.getUnitNumber(), room.getNumber(), "+\\d");
 
                                 List<String> acRoomLayers = Util.getLayerNamesLike(pl.getDoc(), acRoomLayerName);
                                 if (!acRoomLayers.isEmpty()) {
@@ -200,7 +200,7 @@ public class VentilationExtract extends FeatureExtract {
         if (kitchen != null) {
             String kitchenAndDining = String.format(
                     layerNames.getLayerName("LAYER_NAME_UNIT_KITCHEN_DINING_VENTILATION"),
-                    b.getNumber(), f.getNumber(), floorUnit.getNumber(), "+\\d");
+                    b.getNumber(), f.getNumber(), floorUnit.getUnitNumber(), "+\\d");
 
             List<String> ventilationLayers = Util.getLayerNamesLike(pl.getDoc(), kitchenAndDining);
             if (!ventilationLayers.isEmpty()) {
@@ -292,7 +292,7 @@ public class VentilationExtract extends FeatureExtract {
         if (laundryVentilation != null) {
             String laundryVentLayerPattern = String.format(
                     layerNames.getLayerName("LAYER_NAME_UNIT_LAUNDRY_RECREATION_VENTILATION"),
-                    b.getNumber(), f.getNumber(), floorUnit.getNumber(), "+\\d");
+                    b.getNumber(), f.getNumber(), floorUnit.getUnitNumber(), "+\\d");
 
             List<String> ventilationLayers = Util.getLayerNamesLike(pl.getDoc(), laundryVentLayerPattern);
             if (!ventilationLayers.isEmpty()) {

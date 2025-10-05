@@ -130,7 +130,7 @@ public class WaterClosets_Assam extends WaterClosets {
                 if(floor.getUnits() != null && !floor.getUnits().isEmpty())
                     for(FloorUnit floorUnit : floor.getUnits()) {
                         if (!hasValidWaterClosets(floorUnit)) {
-                            LOG.debug("Skipping floor {} and unit {} in block {} due to invalid water closet data", floor.getNumber(), floorUnit.getNumber(), block.getNumber());
+                            LOG.debug("Skipping floor {} and unit {} in block {} due to invalid water closet data", floor.getNumber(), floorUnit.getUnitNumber(), block.getNumber());
                             continue;
                         }
 
@@ -139,7 +139,7 @@ public class WaterClosets_Assam extends WaterClosets {
                         BigDecimal totalArea = getTotalArea(floorUnit.getWaterClosets().getRooms());
 
                         LOG.debug("Floor {} and FloorUnit {} in block {} - Min Height: {}, Min Width: {}, Total Area: {}",
-                                floor.getNumber(), floorUnit.getNumber(), block.getNumber(), minHeight, minWidth, totalArea);
+                                floor.getNumber(), floorUnit.getUnitNumber(), block.getNumber(), minHeight, minWidth, totalArea);
 
                         processWCVentilation(floor, floorUnit, ventScrutinyDetail, pl);
 
@@ -161,18 +161,18 @@ public class WaterClosets_Assam extends WaterClosets {
 	}
 
 	private void processWCVentilation(Floor floor, FloorUnit floorUnit, ScrutinyDetail scrutinyDetail, Plan pl) {
-	    LOG.debug("Processing Water Closet Ventilation validation for FloorUnit {}", floorUnit.getNumber());
+	    LOG.debug("Processing Water Closet Ventilation validation for FloorUnit {}", floorUnit.getUnitNumber());
 
 	    List<Measurement> wcVentilation = floorUnit.getWaterClosets().getWaterClosetVentialtion();
 
 	    if (wcVentilation == null || wcVentilation.isEmpty()) {
-	        LOG.warn("Water closet ventilation missing for floor {} and floorUnit {}", floor.getNumber(), floorUnit.getNumber());
+	        LOG.warn("Water closet ventilation missing for floor {} and floorUnit {}", floor.getNumber(), floorUnit.getUnitNumber());
 
 	        ReportScrutinyDetail detail = new ReportScrutinyDetail();
 	        detail.setRuleNo(RULE_91_D);
 	        detail.setDescription(WC_VENTILATION_MISSING_DESC);
 	        detail.setRequired(WC_VENTILATION_NOT_DEFINED);
-	        detail.setProvided(WC_VENTILATION_NOT_AVAILABLE + floor.getNumber() + WC_VENTILATION_FLOOR_UNIT + floorUnit.getNumber());
+	        detail.setProvided(WC_VENTILATION_NOT_AVAILABLE + floor.getNumber() + WC_VENTILATION_FLOOR_UNIT + floorUnit.getUnitNumber());
 	        detail.setStatus(Result.Not_Accepted.getResultVal());
 
 	        scrutinyDetail.getDetail().add(mapReportDetails(detail));
@@ -207,7 +207,7 @@ public class WaterClosets_Assam extends WaterClosets {
 	            .map(Measurement::getWidth)
 	            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-	    LOG.debug("Provided ventilation area: {}, width: {} for floor {} and Unit {}", providedArea, providedWidth, floor.getNumber(), floorUnit.getNumber());
+	    LOG.debug("Provided ventilation area: {}, width: {} for floor {} and Unit {}", providedArea, providedWidth, floor.getNumber(), floorUnit.getUnitNumber());
 
 	    // Area validation
 	    if (requiredArea.compareTo(BigDecimal.ZERO) > 0) {
@@ -272,7 +272,7 @@ public class WaterClosets_Assam extends WaterClosets {
 	            && floorUnit.getWaterClosets().getRooms() != null
 	            && !floorUnit.getWaterClosets().getRooms().isEmpty();
 
-	    LOG.debug("FloorUnit {} has valid water closets? {}", floorUnit.getNumber(), hasValid);
+	    LOG.debug("FloorUnit {} has valid water closets? {}", floorUnit.getUnitNumber(), hasValid);
 	    return hasValid;
 	}
 

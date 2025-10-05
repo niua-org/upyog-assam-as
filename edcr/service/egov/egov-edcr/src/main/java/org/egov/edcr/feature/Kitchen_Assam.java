@@ -218,7 +218,7 @@ public class Kitchen_Assam extends Kitchen {
 		String kitchenDiningColor = A.equalsIgnoreCase(occ) ? DxfFileConstants.RESIDENTIAL_KITCHEN_DINING_ROOM_COLOR
 				: DxfFileConstants.COMMERCIAL_KITCHEN_DINING_ROOM_COLOR;
 
-		LOG.info("Processing kitchen for Floor: {}, FloorUnit: {}, Block: {}, Occupancy: {}", floor.getNumber(), floorUnit.getNumber(), block.getNumber(),
+		LOG.info("Processing kitchen for Floor: {}, FloorUnit: {}, Block: {}, Occupancy: {}", floor.getNumber(), floorUnit.getUnitNumber(), block.getNumber(),
 				occ);
 
 		// Extract rooms and heights
@@ -233,7 +233,7 @@ public class Kitchen_Assam extends Kitchen {
 		Optional<KitchenRequirement> matchedRule = rules.stream().filter(KitchenRequirement.class::isInstance)
 				.map(KitchenRequirement.class::cast).findFirst();
 		if (!matchedRule.isPresent()) {
-			LOG.warn("No KitchenRequirement rule found for Floor: {}, FloorUnit: {}, Block: {}", floor.getNumber(), floorUnit.getNumber(), block.getNumber());
+			LOG.warn("No KitchenRequirement rule found for Floor: {}, FloorUnit: {}, Block: {}", floor.getNumber(), floorUnit.getUnitNumber(), block.getNumber());
 			return;
 		}
 		KitchenRequirement rule = matchedRule.get();
@@ -245,7 +245,7 @@ public class Kitchen_Assam extends Kitchen {
             BigDecimal minHeight = kitchenHeights.stream().min(Comparator.naturalOrder()).get().setScale(2, BigDecimal.ROUND_HALF_UP);
             buildResult(pl, floor, floorUnit, rule.getKitchenHeight(), SUBRULE_41_III, SUBRULE_41_III_DESC, minHeight, false, ProcessHelper.getTypicalFloorValues(block, floor, false));
         } else {
-            String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(), floor.getNumber(), floorUnit.getNumber(), "KITCHEN");
+            String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(), floor.getNumber(), floorUnit.getUnitNumber(), "KITCHEN");
             pl.addError(layerName, ROOM_HEIGHT_NOTDEFINED + layerName);
         }
         
@@ -450,7 +450,7 @@ public class Kitchen_Assam extends Kitchen {
         detail.setRuleNo(ruleNo);
         detail.setDescription(ruleDesc);
         detail.setFloorNo(floor);
-        detail.setUnitNo(floorUnit.toString());
+        detail.setUnitNumber(floorUnit.getUnitNumber());
         detail.setRequired(expected);
         detail.setProvided(actual);
         detail.setStatus(status);

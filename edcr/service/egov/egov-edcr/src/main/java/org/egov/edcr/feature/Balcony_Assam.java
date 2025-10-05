@@ -231,7 +231,7 @@ public class Balcony_Assam extends FeatureProcess {
 		detail.setProvided(minWidth.toString());
 		detail.setStatus(isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 		detail.setFloorNo(floorLabel);
-        detail.setUnitNo(floorUnit.getNumber().toString());
+        detail.setUnitNumber(floorUnit.getUnitNumber());
 
 		Map<String, String> details = mapReportDetails(detail);
 		scrutinyDetail.getDetail().add(details);

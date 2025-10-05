@@ -74,11 +74,11 @@ public class WaterClosetsExtract extends FeatureExtract {
                         for(FloorUnit floorUnit : f.getUnits()) {
                             String layerName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
                                     + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + f.getNumber() + "_"
-                                    + layerNames.getLayerName("LAYER_NAME_UNIT_NAME_PREFIX") + floorUnit.getNumber() + "_"
+                                    + layerNames.getLayerName("LAYER_NAME_UNIT_NAME_PREFIX") + floorUnit.getUnitNumber() + "_"
                                     + layerNames.getLayerName("LAYER_NAME_WATER_CLOSET");
                             String ventilationLayerName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
                                     + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + f.getNumber() + "_"
-                                    + layerNames.getLayerName("LAYER_NAME_UNIT_NAME_PREFIX") + floorUnit.getNumber() + "_"
+                                    + layerNames.getLayerName("LAYER_NAME_UNIT_NAME_PREFIX") + floorUnit.getUnitNumber() + "_"
                                     + layerNames.getLayerName("LAYER_NAME_WATER_CLOSET_VENTILATION");
                             rooms = Util.getPolyLinesByLayer(planDetail.getDoc(), layerName);
                             ventilationWC = Util.getPolyLinesByLayer(planDetail.getDoc(), ventilationLayerName);
@@ -92,7 +92,7 @@ public class WaterClosetsExtract extends FeatureExtract {
                             floorUnit.getWaterClosets().setRooms(roomMeasurements);
                             floorUnit.getWaterClosets().setWaterClosetVentilation(ventilationMeasurements);
                             roomHeights = Util.getListOfDimensionValueByLayer(planDetail,
-                                    String.format(layerNames.getLayerName("LAYER_NAME_BLK_FLR_UNIT_WC_HT"), block.getNumber(), f.getNumber(), floorUnit.getNumber()));
+                                    String.format(layerNames.getLayerName("LAYER_NAME_BLK_FLR_UNIT_WC_HT"), block.getNumber(), f.getNumber(), floorUnit.getUnitNumber()));
                             roomHeightsList = new ArrayList<>();
                             for (BigDecimal h : roomHeights) {
                                 height = new RoomHeight();

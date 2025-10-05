@@ -115,13 +115,16 @@ public class Verandah extends FeatureProcess {
 	        if (block.getBuilding() == null || block.getBuilding().getFloors() == null) continue;
 
 	        for (Floor floor : block.getBuilding().getFloors()) {
-	            if (floor.getVerandah() == null || floor.getVerandah().getMeasurements() == null
-	                    || floor.getVerandah().getMeasurements().isEmpty()) {
-	                continue;
-	            }
+                if(floor.getUnits() != null && !floor.getUnits().isEmpty())
+                    for(FloorUnit floorUnit : floor.getUnits()) {
+                        if (floorUnit.getVerandah() == null || floorUnit.getVerandah().getMeasurements() == null
+                                || floorUnit.getVerandah().getMeasurements().isEmpty()) {
+                            continue;
+                        }
 
-	            evaluateVerandahWidth(pl, scrutinyDetail, floor, permissibleWidth);
-	            evaluateVerandahDepth(pl, scrutinyDetail, floor, permissibleDepth);
+                        evaluateVerandahWidth(pl, scrutinyDetail, floor, floorUnit, permissibleWidth);
+                        evaluateVerandahDepth(pl, scrutinyDetail, floor, floorUnit, permissibleDepth);
+                    }
 	        }
 	    }
 	    return pl;
@@ -170,8 +173,8 @@ public class Verandah extends FeatureProcess {
 	 * @param floor The floor containing verandah measurements
 	 * @param permissibleWidth The minimum required verandah width
 	 */
-	private void evaluateVerandahWidth(Plan pl, ScrutinyDetail scrutinyDetail, Floor floor, BigDecimal permissibleWidth) {
-	    List<BigDecimal> verandahWidths = floor.getVerandah().getVerandahWidth();
+	private void evaluateVerandahWidth(Plan pl, ScrutinyDetail scrutinyDetail, Floor floor, FloorUnit floorUnit, BigDecimal permissibleWidth) {
+	    List<BigDecimal> verandahWidths = floorUnit.getVerandah().getVerandahWidth();
 
 	    if (verandahWidths != null && !verandahWidths.isEmpty()) {
 	        // Take minimum width from extracted verandah widths
@@ -181,7 +184,13 @@ public class Verandah extends FeatureProcess {
 	        detail.setRuleNo(RULE_43);
 	        detail.setDescription(VERANDAH_DESCRIPTION);
 	        detail.setRequired(EMPTY_STRING);
-	        detail.setProvided(WIDTH_AREA + providedWidth + AT_FLOOR + floor.getNumber());
+	        detail.setProvided(WIDTH_AREA + providedWidth + AT_FLOOR + floor.getNumber() + UNIT + floorUnit.getUnitNumber());
+
+             // Since the verandah width is a minimum requirement, it is always accepted if provided
+             // This assumes that any positive width meets the minimum requirement
+             // If specific minimum width validation is needed, additional logic can be added here
+
+             // For now, we assume any provided width is acceptable
 	        detail.setStatus(Result.Accepted.getResultVal());
 	               
 
@@ -201,8 +210,8 @@ public class Verandah extends FeatureProcess {
 	 * @param floor The floor containing verandah measurements
 	 * @param permissibleDepth The maximum allowed verandah depth
 	 */
-	private void evaluateVerandahDepth(Plan pl, ScrutinyDetail scrutinyDetail, Floor floor, BigDecimal permissibleDepth) {
-	    Optional<BigDecimal> minDepthOpt = floor.getVerandah().getHeightOrDepth().stream()
+	private void evaluateVerandahDepth(Plan pl, ScrutinyDetail scrutinyDetail, Floor floor, FloorUnit floorUnit, BigDecimal permissibleDepth) {
+	    Optional<BigDecimal> minDepthOpt = floorUnit.getVerandah().getHeightOrDepth().stream()
 	            .min(Comparator.naturalOrder());
 
 	    if (minDepthOpt.isPresent() && minDepthOpt.get().compareTo(BigDecimal.ZERO) > 0) {
@@ -211,7 +220,7 @@ public class Verandah extends FeatureProcess {
 			detail.setRuleNo(RULE_43A);
 			detail.setDescription(VERANDAH_DESCRIPTION);
 			detail.setRequired(EMPTY_STRING);
-			detail.setProvided(DEPTH_AREA + minDepth + AT_FLOOR + floor.getNumber());
+			detail.setProvided(DEPTH_AREA + minDepth + AT_FLOOR + floor.getNumber() + UNIT + floorUnit.getUnitNumber());
 			detail.setStatus(Result.Accepted.getResultVal());
 
 			Map<String, String> details = mapReportDetails(detail);

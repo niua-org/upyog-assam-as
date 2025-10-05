@@ -59,7 +59,7 @@ public class ServiceRoomExtract extends FeatureExtract {
                     if(floor.getUnits() != null && !floor.getUnits().isEmpty())
                         for (FloorUnit floorUnit : floor.getUnits()) {
                             Map<Integer, List<BigDecimal>> serviceRoomHeightMap = new HashMap<>();
-                            String serviceRoomLayerName = String.format(layerNames.getLayerName("LAYER_NAME_UNIT_SERVICEROOM"), block.getNumber(), floor.getNumber(), floorUnit.getNumber(), "+\\d");
+                            String serviceRoomLayerName = String.format(layerNames.getLayerName("LAYER_NAME_UNIT_SERVICEROOM"), block.getNumber(), floor.getNumber(), floorUnit.getUnitNumber(), "+\\d");
                             List<String> serviceRoomLayers = Util.getLayerNamesLike(pl.getDoc(), serviceRoomLayerName);
 
                             if (!serviceRoomLayers.isEmpty()) {

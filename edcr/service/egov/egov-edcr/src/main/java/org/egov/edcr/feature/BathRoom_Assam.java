@@ -200,7 +200,7 @@ public class BathRoom_Assam extends BathRoom {
 
         LOG.info("Validating bathroom for Floor Number: {} and Unit number : {} - Total Area: {}, Min Width: {}, Min Height: {}, " +
                   "Permitted Area: {}, Permitted Min Width: {}, Accepted: {}",
-                floor.getNumber(), floorUnit.getNumber(), totalArea, minWidth, minHeight, permittedArea, permittedMinWidth, isAccepted);
+                floor.getNumber(), floorUnit.getUnitNumber(), totalArea, minWidth, minHeight, permittedArea, permittedMinWidth, isAccepted);
 
         Map<String, String> resultRow = createResultRow(floor, permittedArea, permittedMinWidth, totalArea, minWidth, isAccepted);
         scrutinyDetail.getDetail().add(resultRow);
@@ -211,13 +211,13 @@ public class BathRoom_Assam extends BathRoom {
             floorUnit.getBathRoom().getBathVentilation() == null ||
             floorUnit.getBathRoom().getBathVentilation().isEmpty()) {
 
-            LOG.warn("Bathroom ventilation measurements missing on Floor Number: {} and Unit number: {}", floor.getNumber(), floorUnit.getNumber());
+            LOG.warn("Bathroom ventilation measurements missing on Floor Number: {} and Unit number: {}", floor.getNumber(), floorUnit.getUnitNumber());
 
             ReportScrutinyDetail detail = new ReportScrutinyDetail();
             detail.setRuleNo("91 d");
             detail.setDescription("Bathroom - Ventilation Area");
             detail.setRequired("Not defined");
-            detail.setProvided("Bath ventilation measurements not available on floor " + floor.getNumber() + " and Unit number: " + floorUnit.getNumber());
+            detail.setProvided("Bath ventilation measurements not available on floor " + floor.getNumber() + " and Unit number: " + floorUnit.getUnitNumber());
             detail.setStatus(Result.Not_Accepted.getResultVal());
 
             scrutinyDetail.getDetail().add(mapReportDetails(detail));
@@ -263,7 +263,7 @@ public class BathRoom_Assam extends BathRoom {
             detail.setRuleNo("91 d");
             detail.setDescription("Bathroom - Ventilation Area");
             detail.setRequired(requiredArea + " sqm");
-            detail.setProvided(providedArea + " sqm at floor " + floor.getNumber() + " and Unit number: " + floorUnit.getNumber());
+            detail.setProvided(providedArea + " sqm at floor " + floor.getNumber() + " and Unit number: " + floorUnit.getUnitNumber());
             detail.setStatus(acceptedArea ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 
             scrutinyDetail.getDetail().add(mapReportDetails(detail));
@@ -278,7 +278,7 @@ public class BathRoom_Assam extends BathRoom {
             detail.setRuleNo("91 d");
             detail.setDescription("Bathroom - Ventilation Width");
             detail.setRequired(requiredWidth + " m");
-            detail.setProvided(providedWidth + " m at floor " + floor.getNumber() + " and Unit number: " + floorUnit.getNumber());
+            detail.setProvided(providedWidth + " m at floor " + floor.getNumber() + " and Unit number: " + floorUnit.getUnitNumber());
             detail.setStatus(acceptedWidth ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 
             scrutinyDetail.getDetail().add(mapReportDetails(detail));

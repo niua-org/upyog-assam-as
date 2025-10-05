@@ -181,7 +181,7 @@ public class BathRoomWaterClosets extends FeatureProcess {
         for (Floor floor : block.getBuilding().getFloors()) {
             if(floor.getUnits() != null && !floor.getUnits().isEmpty())
                 for (FloorUnit floorUnit : floor.getUnits()) {
-                    LOG.info("Processing Floor Number: {} and Unit Number: {} in Block Number: {}", floor.getNumber(), floorUnit.getNumber(), block.getNumber());
+                    LOG.info("Processing Floor Number: {} and Unit Number: {} in Block Number: {}", floor.getNumber(), floorUnit.getUnitNumber(), block.getNumber());
                     processFloor(plan, floor, floorUnit, reqArea, reqWidth, reqHeight, scrutinyDetail);
                 }
         }
