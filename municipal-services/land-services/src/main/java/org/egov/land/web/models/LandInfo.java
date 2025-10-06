@@ -115,7 +115,7 @@ public class LandInfo {
   @JsonProperty("auditDetails")
   @Valid
   private AuditDetails auditDetails;
-  
+  //TODO: remove this field after owner api is fixed
   private List<Address> ownerAddresses;
 
   public void additionalDetails(Object additionalDetails) {

@@ -220,13 +220,6 @@ public class OwnerInfoV2 {
     private Long lastModifiedDate;
 
     /**
-     * OTP reference for the owner
-     */
-    @SafeHtml
-    @JsonProperty("otpReference")
-    private String otpReference;
-
-    /**
      * Audit details of the owner
      */
     @JsonProperty("auditDetails")
@@ -240,14 +233,18 @@ public class OwnerInfoV2 {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        OwnerInfoV2 ownerInfo = (OwnerInfoV2) o;
-        return Objects.equals(name, ownerInfo.name) &&
-                Objects.equals(mobileNumber, ownerInfo.mobileNumber) &&
-                Objects.equals(gender, ownerInfo.gender) &&
-                Objects.equals(emailId, ownerInfo.emailId) &&
-//              Objects.equals(dob, user.dob) && //Epoch format not converting properly from UI
-                Objects.equals(fatherOrHusbandName, ownerInfo.fatherOrHusbandName) &&
-                Objects.equals(correspondenceAddress, ownerInfo.correspondenceAddress);
+        OwnerInfo ownerInfo = (OwnerInfo) o;
+
+        return Objects.equals(name, ownerInfo.getName()) &&
+                Objects.equals(mobileNumber, ownerInfo.getMobileNumber()) &&
+                Objects.equals(gender, ownerInfo.getGender()) &&
+                Objects.equals(emailId, ownerInfo.getEmailId()) &&
+                Objects.equals(altContactNumber, ownerInfo.getAltContactNumber()) &&
+                Objects.equals(panNumber, ownerInfo.getPan()) &&
+                Objects.equals(aadhaarNumber, ownerInfo.getAadhaarNumber()) &&
+                //TODO: uncomment once done from UI Epoch format not converting properly from UI
+             //   Objects.equals(dob, ownerInfo.getDob()) &&
+                Objects.equals(fatherOrHusbandName, ownerInfo.getFatherOrHusbandName());
     }
 
     /*

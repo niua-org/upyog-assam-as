@@ -51,9 +51,8 @@ public class LandService {
 		}
 		
 		//landValidator.validateLandInfo(landRequest,mdmsData);
-		userService.manageCreateUser(landRequest);
-		
 		enrichmentService.enrichCreateLandInfo(landRequest);
+		userService.manageCreateUser(landRequest);
 
 		landRequest.getLandInfo().getOwners().forEach(owner -> {
 			if (owner.getActive()) {

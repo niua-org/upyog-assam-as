@@ -12,6 +12,7 @@ import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.land.config.LandConfiguration;
 import org.egov.land.repository.ServiceRequestRepository;
 import org.egov.land.util.LandConstants;
+import org.egov.land.util.LandUtil;
 import org.egov.land.web.models.CreateUserRequest;
 import org.egov.land.web.models.LandInfo;
 import org.egov.land.web.models.LandInfoRequest;
@@ -58,30 +59,24 @@ public class LandUserService {
 					owner.setTenantId(centralInstanceUtil.getStateLevelTenant(landInfo.getTenantId()));
 				}
 
-				userDetailResponse = userExists(owner, requestInfo);
+				userDetailResponse = userExists(owner, requestInfo, true);
 
-				if (userDetailResponse == null || CollectionUtils.isEmpty(userDetailResponse.getUser())
-					//TODO: check this condition and uncomment if required
-					//	|| !owner.compareWithExistingUser(userDetailResponse.getUser().get(0))
-					) {
-					// if no user found with mobileNo or details were changed,
-					// creating new one..
+				if (userDetailResponse == null || CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+					log.info("No user found with mobileNo or details were change creating new one : {} ", owner.getMobileNumber());
 					Role role = getCitizenRole();
 					addUserDefaultFields(owner.getTenantId(), role, owner);
 					StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserContextPath())
 							.append(config.getUserCreateEndpoint());
-					setUserName(owner);
+					setUserName(owner, landRequest.getLandInfo());
 					owner.setOwnerType(LandConstants.CITIZEN);
 					OwnerInfo ownerInfo = convertToOwnerInfo(owner);
 					log.info("ownerInfo-->" + ownerInfo);
 					userDetailResponse = userCall(new CreateUserRequest(requestInfo, ownerInfo), uri);
 					log.debug("owner created --> " + userDetailResponse.getUser().get(0).getUuid());
 				}
-				if (userDetailResponse != null)
-					setOwnerFields(owner, userDetailResponse, requestInfo);
 
 			} else {
-				log.debug("MobileNo is not existed in ownerInfo.");
+				log.info("MobileNo is not existed in ownerInfo.");
 				throw new CustomException(LandConstants.INVALID_ONWER_ERROR, "MobileNo is mandatory for ownerInfo");
 			}
 		});
@@ -99,7 +94,7 @@ public class LandUserService {
 		landInfo.getOwners().forEach(ownerInfoV2 -> {
 
 			// Step 3: Fetch existing user from UserService
-			UserDetailResponse existingUserResponse = userExists(ownerInfoV2, requestInfo);
+			UserDetailResponse existingUserResponse = userExists(ownerInfoV2, requestInfo, false);
 			OwnerInfo existingOwnerInfo = null;
 			if (existingUserResponse != null && !CollectionUtils.isEmpty(existingUserResponse.getUser())) {
 				existingOwnerInfo = existingUserResponse.getUser().get(0);
@@ -110,7 +105,7 @@ public class LandUserService {
 			OwnerInfo ownerInfoToCompare = convertToOwnerInfo(ownerInfoV2);
 
 			// Step 5: Check if owner info has changed
-			if (existingOwnerInfo != null && isOwnerInfoChanged(ownerInfoV2, existingOwnerInfo)) {
+			if (existingOwnerInfo != null && ownerInfoV2.compareWithExistingUser(existingOwnerInfo)) {
 				// Step 5a: Add default fields for a Citizen user
 				ownerInfoToCompare.setRoles(existingOwnerInfo.getRoles());
 
@@ -175,12 +170,26 @@ public class LandUserService {
 	 *            The requestInfo of the request
 	 * @return The search response from the user service
 	 */
-	private UserDetailResponse userExists(OwnerInfoV2 owner, @Valid RequestInfo requestInfo) {
+	private UserDetailResponse userExists(OwnerInfoV2 owner, RequestInfo requestInfo ,boolean isCreate) {
 
 		UserSearchRequest userSearchRequest = new UserSearchRequest();
 		userSearchRequest.setTenantId(centralInstanceUtil.getStateLevelTenant(owner.getTenantId()));
-		userSearchRequest.setMobileNumber(owner.getMobileNumber());
-		if(!StringUtils.isEmpty(owner.getUuid())) {
+		userSearchRequest.setRequestInfo(requestInfo);
+		if(isCreate){
+			userSearchRequest.setMobileNumber(owner.getMobileNumber());
+			userSearchRequest.setUserType("CITIZEN");
+			userSearchRequest.setPan(owner.getAadhaarNumber());
+			userSearchRequest.setAadhaarNumber(owner.getAadhaarNumber());
+			userSearchRequest.setActive(true);
+			userSearchRequest.setName(owner.getName());
+		//	userSearchRequest.setFatherOrHusbandName(owner.getFatherOrHusbandName());
+			userSearchRequest.setEmailId(owner.getEmailId());
+		//	userSearchRequest.setGender(owner.getGender());
+		//	userSearchRequest.setAltContactNumber(owner.getAltContactNumber());
+		//	userSearchRequest.setDob(owner.getDob());
+
+		}
+		if(!isCreate && !StringUtils.isEmpty(owner.getUuid())) {
 			List<String> uuids = new ArrayList<String>();
 			uuids.add(owner.getUuid());
 			userSearchRequest.setUuid(uuids);
@@ -192,12 +201,14 @@ public class LandUserService {
 
 	/**
 	 * Sets the username as uuid
+	 * As we set username to mobile no when we have to create the user that can login
+	 * For general user just to store user details we set username to dummy value
 	 * 
 	 * @param owner
-	 *            The owner to whom the username is to assigned
+	 *
 	 */
-	private void setUserName(OwnerInfoV2 owner) {
-		owner.setUserName(owner.getMobileNumber());
+	private void setUserName(OwnerInfoV2 owner, LandInfo landInfo) {
+		owner.setUserName(LandUtil.getRandonUUID());
 	}
 
 	/**
@@ -319,7 +330,8 @@ public class LandUserService {
 		try {
 			d = f.parse(date);
 		} catch (ParseException e) {
-			e.printStackTrace();
+            log.error("Exception while parsing date to long : {}", String.valueOf(e));
+			throw new CustomException(LandConstants.DATE_PARSE_EXCEPTION, "Exception while parsing date to long");
 		}
 		return d.getTime();
 	}
@@ -357,33 +369,6 @@ public class LandUserService {
 		userSearchRequest.setActive(true);
 		userSearchRequest.setUserType(LandConstants.CITIZEN);
 		return userSearchRequest;
-	}
-
-
-	/*This will compare incoming owner info (OwnerInfoV2) with existing owner info from UserService (OwnerInfo)
-	*
-	* 1. Returns true if the owner info has changed.
-	* 2. Ignores username, type, role, tenantId, active as requested.
-	*/
-	private boolean isOwnerInfoChanged(OwnerInfoV2 incoming, OwnerInfo existing) {
-		if (existing == null) return true; // if user not found, treat as changed
-
-		if (!Objects.equals(incoming.getName(), existing.getName())) return true;
-		if (!Objects.equals(incoming.getEmailId(), existing.getEmailId())) return true;
-		if (!Objects.equals(incoming.getMobileNumber(), existing.getMobileNumber())) return true;
-		if (!Objects.equals(incoming.getGender(), existing.getGender())) return true;
-		if (!Objects.equals(incoming.getFatherOrHusbandName(), existing.getFatherOrHusbandName())) return true;
-
-		// Compare addresses
-		String incomingPermanent = incoming.getPermanentAddress() != null ? incoming.getPermanentAddress().getAddressLine1() : null;
-		String existingPermanent = existing.getPermanentAddress() != null ? existing.getPermanentAddress() : null;
-		if (!Objects.equals(incomingPermanent, existingPermanent)) return true;
-
-		String incomingCorr = incoming.getCorrespondenceAddress() != null ? incoming.getCorrespondenceAddress().getAddressLine1() : null;
-		String existingCorr = existing.getCorrespondenceAddress() != null ? existing.getCorrespondenceAddress() : null;
-		if (!Objects.equals(incomingCorr, existingCorr)) return true;
-
-		return false; // no changes detected
 	}
 
 }

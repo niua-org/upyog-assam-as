@@ -1,12 +1,14 @@
 package org.egov.land.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.land.config.LandConfiguration;
 import org.egov.land.repository.ServiceRequestRepository;
@@ -32,6 +34,8 @@ public class LandUtil {
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
+
+	public final static String DATE_FORMAT = "dd-MM-yyyy";
 
 	@Autowired
 	public LandUtil(LandConfiguration config, ServiceRequestRepository serviceRequestRepository) {
@@ -148,4 +152,66 @@ public class LandUtil {
 			}
 		});
 	}
+
+
+	public static Long getCurrentTimestamp() {
+		return Instant.now().toEpochMilli();
+	}
+
+	public static LocalDate getCurrentDate() {
+		return LocalDate.now();
+	}
+
+	public static String getRandonUUID() {
+		return UUID.randomUUID().toString();
+	}
+
+	public static LocalDate parseStringToLocalDate(String date) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
+		LocalDate localDate = LocalDate.parse(date, formatter);
+		return localDate;
+	}
+
+	public static String parseLocalDateToString(LocalDate date, String dateFormat) {
+		if (dateFormat == null) {
+			dateFormat = DATE_FORMAT;
+		}
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+		// Format the LocalDate
+		String formattedDate = date.format(formatter);
+		return formattedDate;
+	}
+
+	public static String convertDateFormat(String date, String dateFormat) {
+		if (dateFormat == null) {
+			dateFormat = DATE_FORMAT;
+		}
+		LocalDate localDate = parseStringToLocalDate(date);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+		// Format the LocalDate
+		String formattedDate = localDate.format(formatter);
+		return formattedDate;
+	}
+
+	public static AuditDetails getAuditDetails(ResultSet rs) throws SQLException {
+		AuditDetails auditdetails = AuditDetails.builder().createdBy(rs.getString("createdBy"))
+				.createdTime(rs.getLong("createdTime")).lastModifiedBy(rs.getString("lastModifiedBy"))
+				.lastModifiedTime(rs.getLong("lastModifiedTime")).build();
+		return auditdetails;
+	}
+
+	public static String beuatifyJson(Object result) {
+		ObjectMapper mapper = new ObjectMapper();
+		String data = null;
+		try {
+			data = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return data;
+	}
+
+
+
 }
