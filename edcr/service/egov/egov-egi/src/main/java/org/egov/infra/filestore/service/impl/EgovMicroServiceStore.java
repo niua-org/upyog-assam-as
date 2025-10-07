@@ -128,7 +128,7 @@ public class EgovMicroServiceStore implements FileStoreService {
             moduleName = normalizeString(moduleName);
             HttpHeaders headers = new HttpHeaders();
             if (LOG.isDebugEnabled())
-                LOG.info(String.format("Uploaded file   %s   with size  %s ", file.getName(), file.length()));
+                LOG.debug(String.format("Uploaded file   %s   with size  %s ", file.getName(), file.length()));
 
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
@@ -141,7 +141,7 @@ public class EgovMicroServiceStore implements FileStoreService {
             FileStoreMapper fileMapper = new FileStoreMapper(result.getBody().getFiles().get(0).getFileStoreId(),
                     fileName);
             if (LOG.isDebugEnabled())
-                LOG.info(
+                LOG.debug(
                         String.format("Uploaded file   %s   with filestoreid  %s ", file.getName(), fileMapper.getFileStoreId()));
 
             fileMapper.setContentType(mimeType);
@@ -173,7 +173,7 @@ public class EgovMicroServiceStore implements FileStoreService {
                 fileStream.close();
             }
             if (LOG.isDebugEnabled())
-                LOG.info(String.format("Uploading .....  %s    with size %s   ", f.getName(), f.length()));
+                LOG.debug(String.format("Uploading .....  %s    with size %s   ", f.getName(), f.length()));
 
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
@@ -186,7 +186,7 @@ public class EgovMicroServiceStore implements FileStoreService {
             FileStoreMapper fileMapper = new FileStoreMapper(result.getBody().getFiles().get(0).getFileStoreId(),
                     fileName);
             if (LOG.isDebugEnabled())
-                LOG.info(String.format("Upload completed for  %s   with filestoreid   ", f.getName(),
+                LOG.debug(String.format("Upload completed for  %s   with filestoreid   ", f.getName(),
                         fileMapper.getFileStoreId()));
 
             fileMapper.setContentType(mimeType);
@@ -217,7 +217,7 @@ public class EgovMicroServiceStore implements FileStoreService {
                 fileStream.close();
             }
             if (LOG.isDebugEnabled())
-                LOG.info(String.format("Uploading .....  %s    with size %s   ", f.getName(), f.length()));
+                LOG.debug(String.format("Uploading .....  %s    with size %s   ", f.getName(), f.length()));
 
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
@@ -230,7 +230,7 @@ public class EgovMicroServiceStore implements FileStoreService {
             FileStoreMapper fileMapper = new FileStoreMapper(result.getBody().getFiles().get(0).getFileStoreId(),
                     fileName);
             if (LOG.isDebugEnabled())
-                LOG.info(String.format("Upload completed for  %s   with filestoreid   ", f.getName(),
+                LOG.debug(String.format("Upload completed for  %s   with filestoreid   ", f.getName(),
                         fileMapper.getFileStoreId()));
 
             fileMapper.setContentType(mimeType);
@@ -264,7 +264,7 @@ public class EgovMicroServiceStore implements FileStoreService {
         moduleName = normalizeString(moduleName);
         String urls = url + "/id?tenantId=" + ApplicationThreadLocals.getTenantID() + "&fileStoreId=" + fileStoreId;
         if (LOG.isDebugEnabled())
-            LOG.info(String.format("fetch file fron url   %s   ", urls));
+            LOG.debug(String.format("fetch file fron url   %s   ", urls));
 
         Path path = Paths.get("/tmp/" + RandomUtils.nextLong());
         try {
