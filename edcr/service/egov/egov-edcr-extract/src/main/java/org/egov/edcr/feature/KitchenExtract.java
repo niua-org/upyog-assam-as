@@ -25,7 +25,7 @@ public class KitchenExtract extends FeatureExtract {
 
     @Override
     public PlanDetail extract(PlanDetail pl) {
-        if (LOG.isDebugEnabled())
+//        if (LOG.isDebugEnabled())
             LOG.info("Starting of Kitchen room Extract......");
         if (pl != null && !pl.getBlocks().isEmpty())
             for (Block block : pl.getBlocks())
@@ -123,7 +123,7 @@ public class KitchenExtract extends FeatureExtract {
                         }
                     }
 
-        if (LOG.isDebugEnabled())
+//        if (LOG.isDebugEnabled())
             LOG.info("End of Kitchen Room Extract......");
         return pl;
     }
