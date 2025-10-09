@@ -136,6 +136,7 @@ public class LandUserService {
 		ownerInfo.setFatherOrHusbandName(ownerInfoV2.getFatherOrHusbandName());
 		ownerInfo.setGender(ownerInfoV2.getGender());
 		ownerInfo.setId(ownerInfoV2.getId());
+		ownerInfo.altContactNumber(ownerInfoV2.getAltContactNumber());
 		ownerInfo.setAadhaarNumber(ownerInfoV2.getAadhaarNumber());
 		ownerInfo.setPan(ownerInfoV2.getPanNumber());
 		ownerInfo.setMobileNumber(ownerInfoV2.getMobileNumber());
