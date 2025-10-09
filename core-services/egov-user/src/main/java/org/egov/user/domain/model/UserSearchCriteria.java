@@ -88,12 +88,12 @@ public class UserSearchCriteria {
          */
         if (isInterServiceCall)
             return (!isEmpty(userName) || !isEmpty(name) || !isEmpty(mobileNumber) || !isEmpty(aadhaarNumber) || !isEmpty(pan) ||
-                    !isEmpty(altContactNumber) || !isEmpty(guardian) || !isEmpty(guardianRelation.toString()) || !isEmpty(gender) ||
+                    !isEmpty(altContactNumber) || !isEmpty(guardian) || !isEmpty(gender) ||
                     !CollectionUtils.isEmpty(roleCodes))
                     && isEmpty(tenantId);
         else
             return (!isEmpty(userName) || !isEmpty(name) || !isEmpty(mobileNumber) || !isEmpty(aadhaarNumber) || !isEmpty(pan) ||
-                    !isEmpty(altContactNumber) || !isEmpty(guardian) || !isEmpty(guardianRelation.toString()) || !isEmpty(gender))
+                    !isEmpty(altContactNumber) || !isEmpty(guardian) || !isEmpty(gender))
                     && isEmpty(tenantId);
 
     }
