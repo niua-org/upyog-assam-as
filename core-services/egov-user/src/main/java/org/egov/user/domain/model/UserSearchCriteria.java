@@ -59,11 +59,11 @@ public class UserSearchCriteria {
          */
         if (isInterServiceCall)
             return isEmpty(userName) && isEmpty(name) && isEmpty(mobileNumber) && isEmpty(emailId) && isEmpty(aadhaarNumber) && isEmpty(pan) &&
-                    isEmpty(altContactNumber) && isEmpty(guardian) && isEmpty(guardianRelation.toString()) && isEmpty(gender) &&
+                    isEmpty(altContactNumber) && isEmpty(guardian) && isEmpty(gender) &&
                     CollectionUtils.isEmpty(uuid) && CollectionUtils.isEmpty(id) && CollectionUtils.isEmpty(roleCodes);
         else
             return isEmpty(userName) && isEmpty(name) && isEmpty(mobileNumber) && isEmpty(emailId) &&
-                    isEmpty(altContactNumber) && isEmpty(guardian) && isEmpty(guardianRelation.toString()) && isEmpty(gender) &&
+                    isEmpty(altContactNumber) && isEmpty(guardian) && isEmpty(gender) &&
                     CollectionUtils.isEmpty(uuid) && isEmpty(aadhaarNumber) && isEmpty(pan);
     }
 
