@@ -132,7 +132,7 @@ public class VentilationExtract extends FeatureExtract {
         Room kitchen = floorUnit.getKitchen();
         if (kitchen != null) {
             String kitchenAndDining = String.format(
-                    layerNames.getLayerName("LAYER_NAME_UNIT_KITCHEN_DINING_VENTILATION"),
+                    layerNames.getLayerName("LAYER_NAME_UNITWISE_KITCHEN_DINING_VENTILATION"),
                     b.getNumber(), f.getNumber(), floorUnit.getUnitNumber(), "+\\d");
 
             List<String> ventilationLayers = Util.getLayerNamesLike(pl.getDoc(), kitchenAndDining);
