@@ -39,7 +39,7 @@ public class RTPAllocationDetails {
     public enum RTPCategory {
         ENGINEER("ENGINEER"),
         ARCHITECT("ARCHITECT"),
-        AGENCY("AGENCY");
+        GENERAL_AGENCY("GENERAL_AGENCY");
 
         private final String value;
         RTPCategory(String value) {
