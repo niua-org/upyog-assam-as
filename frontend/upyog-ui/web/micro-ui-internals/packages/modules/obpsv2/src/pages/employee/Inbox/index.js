@@ -24,7 +24,6 @@ const Inbox = ({ parentRoute }) => {
     sortBy: "",
     limit: Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
-    sortOrder: "DESC",
   };
   function formReducer(state, payload) {
     switch (payload.action) {
@@ -58,7 +57,6 @@ const Inbox = ({ parentRoute }) => {
     dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
   };
   const onSortFormReset = (setSortFormValue) => {
-    setSortFormValue("sortOrder", "DESC");
     dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
   };
   const formInitValue = useMemo(() => {
@@ -110,7 +108,14 @@ const Inbox = ({ parentRoute }) => {
   );
   const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {} } = useBPAInbox({
     tenantId,
-    filters: { ...formState },
+    filters: { 
+      searchForm: formState.searchForm,
+      filterForm: formState.filterForm,
+      tableForm: {
+        limit: formState.tableForm?.limit,
+        offset: formState.tableForm?.offset
+      }
+    },
   });
 
   const PropsForInboxLinks = {

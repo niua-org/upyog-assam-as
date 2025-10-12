@@ -12,7 +12,7 @@ const Search = ({ path }) => {
   const [paramerror, setparamerror] = useState("");
 
   useEffect(() => {
-    if (location.pathname === "/upyog-ui/citizen/obpsv2/rtp/search/application" || location.pathname === "/upyog-ui/employee/obps/search/application") {
+    if (location.pathname === "/upyog-ui/citizen/obpsv2/rtp/search/application" || location.pathname === "/upyog-ui/employee/obpsv2/search/application") {
       Digit.SessionStorage.del("OBPSV2.INBOX");
     }
   }, [location.pathname]);

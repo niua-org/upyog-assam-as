@@ -125,8 +125,8 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   // File upload states
   const [isUploadingForm36, setIsUploadingForm36] = useState(false);
   const [isUploadingForm39, setIsUploadingForm39] = useState(false);
-  const [uploadedForm36Id, setUploadedForm36Id] = useState(landData?.documents?.find(doc => doc.documentType === 'FORM_36') || searchResult?.documents.find(doc => doc.documentType === 'FORM_36')|| null);
-  const [uploadedForm39Id, setUploadedForm39Id] = useState(landData?.documents?.find(doc => doc.documentType === 'FORM_39') || searchResult?.documents.find(doc => doc.documentType === 'FORM_39')|| null);
+  const [uploadedForm36Id, setUploadedForm36Id] = useState(landData?.documents?.find(doc => doc.documentType === 'FORM_36') || searchResult?.documents?.find(doc => doc.documentType === 'FORM_36')|| null);
+  const [uploadedForm39Id, setUploadedForm39Id] = useState(landData?.documents?.find(doc => doc.documentType === 'FORM_39') || searchResult?.documents?.find(doc => doc.documentType === 'FORM_39')|| null);
   const [form36File, setForm36File] = useState(null);
   const [form39File, setForm39File] = useState(null);
   const [showToast, setShowToast] = useState(null);

@@ -59,10 +59,6 @@ import {
     });
     const [hasAccess, setHasAccess] = useState(false);
     const { roles } = Digit.UserService.getUser().info;
-    useEffect(()=>{
-      const access = roles?.some(role=> role?.code === "BPA_ARCHITECT");
-      setHasAccess(access);
-    }, [roles])
     const [workflowDetails, setWorkflowDetails] = useState(null);
 
     useEffect(() => {
@@ -73,6 +69,12 @@ import {
 
       fetchWorkflow();
     }, [acknowledgementIds, tenantId]);
+
+    useEffect(() => {
+      const nextActionRoles = workflowDetails?.ProcessInstances?.[0]?.nextActions[0]?.roles || [];
+      const access = roles?.some(role => nextActionRoles.includes(role?.code));
+      setHasAccess(access);
+    }, [roles])
 
    const client = useQueryClient();
     const [actioneError, setActionError] = useState(null);
@@ -294,6 +296,18 @@ import {
         setPopup(true);
         setDisplayMenu(false);
         break;
+      case "SUBMIT_REPORT":
+        setPopup(true);
+        setDisplayMenu(false);
+        break;
+      case "SEND_BACK_TO_GMDA":
+        setPopup(true);
+        setDisplayMenu(false);
+        break;
+      case "RECOMMEND_TO_CEO":
+        setPopup(true);
+        setDisplayMenu(false);
+        break;
       case "VALIDATE_GIS":
         setPopup(true);
         setDisplayMenu(false);
@@ -393,9 +407,17 @@ import {
                 label={t("BPA_EMAIL_ID")}
                 text={primaryOwner?.emailId || t("CS_NA")}
               />
+               <Row
+                label={t("BPA_GENDER")}
+                text={t(primaryOwner?.gender) || t("CS_NA")}
+              />
               <Row
-                label={t("BPA_FATHER_NAME")}
+                label={t("BPA_GUARDIAN")}
                 text={primaryOwner?.fatherOrHusbandName || t("CS_NA")}
+              />
+               <Row
+                label={t("BPA_RELATIONSHIP")}
+                text={t(primaryOwner?.relationship) || t("CS_NA")}
               />
               <Row
                 label={t("BPA_MOTHER_NAME")}
@@ -634,7 +656,7 @@ import {
         t("CS_COMMON_SUBMIT")
       }
       actionSaveOnSubmit={() => {
-        if(selectedAction==="APPROVE"||selectedAction==="ACCEPT"||selectedAction==="REJECT"||selectedAction==="SEND"||selectedAction==="VALIDATE_GIS" ||selectedAction==="SEND_BACK_TO_RTP" )
+        if(selectedAction==="APPROVE"||selectedAction==="ACCEPT"||selectedAction==="REJECT"||selectedAction==="SEND"||selectedAction==="VALIDATE_GIS" ||selectedAction==="SEND_BACK_TO_RTP" || selectedAction==="SUBMIT_REPORT" || selectedAction==="RECOMMEND_TO_CEO" || selectedAction==="SEND_BACK_TO_GMDA")
           onAssign(selectedAction, comments, "Edit");
       if(selectedAction==="NEWRTP" &&!oldRTPName)
         setActionError(t("CS_OLD_RTP_NAME_MANDATORY"))
@@ -649,7 +671,7 @@ import {
     >
       <Card>
   <React.Fragment>
-    {(selectedAction === "APPROVE" || selectedAction === "ACCEPT" || selectedAction === "SEND" || selectedAction === "REJECT"|| selectedAction==="SEND_BACK_TO_RTP") && (
+    {(selectedAction === "APPROVE" || selectedAction === "ACCEPT" || selectedAction === "SEND" || selectedAction === "REJECT"|| selectedAction==="SEND_BACK_TO_RTP" || selectedAction==="SUBMIT_REPORT" || selectedAction==="RECOMMEND_TO_CEO" || selectedAction==="SEND_BACK_TO_GMDA") && (
       <div>
         <CardLabel>{t("COMMENTS")}</CardLabel>
         <TextArea 

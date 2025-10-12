@@ -89,6 +89,7 @@ export const bpaPayload = async(data) => {
     addressCategory: "PERMANENT",
     addressType: "PERMANENT_ADDRESS",
     country: "INDIA",
+    localityCode: data?.address?.permanent?.city?.code,
     district: data?.address?.permanent?.district?.code,
     houseNo: data?.address?.permanent?.houseNo,
     pincode: data?.address?.permanent?.pincode,
@@ -98,7 +99,7 @@ export const bpaPayload = async(data) => {
 
   // Correspondence Address
   const correspondenceAddress = data?.address?.sameAsPermanent
-    ? { ...permanentAddress, addressCategory: "CORRESPONDENCE" }
+    ? { ...permanentAddress, addressCategory: "CORRESPONDENCE",  addressType: "CORRESPONDENCE_ADDRESS", }
     : {
         addressLine1: data?.address?.correspondence?.addressLine1,
         addressLine2: data?.address?.correspondence?.addressLine2,
@@ -106,6 +107,7 @@ export const bpaPayload = async(data) => {
         addressType: "CORRESPONDENCE_ADDRESS",
         city: data?.address?.correspondence?.city?.code,
         country: "INDIA",
+        localityCode: data?.address?.correspondence?.city?.code,
         district: data?.address?.correspondence?.district?.code,
         houseNo: data?.address?.correspondence?.houseNo,
         pincode: data?.address?.correspondence?.pincode,
@@ -189,6 +191,8 @@ export const bpaPayload = async(data) => {
             name: data?.applicant?.applicantName,
             emailId: data?.applicant?.emailId,
             fatherOrHusbandName: data?.applicant?.fatherName,
+            gender: data?.applicant?.gender?.code,
+            relationship:data?.applicant?.relationship?.code,
             motherName: data?.applicant?.motherName,
             permanentAddress,
             correspondenceAddress,
@@ -244,6 +248,9 @@ export const bpaEditPayload = async (formData) => {
       ...updated.landInfo.owners[0],
       name: formData.applicant.applicantName ?? updated.landInfo.owners[0].name,
       mobileNumber: formData.applicant.mobileNumber ?? updated.landInfo.owners[0].mobileNumber,
+      altContactNumber: formData.applicant.alternateNumber ?? updated.landInfo.owners[0].altContactNumber,
+      gender: formData.applicant.gender?.code ?? updated.landInfo.owners[0].gender,
+      relationship: formData.applicant.relationship?.code ?? updated.landInfo.owners[0].relationship,
       aadhaarNumber: formData.applicant.aadhaarNumber ?? updated.landInfo.owners[0].aadhaarNumber,
       pan: formData.applicant.panCardNumber ?? updated.landInfo.owners[0].pan,
       emailId: formData.applicant.emailId ?? updated.landInfo.owners[0].emailId,

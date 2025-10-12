@@ -297,8 +297,16 @@ const handleDownloadPdf = async (formType) => {
             text={checkForNA(applicant?.emailId)}
           />
           <Row
-            label={t("BPA_FATHER_NAME")}
+            label={t("BPA_GENDER")}
+            text={checkForNA(t(applicant?.gender?.code))}
+          />
+          <Row
+            label={t("BPA_GUARDIAN")}
             text={checkForNA(applicant?.fatherName)}
+          />
+           <Row
+            label={t("BPA_RELATIONSHIP")}
+            text={checkForNA(t(applicant?.relationship?.code))}
           />
           <Row
             label={t("BPA_MOTHER_NAME")}

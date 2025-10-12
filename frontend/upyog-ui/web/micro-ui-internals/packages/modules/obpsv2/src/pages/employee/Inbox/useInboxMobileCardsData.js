@@ -7,27 +7,16 @@ import { Controller, useFormContext } from "react-hook-form";
 const useInboxMobileCardsData = ({parentRoute, table, getRedirectionLink}) => {
     const { t } = useTranslation()
 
-    const dataForMobileInboxCards = table?.map(({ applicationId, date, applicationType, businessService, locality, status, owner, sla, state, applicantName, fatherName, mobileNumber}) => ({
-            [t("BPA_APPLICATION_NUMBER_LABEL")]: applicationId,
-            [t("APPLICANT_NAME")]: applicantName || "-",
-            [t("FATHERS_NAME")]: fatherName || "-", 
-            [t("MOBILE_NUMBER")]: mobileNumber || "-",
-            [t("CS_APPLICATION_DETAILS_APPLICATION_DATE")]: date ? format(new Date(date), 'dd/MM/yyyy') : "-",
-            [t("BPA_SEARCH_APPLICATION_TYPE_LABEL")]: t(applicationType) || "-",
-            [t("ES_INBOX_LOCALITY")]: t(locality) || "-",
-            [t("EVENTS_STATUS_LABEL")]: state ? t(`WF_${businessService}_${state}`): t(`WF_${businessService}_${status}`),
-            [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner || "-",
-            [t("ES_INBOX_SLA_DAYS_REMAINING")]: sla || "-"
+    const dataForMobileInboxCards = table?.map((row) => ({
+            [t("BPA_APPLICATION_NUMBER_LABEL")]: row?.applicationId || "NA",
+            [t("APPLICANT_NAME")]: row?.applicantName || "NA",
+            [t("DISTRICT")]: t(row?.areaMapping?.district) || "NA",
+            [t("MOBILE_NUMBER")]: row?.mobileNumber || "NA",
+            [t("STATUS")]: t(row?.status) || t("CS_NA")
     }))
 
     const MobileSortFormValues = () => {
-        const sortOrderOptions = [{
-            code: "DESC",
-            i18nKey: "ES_COMMON_SORT_BY_DESC"
-        },{
-            code: "ASC",
-            i18nKey: "ES_COMMON_SORT_BY_ASC"
-        }]
+        const sortOrderOptions = []
         const { control: controlSortForm  } = useFormContext()
         return <SearchField>
             <Controller

@@ -146,7 +146,7 @@ const RTPAcknowledgement = (props) => {
               whiteSpace: "pre", 
               width: "60%", 
               fontWeight: "bold",
-              color: "#00703C",
+              color: "#a82227",
               padding: "0px 8px",
               marginBottom: "10px"
             }}>

@@ -11,7 +11,9 @@ const getAction = (flow) => {
       actions = ["BPA_APPLICANT_DETAILS", "BPA_ADDRESS_DETAILS", "BPA_LAND_DETAILS", "BPA_SUMMARY"];
       break;
     case "editApplication":
-      actions = ["BPA_APPLICANT_DETAILS", "BPA_ADDRESS_DETAILS", "BPA_LAND_DETAILS", "BPA_DOCUMENTS", "BPA_SUMMARY"];
+      actions = ["BPA_APPLICANT_DETAILS", "BPA_ADDRESS_DETAILS", "BPA_LAND_DETAILS", "BPA_DOCUMENTS", "BPA_FORM_22A",
+        "BPA_FORM_23A",
+        "BPA_FORM_23B", "BPA_SUMMARY"];
       break;
     default:
       actions = [

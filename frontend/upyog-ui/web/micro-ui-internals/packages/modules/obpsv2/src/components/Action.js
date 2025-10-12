@@ -91,10 +91,18 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
         case "SEND":
           setPopup(true);
           break;
-          case "SEND_BACK_TO_RTP":
-            setPopup(true);
-            
-            break;
+        case "SEND_BACK_TO_RTP":
+          setPopup(true);
+          break;
+        case "SUBMIT_REPORT":
+          setPopup(true);
+          break;
+        case "RECOMMEND_TO_CEO":
+          setPopup(true);
+          break;
+        case "SEND_BACK_TO_GMDA":
+          setPopup(true);
+          break;
         case "VALIDATE_GIS":
             setPopup(true);
             break;
@@ -242,7 +250,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           actionSaveLabel={t("CS_COMMON_SUBMIT")}
           popupStyles={{ zIndex: 1001 }}
           actionSaveOnSubmit={() => {
-        if(selectedAction==="APPROVE"||selectedAction==="ACCEPT"||selectedAction==="SEND"||selectedAction==="REJECT"||selectedAction==="SEND_BACK_TO_RTP"||selectedAction==="VALIDATE_GIS")
+        if(selectedAction==="APPROVE"||selectedAction==="ACCEPT"||selectedAction==="SEND"||selectedAction==="REJECT"||selectedAction==="SEND_BACK_TO_RTP"||selectedAction==="VALIDATE_GIS" || selectedAction==="SUBMIT_REPORT" ||  selectedAction==="RECOMMEND_TO_CEO" || selectedAction==="SEND_BACK_TO_GMDA")
            onAssign(selectedAction, comments);
       if(selectedAction==="NEWRTP"&&!oldRTPName)
         setActionError(t("CS_OLD_RTP_NAME_MANDATORY"))
@@ -254,7 +262,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
         >
           <Card>
             <React.Fragment>
-              {(selectedAction === "APPROVE" || selectedAction === "ACCEPT" || selectedAction === "SEND" || selectedAction === "REJECT" || selectedAction==="SEND_BACK_TO_RTP") && (
+              {(selectedAction === "APPROVE" || selectedAction === "ACCEPT" || selectedAction === "SEND" || selectedAction === "REJECT" || selectedAction==="SEND_BACK_TO_RTP" || selectedAction==="SUBMIT_REPORT" ||  selectedAction==="RECOMMEND_TO_CEO" || selectedAction==="SEND_BACK_TO_GMDA") && (
                 <div>
                   <CardLabel>{t("COMMENTS")}</CardLabel>
                   <TextArea

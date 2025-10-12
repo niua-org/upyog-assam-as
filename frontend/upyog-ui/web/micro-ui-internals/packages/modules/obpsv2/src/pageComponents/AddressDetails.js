@@ -68,13 +68,25 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
 
   // Correspondence Address Fields
   const [sameAsPermanent, setSameAsPermanent] = useState(formData?.address?.sameAsPermanent || false);
-  const [correspondenceHouseNo, setCorrespondenceHouseNo] = useState(formData?.address?.correspondence?.houseNo || searchResult?.landInfo?.address?.houseNo || "");
-  const [correspondenceAddressLine1, setCorrespondenceAddressLine1] = useState(formData?.address?.correspondence?.addressLine1 || searchResult?.landInfo?.address?.addressLine1 || "");
-  const [correspondenceAddressLine2, setCorrespondenceAddressLine2] = useState(formData?.address?.correspondence?.addressLine2 || searchResult?.landInfo?.address?.addressLine2 || "");
-  const [correspondenceDistrict, setCorrespondenceDistrict] = useState(formData?.address?.correspondence?.district || searchResultDistrict || "");
-  const [correspondenceCity, setCorrespondenceCity] = useState(formData?.address?.correspondence?.city || searchResultCity || "");
-  const [correspondenceState, setCorrespondenceState] = useState(formData?.address?.correspondence?.state || searchResultState || "");
-  const [correspondencePincode, setCorrespondencePincode] = useState(formData?.address?.correspondence?.pincode || searchResult?.landInfo?.address?.pincode || "");
+  const [correspondenceHouseNo, setCorrespondenceHouseNo] = useState(formData?.address?.correspondence?.houseNo || searchResult?.landInfo?.owners[0]?.correspondenceAddress?.houseNo || "");
+  const [correspondenceAddressLine1, setCorrespondenceAddressLine1] = useState(formData?.address?.correspondence?.addressLine1 || searchResult?.landInfo?.owners[0]?.correspondenceAddress?.addressLine1 || "");
+  const [correspondenceAddressLine2, setCorrespondenceAddressLine2] = useState(formData?.address?.correspondence?.addressLine2 || searchResult?.landInfo?.owners[0]?.correspondenceAddress?.addressLine2 || "");
+  const searchResultDistrictCorr = searchResult?.landInfo?.owners[0]?.correspondenceAddress?.district ? {
+    "code" : searchResult?.landInfo?.owners[0]?.correspondenceAddress?.district,
+    "i18nKey" : searchResult?.landInfo?.owners[0]?.correspondenceAddress?.district
+  } : "";
+  const searchResultStateCorr = searchResult?.landInfo?.owners[0]?.correspondenceAddress?.state ? {
+    "code" : searchResult?.landInfo?.owners[0]?.correspondenceAddress?.state,
+    "i18nKey" : searchResult?.landInfo?.owners[0]?.correspondenceAddress?.state
+  } : "";
+  const searchResultCityCorr = searchResult?.landInfo?.owners[0]?.correspondenceAddress?.localityCode ? {
+    "code" : searchResult?.landInfo?.owners[0]?.correspondenceAddress?.localityCode,
+    "i18nKey" : searchResult?.landInfo?.owners[0]?.correspondenceAddress?.localityCode
+  } : "";
+  const [correspondenceDistrict, setCorrespondenceDistrict] = useState(formData?.address?.correspondence?.district || searchResultDistrictCorr || "");
+  const [correspondenceCity, setCorrespondenceCity] = useState(formData?.address?.correspondence?.city || searchResultCityCorr || "");
+  const [correspondenceState, setCorrespondenceState] = useState(formData?.address?.correspondence?.state || searchResultStateCorr || "");
+  const [correspondencePincode, setCorrespondencePincode] = useState(formData?.address?.correspondence?.pincode || searchResult?.landInfo?.owners[0]?.correspondenceAddress?.pincode || "");
     // Update permanent city options when permanent district changes
   useEffect(() => {
     if (permanentDistrict && mdmsData?.revenueVillages) {

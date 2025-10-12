@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, MobileNumber } from "@upyog/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, MobileNumber, RadioButtons } from "@upyog/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 
 const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
@@ -15,6 +15,19 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
   const [motherName, setMotherName] = useState(formData?.applicant?.motherName || searchResult?.landInfo?.owners?.[0]?.motherName ||"");
   const [panCardNumber, setPanCardNumber] = useState(formData?.applicant?.panCardNumber || searchResult?.landInfo?.owners?.[0]?.pan || "");
   const [aadhaarNumber, setAadhaarNumber] = useState(formData?.applicant?.aadhaarNumber || searchResult?.landInfo?.owners?.[0]?.aadhaarNumber ||"");
+  const [gender, setGender] = useState(formData?.applicant?.gender || (searchResult?.landInfo?.owners?.[0]?.gender ? { code: searchResult.landInfo.owners[0].gender, name: searchResult.landInfo.owners[0].gender, i18nKey: searchResult.landInfo.owners[0].gender } : ""));
+  const [relationship, setRelationship] = useState(formData?.applicant?.relationship || (searchResult?.landInfo?.owners?.[0]?.relationship ? { code: searchResult.landInfo.owners[0].relationship, name: searchResult.landInfo.owners[0].relationship, i18nKey: searchResult.landInfo.owners[0].relationship } : ""));  
+  // Options for radio buttons
+  const genderOptions = [
+    { code: "MALE", i18nKey: "MALE" , name:"MALE"},
+    { code: "FEMALE", i18nKey: "FEMALE", name:"FEMALE" },
+    { code: "TRANSGENDER", i18nKey: "TRANSGENDER", name:"TRANSGENDER" }
+  ];
+
+  const relationshipOptions = [
+    { code: "HUSBAND", i18nKey: "HUSBAND", name:"HUSBAND" },
+    { code: "FATHER", i18nKey: "FATHER", name:"FATHER" },
+  ];
 
   // Go next
   const goNext = () => {
@@ -27,6 +40,8 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
       motherName,
       panCardNumber,
       aadhaarNumber,
+      gender,
+      relationship,
     };
 
     onSelect(config.key, { ...formData[config.key], ...applicantStep });
@@ -49,7 +64,9 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
           !emailId ||
           !fatherName ||
           !panCardNumber ||
-          !aadhaarNumber
+          !aadhaarNumber ||
+          !gender ||
+          !relationship
         }
       >
         <div>
@@ -98,17 +115,45 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
             ValidationRequired={true}
             {...{ pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$", title: t("BPA_EMAIL_ERROR_MESSAGE") }}
           />
-
-          {/* Father's Name */}
-          <CardLabel>{`${t("BPA_FATHER_NAME")}`} <span className="check-page-link-button">*</span></CardLabel>
+          {/* Gender */}
+          <CardLabel>{`${t("BPA_GENDER")}`} <span className="check-page-link-button">*</span></CardLabel>
+          <RadioButtons
+            t={t}
+            options={genderOptions}
+            style={{ display: "flex", flexWrap: "wrap", maxHeight: "20px" }}
+            innerStyles={{ minWidth: "20%" }}
+            optionsKey="i18nKey"
+            name="gender"
+            value={gender}
+            selectedOption={gender}
+            onSelect={setGender}
+            labelKey="i18nKey"
+          />
+          {/* Guardian */}
+          <CardLabel>{`${t("BPA_GUARDIAN")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
             type="text"
             name="fatherName"
             value={fatherName}
-            placeholder="Enter Father’s Name"
+            placeholder="Enter Guardian Name"
             onChange={(e) => setFatherName(e.target.value.replace(/[^a-zA-Z\s]/g, ""))}
             ValidationRequired={true}
+          />
+
+          {/* Relationship */}
+          <CardLabel>{`${t("BPA_RELATIONSHIP")}`} <span className="check-page-link-button">*</span></CardLabel>
+          <RadioButtons
+            t={t}
+            options={relationshipOptions}
+            style={{ display: "flex", flexWrap: "wrap", maxHeight: "20px" }}
+            innerStyles={{ minWidth: "20%" }}
+            optionsKey="i18nKey"
+            name="relationship"
+            value={relationship}
+            selectedOption={relationship}
+            onSelect={setRelationship}
+            labelKey="i18nKey"
           />
 
           {/* Mother's Name */}
@@ -118,7 +163,7 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
             type="text"
             name="motherName"
             value={motherName}
-            placeholder="Enter Mother’s Name"
+            placeholder="Enter Mother's Name"
             onChange={(e) => setMotherName(e.target.value.replace(/[^a-zA-Z\s]/g, ""))}
           />
 
@@ -130,7 +175,12 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
             name="panCardNumber"
             value={panCardNumber}
             placeholder="Enter PAN Card Number"
-            onChange={(e) => setPanCardNumber(e.target.value.toUpperCase())}
+            onChange={(e) => {
+              const input = e.target.value.toUpperCase();
+              if (input.length <= 10) {
+                setPanCardNumber(input);
+              }
+            }}
             ValidationRequired={true}
             minLength={10}
             maxLength={10}
@@ -145,7 +195,12 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
             name="aadhaarNumber"
             value={aadhaarNumber}
             placeholder="Enter Aadhaar Card Number"
-            onChange={(e) => setAadhaarNumber(e.target.value.replace(/[^0-9]/g, ""))}
+            onChange={(e) => {
+              const input = e.target.value.replace(/[^0-9]/g, "");
+              if (input.length <= 12) {
+                setAadhaarNumber(input);
+              }
+            }}
             ValidationRequired={true}
             minLength={12}
             maxLength={12}

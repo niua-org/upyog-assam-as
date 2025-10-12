@@ -10,6 +10,7 @@ const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
   const Inbox = Digit.ComponentRegistryService.getComponent("OBPSV2Inbox");
   const RTPInbox = Digit.ComponentRegistryService.getComponent("RTPInbox");
+  const BPAApplicationDetails = Digit?.ComponentRegistryService?.getComponent("BPAApplicationDetails");
 
   return (
     <Fragment>
@@ -18,6 +19,7 @@ const EmployeeApp = ({ path }) => {
       <Switch>
         
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
+         <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={BPAApplicationDetails}></PrivateRoute>
         <PrivateRoute path={`${path}/rtp/inbox`} component={(props) => <RTPInbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
 

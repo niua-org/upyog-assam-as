@@ -90,7 +90,7 @@ const BPAAcknowledgement = ({ data, onSuccess }) => {
               whiteSpace: "pre", 
               width: "60%", 
               fontWeight: "bold" ,
-              color: "#00703C"
+              color: "#a82227"
             }}>
             {t(mutation.data?.bpa?.[0]?.status)}
             </CardText>
