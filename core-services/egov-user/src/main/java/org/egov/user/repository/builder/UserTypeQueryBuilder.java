@@ -42,6 +42,7 @@ package org.egov.user.repository.builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.user.domain.model.UserSearchCriteria;
+import org.egov.user.domain.model.enums.Gender;
 import org.egov.user.domain.service.utils.UserConstants;
 import org.egov.user.persistence.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,7 +209,18 @@ public class UserTypeQueryBuilder {
         if(userSearchCriteria.getGender() != null) {
         	isAppendAndClause = addAndClauseIfRequired(isAppendAndClause, selectQuery);
             selectQuery.append(" userdata.gender = ?");
-            preparedStatementValues.add(userSearchCriteria.getGender().toString());
+			String gender = userSearchCriteria.getGender().toString();
+			Integer genderVal = 0;
+			if (Gender.FEMALE.toString().equals(gender)) {
+				genderVal = 1;
+			} else if (Gender.MALE.toString().equals(gender)) {
+				genderVal = 2;
+			} else if (Gender.OTHERS.toString().equals(gender)) {
+				genderVal = 3;
+			} else if (Gender.TRANSGENDER.toString().equals(gender)) {
+				genderVal = 4;
+			}
+            preparedStatementValues.add(genderVal);
         }
 
         // Search based on alternate contact number
