@@ -266,6 +266,7 @@ public class OwnerInfoV2 {
         this.setAltContactNumber(user.getAltContactNumber());
         this.setPanNumber(user.getPan());
         this.setAadhaarNumber(user.getAadhaarNumber());
+        this.setRelationship(user.getRelationship());
         //this.setPermanentAddress(user.getPermanentAddress());
         //	this.setPermanentCity(user.getPermanentCity());
         //	this.setPermanentPincode(user.getPermanentPincode());

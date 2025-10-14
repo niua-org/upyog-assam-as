@@ -141,6 +141,7 @@ public class LandUserService {
 		ownerInfo.setPan(ownerInfoV2.getPanNumber());
 		ownerInfo.setMobileNumber(ownerInfoV2.getMobileNumber());
 		ownerInfo.setName(ownerInfoV2.getName());
+		ownerInfo.setRelationship(ownerInfoV2.getRelationship());
 		if(ownerInfoV2.getPermanentAddress() != null){
 			ownerInfo.setPermanentAddress(ownerInfoV2.getPermanentAddress().getAddressLine1());
 			ownerInfo.setPermanentPincode(ownerInfoV2.getPermanentAddress().getPincode());
