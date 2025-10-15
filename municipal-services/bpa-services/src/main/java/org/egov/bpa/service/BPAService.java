@@ -11,6 +11,7 @@ import java.util.*;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
+import org.egov.bpa.repository.ServiceRequestRepository;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.util.BPAUtil;
@@ -192,14 +193,18 @@ public class BPAService {
      * @param applicationType
      * @param bpaRequest
      */
-    private void addCalculation(String applicationType, BPARequest bpaRequest) {
+	private void addCalculation(BPARequest bpaRequest) {
 
-        if (bpaRequest.getBPA().getRiskType().equals(BPAConstants.LOW_RISKTYPE) && !applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
-            calculationService.addCalculation(bpaRequest, BPAConstants.LOW_RISK_PERMIT_FEE_KEY);
-        } else {
-            calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
-        }
-    }
+		BigDecimal plotArea = bpaRequest.getBPA().getLandInfo().getTotalPlotArea();
+		bpaRequest.getBPA().setTenantId("pg");
+		bpaRequest.setApplicationType("RESIDENTIAL_RCC");
+		bpaRequest.setFloorLevel("Upper");
+		bpaRequest.setWallType("");
+		bpaRequest.setFeeType("PLANNING_PERMIT_FEE");
+		bpaRequest.getBPA().setTotalBuiltUpArea(plotArea);
+
+		calculationService.addCalculation(bpaRequest);
+	}
 
     /**
      * Searches the Bpa for the given criteria if search is on owner paramter
@@ -474,6 +479,7 @@ public class BPAService {
             enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
             wfIntegrator.callWorkFlow(bpaRequest);
             repository.update(bpaRequest, BPAConstants.UPDATE_ALL_BUILDING_PLAN);
+            addCalculation(bpaRequest);
             landService.updateLandInfo(bpaRequest);
             return bpaRequest.getBPA();
         }
