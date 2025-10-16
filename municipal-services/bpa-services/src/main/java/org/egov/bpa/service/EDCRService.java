@@ -1,5 +1,7 @@
 package org.egov.bpa.service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
 import org.egov.bpa.repository.ServiceRequestRepository;
@@ -16,6 +19,7 @@ import org.egov.bpa.validator.MDMSValidator;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
+import org.egov.bpa.web.model.Floor;
 import org.egov.bpa.web.model.edcr.RequestInfo;
 import org.egov.bpa.web.model.edcr.RequestInfoWrapper;
 import org.egov.tracer.model.CustomException;
@@ -246,11 +250,54 @@ public class EDCRService {
 	@SuppressWarnings("rawtypes")
 	public Map<String, String> getEDCRDetails(org.egov.common.contract.request.RequestInfo requestInfo, BPA bpa) {
 
+		DocumentContext context = fetchEDCRInfo(requestInfo, bpa);
+		
+		Map<String, String> edcrDetails = new HashMap<String, String>();
+		List<String> serviceType = context.read("edcrDetail.*.planDetail.planInformation.serviceType");
+		if (CollectionUtils.isEmpty(serviceType)) {
+			serviceType.add("NEW_CONSTRUCTION");
+		}
+		List<String> applicationType = context.read("edcrDetail.*.appliactionType");
+		if (CollectionUtils.isEmpty(applicationType)) {
+			applicationType.add("permit");
+		}
+		List<String> approvalNo = context.read("edcrDetail.*.permitNumber");
+		edcrDetails.put(BPAConstants.SERVICETYPE, serviceType.get(0).toString());
+		edcrDetails.put(BPAConstants.APPLICATIONTYPE, applicationType.get(0).toString());
+		if(approvalNo.size()>0 && approvalNo!=null){
+			edcrDetails.put(BPAConstants.PERMIT_NO, approvalNo.get(0).toString());
+		}
+
+		return edcrDetails;
+	}
+	
+	public List<Floor> getFloorsFromEDCRDetails(org.egov.common.contract.request.RequestInfo requestInfo, BPA bpa) {
+
+		DocumentContext context = fetchEDCRInfo(requestInfo, bpa);
+
+		// GET FLOOR DETAILS
+		List<Floor> floors = new ArrayList<>();
+		List<Object> edcrFloors = context.read("edcrDetail.*.planDetail.blocks[0].building.floors");
+		Integer totalFloors = floors.size();
+
+		for (int i = 0; i < totalFloors; i++) {
+			BigDecimal builtUpArea = context
+					.read("edcrDetail.*.planDetail.blocks[0].building.floors[i].occupancies[0].builtUpArea");
+			BigDecimal floorArea = context
+					.read("edcrDetail.*.planDetail.blocks[0].building.floors[i].occupancies[0].floorArea");
+
+			Floor floor = new Floor(i, builtUpArea, floorArea);
+			floors.add(floor);
+		}
+		return floors;
+	}
+
+	private DocumentContext fetchEDCRInfo(org.egov.common.contract.request.RequestInfo requestInfo, BPA bpa) {
 		String edcrNo = bpa.getEdcrNumber();
 		StringBuilder uri = new StringBuilder(config.getEdcrHost());
 
 		uri.append(config.getGetPlanEndPoint());
-		uri.append("?").append("tenantId=").append(bpa.getTenantId());
+		uri.append("?").append("tenantId=").append("assam");
 		uri.append("&").append("edcrNumber=").append(edcrNo);
 		RequestInfo edcrRequestInfo = new RequestInfo();
 		BeanUtils.copyProperties(requestInfo, edcrRequestInfo);
@@ -267,22 +314,7 @@ public class EDCRService {
 
 		String jsonString = new JSONObject(responseMap).toString();
 		DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
-		Map<String, String> edcrDetails = new HashMap<String, String>();
-		List<String> serviceType = context.read("edcrDetail.*.planDetail.planInformation.serviceType");
-		if (CollectionUtils.isEmpty(serviceType)) {
-			serviceType.add("NEW_CONSTRUCTION");
-		}
-		List<String> applicationType = context.read("edcrDetail.*.appliactionType");
-		if (CollectionUtils.isEmpty(applicationType)) {
-			applicationType.add("permit");
-		}
-		List<String> approvalNo = context.read("edcrDetail.*.permitNumber");
-		edcrDetails.put(BPAConstants.SERVICETYPE, serviceType.get(0).toString());
-		edcrDetails.put(BPAConstants.APPLICATIONTYPE, applicationType.get(0).toString());
-		if(approvalNo.size()>0 && approvalNo!=null){
-			edcrDetails.put(BPAConstants.PERMIT_NO, approvalNo.get(0).toString());
-		}
-		return edcrDetails;
+		return context;
 	}
 
 	/**

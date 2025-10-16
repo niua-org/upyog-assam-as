@@ -35,17 +35,18 @@ public class CalculationService {
 	 */
 	public void addCalculation(BPARequest bpaRequest) {
 
+		BPA bpa = bpaRequest.getBPA();
 		CalculationReq calulcationRequest = new CalculationReq();
 		calulcationRequest.setRequestInfo(bpaRequest.getRequestInfo());
 		CalulationCriteria calculationCriteria = new CalulationCriteria();
-		calculationCriteria.setApplicationNo(bpaRequest.getBPA().getApplicationNo());
-		calculationCriteria.setBpa(bpaRequest.getBPA());
-		calculationCriteria.setFeeType(bpaRequest.getFeeType());
-		calculationCriteria.setTenantId(bpaRequest.getBPA().getTenantId());
-		calculationCriteria.setBpa(bpaRequest.getBPA());
-		calculationCriteria.setFloorLevel(bpaRequest.getFloorLevel());
-		calculationCriteria.setWallType(bpaRequest.getWallType());
-		calculationCriteria.setApplicationType(bpaRequest.getApplicationType());
+		calculationCriteria.setApplicationNo(bpa.getApplicationNo());
+		calculationCriteria.setBpa(bpa);
+		calculationCriteria.setFeeType(bpa.getFeeType());
+		calculationCriteria.setTenantId(bpa.getTenantId());
+		calculationCriteria.setBpa(bpa);
+		calculationCriteria.setFloors(bpa.getFloors());
+		calculationCriteria.setWallType(bpa.getWallType());
+		calculationCriteria.setApplicationType(bpa.getApplicationType());
 		List<CalulationCriteria> criterias = Arrays.asList(calculationCriteria);
 		calulcationRequest.setCalulationCriteria(criterias);
 		StringBuilder url = new StringBuilder();

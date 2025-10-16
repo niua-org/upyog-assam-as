@@ -124,6 +124,10 @@ public class BPA {
   private Object additionalDetails;
 
 	private BigDecimal totalBuiltUpArea;
+	private List<Floor> floors;
+	private String wallType;
+	private String constructionType;
+	private String feeType;
 
   public void addDocument(Document documentsItem) {
     if (this.documents == null) {

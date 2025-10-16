@@ -20,6 +20,7 @@ import org.egov.bpa.calculator.web.models.CalculationRes;
 import org.egov.bpa.calculator.web.models.CalulationCriteria;
 import org.egov.bpa.calculator.web.models.bpa.BPA;
 import org.egov.bpa.calculator.web.models.bpa.EstimatesAndSlabs;
+import org.egov.bpa.calculator.web.models.bpa.Floor;
 import org.egov.bpa.calculator.web.models.demand.Category;
 import org.egov.bpa.calculator.web.models.demand.TaxHeadEstimate;
 import org.egov.common.contract.request.RequestInfo;
@@ -280,9 +281,18 @@ public class CalculationService {
 		EstimatesAndSlabs estimatesAndSlabs = new EstimatesAndSlabs();
 		ArrayList<TaxHeadEstimate> estimates = new ArrayList<>();
 
-		Map calculationTypeMap = mdmsService.getCalculationType(requestInfo, bpa, mdmsData, calulationCriteria);
+		List<Map<String, Object>> calculationTypeMap = mdmsService.getCalculationType(requestInfo, bpa, mdmsData, calulationCriteria);
+		
+		BigDecimal totalTax = BigDecimal.ZERO;
+		for (Floor floor : bpa.getFloors()) {
 
-		BigDecimal totalTax = calculateEstimate(bpa, calculationTypeMap);
+			if (floor.getLevel() == 0) {
+				totalTax = totalTax.add(calculateEstimate(bpa, calculationTypeMap.get(0)));
+			} else {
+				totalTax = totalTax.add(calculateEstimate(bpa, calculationTypeMap.get(1)));
+			}
+
+		}
 
 		if (totalTax.compareTo(BigDecimal.ZERO) < 0)
 			throw new CustomException(BPACalculatorConstants.INVALID_AMOUNT, "Tax amount is negative");

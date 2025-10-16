@@ -37,21 +37,4 @@ public class BPARequest {
 	@JsonProperty("BPA")
 	private BPA BPA;
 
-	@JsonProperty("applicationNo")
-	private String applicationNo;
-
-	@JsonProperty("floorLevel")
-	private String floorLevel;
-
-	@JsonProperty("wallType")
-	private String wallType;
-
-	@JsonProperty("applicationType")
-	private String applicationType;
-
-	@JsonProperty("tenantId")
-	private String tenantId;
-
-	@JsonProperty("feeType")
-	private String feeType;
 }

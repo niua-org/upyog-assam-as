@@ -2,6 +2,7 @@ package org.egov.bpa.calculator.services;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -209,10 +210,10 @@ public class MDMSService {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Map getCalculationType(RequestInfo requestInfo, BPA bpa, Object mdmsData,
+	public List<Map<String, Object>> getCalculationType(RequestInfo requestInfo, BPA bpa, Object mdmsData,
 			CalulationCriteria calulationCriteria) {
 
-		HashMap<String, Object> calculationType = new HashMap<>();
+		List<Map<String, Object>> finalList = new ArrayList<>();
 		String feeType = calulationCriteria.getFeeType();
 		String applicationType = calulationCriteria.getApplicationType();
 		String wallType = calulationCriteria.getWallType();
@@ -238,31 +239,27 @@ public class MDMSService {
 
 				filterExp = "$.[?(@.wallType == '" + wallType + "' || @.wallType == 'ALL')]";
 				calTypes = JsonPath.read(calTypes, filterExp);
-
-			} else if (StringUtils.isNotBlank(floorLevel)) {
-
-				filterExp = "$.[?(@.floorLevel == '" + floorLevel + "' || @.floorLevel == 'ALL')]";
-				calTypes = JsonPath.read(calTypes, filterExp);
 			}
 
 			if (calTypes.isEmpty()) {
-				return defaultMap(feeType);
+				return Collections.singletonList(defaultMap(feeType));
 			}
 
-			calculationType = (HashMap<String, Object>) calTypes.get(0);
+			for (Object obj : calTypes) {
 
-			// Normalize unitType, rate, additionalFee
-			calculationType.put("unitType", calculationType.getOrDefault("unitType", "FIXED"));
-			calculationType.put("rate", calculationType.getOrDefault("rate", "0"));
-			calculationType.put("additionalFee", calculationType.getOrDefault("additionalFee", "0"));
+				HashMap<String, Object> calculationType = (HashMap<String, Object>) obj;
+				calculationType.put("unitType", calculationType.getOrDefault("unitType", "FIXED"));
+				calculationType.put("rate", calculationType.getOrDefault("rate", "0"));
+				calculationType.put("additionalFee", calculationType.getOrDefault("additionalFee", "0"));
+				finalList.add(calculationType);
+			}
 
 		} catch (Exception e) {
 			throw new CustomException(BPACalculatorConstants.CALCULATION_ERROR,
 					"Failed to get calculationType for feeType: " + feeType + e.getLocalizedMessage() + e.getMessage());
 		}
 
-		System.out.println("Calculation Type Used : "+calculationType);
-		return calculationType;
+		return finalList;
 	}
 
 }

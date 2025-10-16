@@ -7,11 +7,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
-import org.egov.bpa.repository.ServiceRequestRepository;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.util.BPAUtil;
@@ -20,7 +27,7 @@ import org.egov.bpa.validator.BPAValidator;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
-import org.egov.bpa.web.model.Workflow;
+import org.egov.bpa.web.model.Floor;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
 import org.egov.bpa.web.model.user.UserDetailResponse;
@@ -195,13 +202,17 @@ public class BPAService {
      */
 	private void addCalculation(BPARequest bpaRequest) {
 
-		BigDecimal plotArea = bpaRequest.getBPA().getLandInfo().getTotalPlotArea();
-		bpaRequest.getBPA().setTenantId("pg");
-		bpaRequest.setApplicationType("RESIDENTIAL_RCC");
-		bpaRequest.setFloorLevel("Upper");
-		bpaRequest.setWallType("");
-		bpaRequest.setFeeType("PLANNING_PERMIT_FEE");
-		bpaRequest.getBPA().setTotalBuiltUpArea(plotArea);
+		BPA bpa = bpaRequest.getBPA();
+		bpa.setTenantId("pg");
+		bpa.setApplicationType("RESIDENTIAL_RCC");
+		List<Floor> floors = new ArrayList<>();
+		floors.add(new Floor(0, bpa.getLandInfo().getTotalPlotArea(), BigDecimal.ZERO));
+		floors.add(new Floor(1, bpa.getLandInfo().getTotalPlotArea(), BigDecimal.ZERO));
+		bpa.setFloors(floors);
+		bpa.setWallType("");
+		bpa.setFeeType("PLANNING_PERMIT_FEE");
+		bpa.setTotalBuiltUpArea(bpa.getLandInfo().getTotalPlotArea());
+		bpaRequest.setBPA(bpa);
 
 		calculationService.addCalculation(bpaRequest);
 	}
@@ -450,6 +461,8 @@ public class BPAService {
 
         BusinessService businessService = workflowService.getBusinessService(bpa, bpaRequest.getRequestInfo(),
                 bpa.getApplicationNo());
+		List<Floor> floors = new ArrayList<>();
+//				edcrService.getFloorsFromEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
 
         List<BPA> searchResult = getBPAWithBPAId(bpaRequest);
         if (CollectionUtils.isEmpty(searchResult) || searchResult.size() > 1) {
@@ -479,6 +492,7 @@ public class BPAService {
             enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
             wfIntegrator.callWorkFlow(bpaRequest);
             repository.update(bpaRequest, BPAConstants.UPDATE_ALL_BUILDING_PLAN);
+			bpaRequest.getBPA().setFloors(floors);
             addCalculation(bpaRequest);
             landService.updateLandInfo(bpaRequest);
             return bpaRequest.getBPA();
