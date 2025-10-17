@@ -1,5 +1,7 @@
 package org.egov.bpa.web.model;
 
+import java.util.List;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -27,11 +29,16 @@ public class CalulationCriteria {
 	@Size(min = 2, max = 64)
 	private String applicationNo;
 
+	@JsonProperty("wallType")
+	private String wallType;
+	
+	private List<Floor> floors;
+
 	@JsonProperty("tenantId")
 	@NotNull
 	@Size(min = 2, max = 256)
 	private String tenantId;
-	
+
 	@JsonProperty("feeType")
 	@NotNull
 	@Size(min = 2, max = 64)

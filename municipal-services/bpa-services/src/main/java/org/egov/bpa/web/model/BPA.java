@@ -1,5 +1,6 @@
 package org.egov.bpa.web.model;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
@@ -121,6 +122,12 @@ public class BPA {
 
   /** JSON object to capture custom fields. */
   private Object additionalDetails;
+
+	private BigDecimal totalBuiltUpArea;
+	private List<Floor> floors;
+	private String wallType;
+	private String constructionType;
+	private String feeType;
 
   public void addDocument(Document documentsItem) {
     if (this.documents == null) {
