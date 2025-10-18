@@ -11,7 +11,7 @@ import {
   Toast,
 } from "@upyog/digit-ui-react-components";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
-
+import useMDMS from "../../../../libraries/src/hooks/obpsv2/useMDMS";
 const OBPSV2Documents = ({ t, formData, applicationData, docs, obpsActionsDetails }) => {
   const stateId = Digit.ULBService.getStateId();
   const applicationStatus = applicationData?.status || "";
@@ -24,19 +24,35 @@ const OBPSV2Documents = ({ t, formData, applicationData, docs, obpsActionsDetail
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const [checkEnablingDocs, setCheckEnablingDocs] = useState(false);
 
-  // OBPS V2 document fetch hook
-  const { data: obpsDocs, isLoading } = Digit.Hooks.obpsv2.useOBPSDocuments(
-    stateId,
-    formData,
-    formData?.PrevStateDocuments || []
-  );
-
-  useEffect(() => {
-    if (obpsDocs?.length > 0) {
-      setBpaTaxDocuments(obpsDocs);
-      sessionStorage.setItem("OBPSV2_DOCUMENTS", JSON.stringify(obpsDocs));
-    }
-  }, [obpsDocs]);
+  const { isLoading: bpaDocsLoading, data: bpaDocs } = useMDMS("as", "BPA", ["DocMapping"]);
+    const { isLoading: commonDocsLoading, data: commonDocs } = useMDMS(stateId, "common-masters", ["DocumentType"]);
+    let filtredBpaDocs = bpaDocs?.BPA?.DocMapping;
+    useEffect(() => {  
+    let documentsList = [];
+    filtredBpaDocs?.[0]?.docTypes?.forEach(doc => {
+        let code = doc.code; doc.dropdownData = []; doc.uploadedDocuments = [];
+        commonDocs?.["common-masters"]?.DocumentType?.forEach(value => {
+            let values = value.code.slice(0, code.length);
+            if (code === values) {
+                doc.hasDropdown = true;
+                value.i18nKey = value.code;
+                doc.dropdownData.push(value);
+            }
+        });
+        
+        doc.uploadedDocuments[0] = {};
+        doc.uploadedDocuments[0].values = [];
+        docs?.[0]?.values?.map(upDocs => {
+          if (code === `${upDocs?.documentType?.split('.')[0]}.${upDocs?.documentType?.split('.')[1]}`) {
+              doc.uploadedDocuments[0].values.push(upDocs)
+          }
+      })
+      
+        documentsList.push(doc);
+    });
+    sessionStorage.setItem("OBPS_DOCUMENTS", JSON.stringify(documentsList));
+        setBpaTaxDocuments(documentsList);
+      }, [!bpaDocsLoading, !commonDocsLoading]);
 
   useEffect(() => {
     let count = 0;
@@ -53,38 +69,34 @@ const OBPSV2Documents = ({ t, formData, applicationData, docs, obpsActionsDetail
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
-  useEffect(() => {
-    if (applicationStatus === "DOC_VERIFICATION_INPROGRESS" && actions?.length > 0)
-      setCheckEnablingDocs(true);
-    else
-      setCheckEnablingDocs(false);
-  }, [applicationData, obpsActionsDetails]);
 
-  if (isLoading) return <Loader />;
+ //s if (isLoading) return <Loader />;
 
   return (
     <div>
-      {bpaTaxDocuments?.map((document, index) => (
-        <div key={index}>
-          <SelectDocument
-            index={index}
-            t={t}
-            document={document}
-            setDocuments={setDocuments}
-            documents={documents}
-            error={error}
-            setError={setError}
-            setCheckRequiredFields={setCheckRequiredFields}
-            applicationStatus={applicationStatus}
-            actions={actions}
-            bpaTaxDocuments={bpaTaxDocuments}
-            checkEnablingDocs={checkEnablingDocs}
-          />
-        </div>
-      ))}
-      {error && <Toast label={error} onClose={() => setError(null)} error />}
+        {bpaTaxDocuments?.map((document, index) => {
+            return (
+                <div>
+                    <SelectDocument
+                        key={index}
+                        index={index}
+                        document={document}
+                        t={t}
+                        error={error}
+                        setError={setError}
+                        setDocuments={setDocuments}
+                        documents={documents}
+                        setCheckRequiredFields={setCheckRequiredFields}
+                        applicationStatus={applicationStatus}
+                        actions={actions}
+                        bpaTaxDocuments={bpaTaxDocuments}
+                        checkEnablingDocs={checkEnablingDocs}
+                    />
+                </div>
+            );
+        })}
     </div>
-  );
+);
 };
 
 function SelectDocument({

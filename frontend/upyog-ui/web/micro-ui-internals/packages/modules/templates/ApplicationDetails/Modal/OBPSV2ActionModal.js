@@ -139,7 +139,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }
 
   const getDocuments = (applicationData) => {
-    let documentsformdata = JSON.parse(sessionStorage.getItem("BPA_DOCUMENTS"));
+    let documentsformdata = JSON.parse(sessionStorage.getItem("OBPS_DOCUMENTS"));
     let documentList = [];
     documentsformdata && documentsformdata.map(doc => {
       if(doc?.uploadedDocuments?.[0]?.values?.length > 0) documentList = [...documentList, ...doc?.uploadedDocuments?.[0]?.values];
@@ -191,15 +191,6 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         ]
         : null,
     };
-
-    
-
-  
-
-    
-
-    
-
     submitAction({
       BPA:applicationData
     });
