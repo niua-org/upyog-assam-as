@@ -23,9 +23,10 @@ import OBPASCitizenHomeScreen from "./pages/citizen/home";
 import RTPForm from "./pageComponents/RTPForm";
 import EmployeeApp from "./pages/employee";
 import BPAApplicationDetails from "./pages/citizen/ApplicationDetails";
+import BPAEmployeeDetails from "./pages/employee/BpaApplicationDetail";
 import OBPSV2Inbox from "./pages/employee/Inbox";
 import OBPSV2EmployeeCard from "./pages/employee/EmployeeCard";
-
+import siteReport from "./pageComponents/siteReport"
 import RTASearchApplication from "./components/SearchApplication";
 const OBPSV2Module = ({ stateCode, userType, tenants }) => {
   const moduleCode = "OBPSV2";
@@ -87,12 +88,14 @@ const componentsToRegister = {
   BPAMyApplications,
   AreaMapping,
   RTPForm,
+  siteReport,
   BPAAcknowledgement,
   RTPAcknowledgement,
   BPAEdit : Edit,
   OBPASCitizenHomeScreen,
   RTASearchApplication,
-  BPAApplicationDetails
+  BPAApplicationDetails,
+  BPAEmployeeDetails
 }
 
 export const initOBPSV2Components = () => {

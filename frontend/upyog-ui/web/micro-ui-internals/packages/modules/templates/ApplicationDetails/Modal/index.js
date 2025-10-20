@@ -12,7 +12,7 @@ import CHBActionModal from "./CHBActionModal";
 import EWActionModal from "./EWActionModal";
 import SVActionModal from "./SVActionModal";
 import WTActionModal from "./WTActionModal";
-
+import OBPSV2ActionModal from "./OBPSV2ActionModal"
 
 
 
@@ -32,6 +32,10 @@ const ActionModal = (props) => {
 
   if (props?.moduleCode.includes("BPAREG")) {
     return <BPAREGActionModal {...props} />;
+  }
+
+  if (props?.moduleCode.includes("OBPSV2")) {
+    return <OBPSV2ActionModal {...props} />;
   }
 
   if (props?.moduleCode.includes("BPA")) {

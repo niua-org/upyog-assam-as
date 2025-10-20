@@ -19,6 +19,7 @@ import React, { Fragment,useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import BPADocuments from "./BPADocuments";
+import OBPSV2Documents from "./OBPSV2Documents"
 import InspectionReport from "./InspectionReport";
 import NOCDocuments from "./NOCDocuments";
 import PermissionCheck from "./PermissionCheck";
@@ -55,7 +56,7 @@ function ApplicationDetailsContent({
   const { t } = useTranslation();
   let { id: applicationNo } = useParams(); // Extracts PG-1013-2025-I-001019
   const ownersSequences = applicationDetails?.applicationData?.owners;
-  console.log("ownersSequences:- ", ownersSequences);
+  
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -520,6 +521,14 @@ function ApplicationDetailsContent({
               applicationData={applicationDetails?.applicationData}
               docs={detail.additionalDetails.noc}
               noc={detail.additionalDetails?.data}
+              bpaActionsDetails={workflowDetails}
+            />
+          )}
+          {detail?.additionalDetails?.obpsDocuments && (
+            <OBPSV2Documents
+              t={t}
+              applicationData={applicationDetails?.applicationData}
+              docs={detail.additionalDetails.obpsDocuments}
               bpaActionsDetails={workflowDetails}
             />
           )}
