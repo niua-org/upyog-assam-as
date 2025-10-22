@@ -499,9 +499,9 @@ public class Far extends FeatureProcess {
         BigDecimal balconyLength = BigDecimal.ZERO;
         BigDecimal buildingLength = block.getBuilding().getBuildingLength();
         if(!floor.getFloorProjectedBalconies().isEmpty())
-            for (BigDecimal projectedBalcony : floor.getFloorProjectedBalconies()) {
-                if (balconyLength.compareTo(projectedBalcony) < 0)
-                    balconyLength = projectedBalcony;
+            for (Measurement projectedBalcony : floor.getFloorProjectedBalconies()) {
+                if (balconyLength.compareTo(projectedBalcony.getWidth()) < 0)
+                    balconyLength = projectedBalcony.getWidth();
             }
 
         BigDecimal quarterBuildingLength = buildingLength.divide(new BigDecimal("4"));

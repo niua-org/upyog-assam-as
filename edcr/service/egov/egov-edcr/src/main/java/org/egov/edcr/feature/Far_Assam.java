@@ -76,6 +76,7 @@ import org.apache.logging.log4j.Logger;
 import org.egov.common.constants.MdmsFeatureConstants;
 import org.egov.common.entity.edcr.*;
 import org.egov.common.entity.edcr.Balcony;
+import org.egov.edcr.constants.EdcrReportConstants;
 import org.egov.edcr.service.MDMSCacheManager;
 import org.egov.edcr.service.ProcessPrintHelper;
 import org.egov.edcr.utility.DcrConstants;
@@ -288,7 +289,6 @@ public class Far_Assam extends Far {
         }
 
         BigDecimal farCommonDeduction = farCommonDeductions(pl, farGuardRoomArea, farCareTakerRoomArea, farCanopyHeight, farCanopyWidth, farCanopyLength);
-
         validateBlockBalconies(pl, farBalconyLength, farBalconyWidth, farBalconySetback);
 
         totalAreaToDeduct = totalAreaToDeduct.add(floorWiseAreaToDeduct).add(farCommonDeduction);
@@ -459,47 +459,57 @@ public class Far_Assam extends Far {
 
         // Deducting Projection area if greater than 2% of room area
         if(floor.getNumber() > 0) {
-            for (Room regularRoom : floor.getRegularRooms()) {
-                BigDecimal totalProjectionArea = BigDecimal.ZERO;
-                BigDecimal roomArea = regularRoom.getRooms().stream().map(Measurement::getArea).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
-                BigDecimal permittedRoomArea = roomArea.multiply(farPermittedRoomAreaPercentage);
+            if(floor.getUnits() != null && !floor.getUnits().isEmpty())
+                for(FloorUnit unit: floor.getUnits()) {
+                    for (Room regularRoom : unit.getRegularRooms()) {
+                        BigDecimal totalProjectionArea = BigDecimal.ZERO;
+                        BigDecimal roomArea = regularRoom.getRooms().stream().map(Measurement::getArea).min(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
+                        BigDecimal permittedRoomArea = roomArea.multiply(farPermittedRoomAreaPercentage);
 
-                BigDecimal totalProjectionLength = BigDecimal.ZERO;
-                BigDecimal totalProjectionWidth = BigDecimal.ZERO;
+                        BigDecimal totalProjectionLength = BigDecimal.ZERO;
+                        BigDecimal totalProjectionWidth = BigDecimal.ZERO;
 
-                for (Projections projection : regularRoom.getRoomProjections()) {
-                    LOG.info("Projection's Length and width validating and deducting...");
-                    if (projection.getWidth() != null && projection.getLength() != null) {
-                        if (projection.getWidth().compareTo(farProjectionWidth) > 0) {
-                            pl.addError(PROJECTION_WIDTH_INCREASED,
-                                    PROJECTION + projection.getNumber() + WIDTH_STRING + projection.getWidth() + PROJECTION_WIDTH_DESC);
-                        } else if (projection.getWidth().compareTo(farProjectionWidth) <= 0) {
-                            totalProjectionWidth = totalProjectionWidth.add(projection.getWidth());
+                        for (Projections projection : regularRoom.getRoomProjections()) {
+                            LOG.info("Projection's Length and width validating and deducting...");
+                            if (projection.getWidth() != null && projection.getLength() != null) {
+                                if (projection.getWidth().compareTo(farProjectionWidth) > 0) {
+                                    pl.addError(PROJECTION_WIDTH_INCREASED,
+                                            PROJECTION + projection.getNumber() + WIDTH_STRING + projection.getWidth() + PROJECTION_WIDTH_DESC);
+                                } else if (projection.getWidth().compareTo(farProjectionWidth) <= 0) {
+                                    totalProjectionWidth = totalProjectionWidth.add(projection.getWidth());
+                                }
+                                if (projection.getLength().compareTo(farProjectionLength) > 0) {
+                                    pl.addError(PROJECTION_LENGTH_INCREASED,
+                                            PROJECTION + projection.getNumber() + LENGTH + projection.getLength() + PROJECTION_LENGTH_DESC);
+                                } else if (projection.getLength().compareTo(farProjectionLength) <= 0) {
+                                    totalProjectionLength = totalProjectionLength.add(projection.getLength());
+                                }
+                            }
                         }
-                        if (projection.getLength().compareTo(farProjectionLength) > 0) {
-                            pl.addError(PROJECTION_LENGTH_INCREASED,
-                                    PROJECTION + projection.getNumber() + LENGTH + projection.getLength() + PROJECTION_LENGTH_DESC);
-                        } else if (projection.getLength().compareTo(farProjectionLength) <= 0) {
-                            totalProjectionLength = totalProjectionLength.add(projection.getLength());
+
+                        if (totalProjectionLength.compareTo(farProjectionLength) <= 0
+                                && totalProjectionWidth.compareTo(farProjectionWidth) <= 0) {
+                            totalProjectionArea = totalProjectionLength.multiply(totalProjectionWidth);
+                        } else {
+                            pl.addError(PROJECTION_LENGTH_WIDTH_INCREASED, PROJECTION_LENGTH_WIDTH_INCREASED_DESC);
+                        }
+
+                        if (permittedRoomArea.compareTo(totalProjectionArea) < 0) {
+                            totalAreaToDeduct = totalAreaToDeduct.add(permittedRoomArea);
+                            pl.addError(PROJECTION_AREA_INCREASED, PROJECTION_AREA_INCREASED_DESC);
+                        } else if (permittedRoomArea.compareTo(totalProjectionArea) >= 0) {
+                            totalAreaToDeduct = totalAreaToDeduct.add(totalProjectionArea);
                         }
                     }
                 }
-
-                if(totalProjectionLength.compareTo(farProjectionLength) <= 0
-                        && totalProjectionWidth.compareTo(farProjectionWidth) <= 0) {
-                    totalProjectionArea = totalProjectionLength.multiply(totalProjectionWidth);
-                } else {
-                    pl.addError(PROJECTION_LENGTH_WIDTH_INCREASED, PROJECTION_LENGTH_WIDTH_INCREASED_DESC);
-                }
-
-                if(permittedRoomArea.compareTo(totalProjectionArea) < 0){
-                    totalAreaToDeduct = totalAreaToDeduct.add(permittedRoomArea);
-                    pl.addError(PROJECTION_AREA_INCREASED, PROJECTION_AREA_INCREASED_DESC);
-                } else if(permittedRoomArea.compareTo(totalProjectionArea) >= 0){
-                    totalAreaToDeduct = totalAreaToDeduct.add(totalProjectionArea);
-                }
-            }
         }
+
+        // Update occupancy deductions at floor level
+        List<Occupancy> occupancies = floor.getOccupancies();
+        if (!occupancies.isEmpty())
+            for (Occupancy occupancyD : occupancies) {
+                occupancyD.addDeduction(totalAreaToDeduct);
+            }
 
         return totalAreaToDeduct;
     }
@@ -512,66 +522,60 @@ public class Far_Assam extends Far {
         for (Block block : plan.getBlocks()) {
             if (block.getBuilding() != null) {
                 for (Floor floor : block.getBuilding().getFloors()) {
-                    for (Balcony balcony : floor.getBalconies()) {
-                        validateBalconyProjection(plan, balcony, block, floor, farBalconyLength, farBalconyWidth, farBalconySetback);
-                    }
+                        validateBalconyProjection(plan, block, floor, farBalconyLength, farBalconyWidth, farBalconySetback);
                 }
             }
         }
     }
 
-    private void validateBalconyProjection(Plan plan, Balcony balcony, Block block, Floor floor, BigDecimal farBalconyLength, BigDecimal farBalconyWidth, BigDecimal farBalconySetback) {
+    private void validateBalconyProjection(Plan plan, Block block, Floor floor, BigDecimal farBalconyLength, BigDecimal farBalconyWidth, BigDecimal farBalconySetback) {
 
         LOG.info("Validating Balcony Projections...");
         if(floor.getNumber() > 0) {
-            // Check max width 1.5m
-            BigDecimal maxWidth = balcony.getWidths().stream()
-                    .max(BigDecimal::compareTo).orElse(BigDecimal.ZERO);
-            if (maxWidth.compareTo(farBalconyWidth) > 0) {
-                plan.addError(BALCONY_WIDTH_EXCEEDED,
-                        BALCONY + balcony.getNumber() + WIDTH_STRING + maxWidth + BALCONY_WIDTH_DESC);
-            }
-
             // Check min setback 1.5m
             if (!isBalconyWithinMinSetback(floor, farBalconySetback)) {
                 plan.addError(BALCONY_SETBACK_VIOLATION,
-                        BALCONY + balcony.getNumber() + BALCONY_SETBACK_DESC);
+                        BALCONY + EdcrReportConstants.AT_FLOOR + floor.getNumber() + BALCONY_SETBACK_DESC);
             }
 
-            // Check max length 1/4 of building dimension
-            if (!isBalconyLengthCompliant(balcony, block, floor, farBalconyLength)) {
-                plan.addError(BALCONY_LENGTH_EXCEEDED,
-                        BALCONY + balcony.getNumber() + BALCONY_LENGTH_DESC);
+            // Check max length 1/4 of building dimension and max width 1.5m
+            if (!isBalconyWidthCompliant(block, plan, floor, farBalconyLength, farBalconyWidth)) {
+                plan.addError(BALCONY_LENGTH_EXCEEDED, BALCONY_LENGTH_DESC + floor.getNumber());
             }
         }
     }
 
     private boolean isBalconyWithinMinSetback(Floor floor, BigDecimal farBalconySetback) {
-        BigDecimal minBalconyDistanceFromPlotBoundary = floor.getBalconyDistanceFromPlotBoundary().stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO);
+        LOG.info("Checking if Balcony is within Minimum Setback...");
+        for (BigDecimal balconyDistance: floor.getBalconyDistanceFromPlotBoundary()){
+            if(balconyDistance.compareTo(farBalconySetback) <= 0)
+                return false;
+        }
 
-        LOG.info("minBalconyDistanceFromPlotBoundary: " + minBalconyDistanceFromPlotBoundary);
-        return (minBalconyDistanceFromPlotBoundary.compareTo(farBalconySetback) <= 0);
+        return true;
     }
 
-    private boolean isBalconyLengthCompliant(Balcony balcony, Block block, Floor floor, BigDecimal farBalconyLength) {
-        LOG.info("Checking balcony length compliance for balcony " + balcony.getNumber());
-        BigDecimal balconyLength = BigDecimal.ZERO;
+    private boolean isBalconyWidthCompliant(Block block, Plan plan, Floor floor, BigDecimal farBalconyLength, BigDecimal farBalconyWidth) {
+        LOG.info("Checking if Balcony Length is within 1/4th of Building Length...");
         BigDecimal buildingLength = block.getBuilding().getBuildingLength();
         BigDecimal quarterBuildingLength = BigDecimal.ZERO;
-        if(floor.getFloorProjectedBalconies() != null || !floor.getFloorProjectedBalconies().isEmpty())
-            for (BigDecimal projectedBalcony : floor.getFloorProjectedBalconies()) {
-                if (projectedBalcony != null && balconyLength.compareTo(projectedBalcony) < 0)
-                    balconyLength = projectedBalcony;
-            }
 
-        if(buildingLength != null) {
-            quarterBuildingLength = buildingLength.divide(farBalconyLength, 2, RoundingMode.HALF_UP);
+        if(buildingLength == null || buildingLength.compareTo(BigDecimal.ZERO) == 0){
+            plan.addError(BUILDING_LENGTH_NULL, BUILDING_LENGTH_NOT_DEFINED + block.getNumber());
         }
         else{
-            return true;
+            quarterBuildingLength = buildingLength.divide(farBalconyLength, 2, RoundingMode.HALF_UP);
         }
 
-        return balconyLength.compareTo(quarterBuildingLength) <= 0;
+        if(floor.getFloorProjectedBalconies() != null || !floor.getFloorProjectedBalconies().isEmpty())
+            for (Measurement projectedBalcony : floor.getFloorProjectedBalconies()) {
+                if(projectedBalcony != null && projectedBalcony.getWidth().compareTo(farBalconyWidth) > 0)
+                    return false;
+                if (projectedBalcony != null && projectedBalcony.getWidth().compareTo(quarterBuildingLength) > 0)
+                    return false;
+            }
+
+        return true;
     }
 
     /**
@@ -1570,7 +1574,7 @@ public class Far_Assam extends Far {
                 : occupancyType.getType().getName();
 
         if (StringUtils.isNotBlank(expectedResult)) {
-            buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+            buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted, null, null);
         }
 
         return false;
@@ -1618,6 +1622,8 @@ public class Far_Assam extends Far {
         BigDecimal permissibleFar = BigDecimal.ZERO;
         String TDR = pl.getPlanInformation().getTDR();
         String todZone = pl.getPlanInformation().getTodZone();
+        BigDecimal additionalMixedUseFar = BigDecimal.ZERO;
+        BigDecimal additionalEWSLIGFar = BigDecimal.ZERO;
 
         LOG.info("Starting processFar with plotArea: {}, far: {}, roadWidth: {}", plotArea, far, roadWidth);
 
@@ -1648,8 +1654,11 @@ public class Far_Assam extends Far {
 
             // Apply 30% Mixed Use FAR only if it's A_AF (Apartment) and plot area < 1 bigha
             if (isResidentialApartmentEligibleForMixedUse(occupancyType, plotArea, ONE_BIGHA_IN_SQM)) {
-                permissibleFar = applyMixedUseFARIfApplicable(pl, occupancyType, permissibleFar);
-                LOG.info("Mixed-use FAR applied. Updated permissible FAR: {}", permissibleFar);
+                additionalMixedUseFar = permissibleFar.multiply(POINTTHREE);
+                permissibleFar = permissibleFar.add(additionalMixedUseFar);
+                LOG.info("30% mixed-use FAR applied for residential plot < 1 bigha. New Permissible FAR = {}", permissibleFar);
+
+//                permissibleFar = applyMixedUseFARIfApplicable(pl, occupancyType, permissibleFar);
             }
 
 //		    // Apply 25% EWS/LIG FAR increase only for Group Housing
@@ -1660,8 +1669,10 @@ public class Far_Assam extends Far {
 
 //		    // Apply 25% EWS/LIG FAR increase only for Group Housing and validate specific carpet areas for EWS and LIG
             if (isEligibleForEWSLIGFarBonus(pl, occupancyType, plotArea)) {
-                permissibleFar = applyEWSLIGFarRelaxationIfApplicable(permissibleFar);
-                LOG.info("EWS/LIG FAR bonus applied. Updated permissible FAR: {}", permissibleFar);
+                additionalEWSLIGFar = permissibleFar.multiply(POINTTWOFIVE);
+                permissibleFar = permissibleFar.add(additionalEWSLIGFar);
+                LOG.info("Applied 25% EWS/LIG FAR relaxation. New permissible FAR: {}", permissibleFar);
+//                permissibleFar = applyEWSLIGFarRelaxationIfApplicable(permissibleFar);
             }
         }
         else {
@@ -1682,7 +1693,7 @@ public class Far_Assam extends Far {
                 isAccepted);
 
         if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
-            buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+            buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted, additionalMixedUseFar, additionalEWSLIGFar);
         }
     }
 
@@ -1836,7 +1847,7 @@ public class Far_Assam extends Far {
                 far, isAccepted);
 
         if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
-            buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+            buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted, null, null);
         }
     }
 
@@ -1923,9 +1934,8 @@ public class Far_Assam extends Far {
         return false;
     }
 
-
     private void buildResult(Plan pl, String occupancyName, BigDecimal far, String typeOfArea, BigDecimal roadWidth,
-                             String expectedResult, boolean isAccepted) {
+                             String expectedResult, boolean isAccepted, BigDecimal mixedUseFAR, BigDecimal additionalEWSLIGFar) {
         ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
         scrutinyDetail.addColumnHeading(1, RULE_NO);
         scrutinyDetail.addColumnHeading(2, OCCUPANCY);
@@ -1943,7 +1953,10 @@ public class Far_Assam extends Far {
         detail.setOccupancy(occupancyName);
         detail.setAreaType(typeOfArea);
         detail.setRoadWidth(roadWidth.toString());
-        detail.setPermissible(expectedResult);
+        detail.setPermissible(expectedResult
+                + (mixedUseFAR != null && mixedUseFAR.compareTo(BigDecimal.ZERO) > 0 ? (" (Other uses FAR: " + mixedUseFAR) : "")
+                + (additionalEWSLIGFar != null && additionalEWSLIGFar.compareTo(BigDecimal.ZERO) > 0 ? (" (EWS/LIG FAR: " + additionalEWSLIGFar) : "")
+                + ")");
         detail.setProvided(actualResult);
         detail.setStatus(isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 

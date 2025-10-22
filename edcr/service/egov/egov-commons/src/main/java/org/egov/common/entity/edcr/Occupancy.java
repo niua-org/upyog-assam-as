@@ -155,6 +155,12 @@ public class Occupancy extends Measurement {
         this.deduction = deduction;
     }
 
+    // To add deduction values coming from different sources
+    public void addDeduction(BigDecimal deduction) {
+        if(deduction != null)
+            this.deduction = this.deduction.add(deduction);
+    }
+
     public void setBuiltUpArea(BigDecimal builtUpArea) {
         this.builtUpArea = builtUpArea;
     }
