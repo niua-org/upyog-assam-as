@@ -1655,7 +1655,7 @@ public class Far_Assam extends Far {
             // Apply 30% Mixed Use FAR only if it's A_AF (Apartment) and plot area < 1 bigha
             if (isResidentialApartmentEligibleForMixedUse(occupancyType, plotArea, ONE_BIGHA_IN_SQM)) {
                 additionalMixedUseFar = permissibleFar.multiply(POINTTHREE);
-                permissibleFar = permissibleFar.add(additionalMixedUseFar);
+              
                 LOG.info("30% mixed-use FAR applied for residential plot < 1 bigha. New Permissible FAR = {}", permissibleFar);
 
 //                permissibleFar = applyMixedUseFARIfApplicable(pl, occupancyType, permissibleFar);
@@ -1670,7 +1670,7 @@ public class Far_Assam extends Far {
 //		    // Apply 25% EWS/LIG FAR increase only for Group Housing and validate specific carpet areas for EWS and LIG
             if (isEligibleForEWSLIGFarBonus(pl, occupancyType, plotArea)) {
                 additionalEWSLIGFar = permissibleFar.multiply(POINTTWOFIVE);
-                permissibleFar = permissibleFar.add(additionalEWSLIGFar);
+               
                 LOG.info("Applied 25% EWS/LIG FAR relaxation. New permissible FAR: {}", permissibleFar);
 //                permissibleFar = applyEWSLIGFarRelaxationIfApplicable(permissibleFar);
             }

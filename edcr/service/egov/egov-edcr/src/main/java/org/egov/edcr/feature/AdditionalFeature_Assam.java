@@ -803,7 +803,7 @@ public class AdditionalFeature_Assam extends FeatureProcess {
 
             if (!plinthHeights.isEmpty()) {
                 minPlinthHeight = plinthHeights.stream().reduce(BigDecimal::min).get().setScale(2, BigDecimal.ROUND_HALF_UP);
-                if (minPlinthHeight.compareTo(plintHeight) >= 0) {
+                if (minPlinthHeight.compareTo(plintHeight) <= 0) {
                     isAccepted = true;
                 }
             } else {

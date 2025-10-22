@@ -68,6 +68,7 @@ import org.egov.edcr.service.FetchEdcrRulesMdms;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import static org.egov.edcr.constants.DxfFileConstants.A;
 
 import static org.egov.edcr.constants.CommonFeatureConstants.*;
 import static org.egov.edcr.constants.EdcrReportConstants.*;
@@ -137,12 +138,19 @@ public class Coverage_Assam extends FeatureProcess {
 	    OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
 	    LOG.info("Most restrictive occupancy: {}", 
 	        mostRestrictiveOccupancy != null ? mostRestrictiveOccupancy.getType().getName() : "None");
+	    String occupancy = mostRestrictiveOccupancy.getType().getCode();
 
 	    BigDecimal totalCoverageArea = calculateCoverageAreas(pl, plotArea);
 	    LOG.info("Total coverage area calculated: {}", totalCoverageArea);
 
 	    BigDecimal totalCoverage = calculateTotalCoverage(plotArea, totalCoverageArea);
 	    LOG.info("Total coverage (%): {}", totalCoverage);
+
+	    //  Skip processing if occupancy is residential
+	    if (occupancy != null && occupancy.equalsIgnoreCase(A)) {
+	        LOG.info("Occupancy is Residential — skipping coverage processing.");
+	        return pl;
+	    }
 
 	    pl.setCoverage(totalCoverage);
 	    if (pl.getVirtualBuilding() != null) {
