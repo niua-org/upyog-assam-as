@@ -122,6 +122,7 @@ public class BPANotificationService {
 	 *
 	 * @param bpaRequest
 	 *            The bpaRequest consumed on the kafka topic
+	 * @return 
 	 */
 	public void process(BPARequest bpaRequest) {
 		RequestInfo requestInfo = bpaRequest.getRequestInfo();
@@ -134,6 +135,10 @@ public class BPANotificationService {
 		String localizationMessages = util.getLocalizationMessages(bpaRequest.getBPA().getTenantId(),
 				bpaRequest.getRequestInfo());
 		String message = util.getCustomizedMsg(bpaRequest.getRequestInfo(), bpaRequest.getBPA(), localizationMessages);
+
+		if (StringUtils.isBlank(message)) {
+			return;
+		}
 
 		List<SMSRequest> smsRequests = new LinkedList<>();
 		smsRequests.addAll(util.createSMSRequest(bpaRequest, message, mobileNumberToOwner));
