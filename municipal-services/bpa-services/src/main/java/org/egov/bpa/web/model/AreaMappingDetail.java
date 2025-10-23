@@ -19,4 +19,5 @@ public class AreaMappingDetail {
     private String revenueVillage;
     private String mouza;
     private String ward;
+    private String village;
 }
