@@ -9,7 +9,8 @@ import { SVService } from "../services/elements/SV";
 import { WTService } from "../services/elements/WT";
 import { MTService } from "../services/elements/MT";
 import { TPService } from "../services/elements/TP";
-
+import { TLService} from "../services/elements/TL";
+import { OBPSV2Services} from "../services/elements/OBPSV2"
 const fsmApplications = async (tenantId, filters) => {
   return (await FSMService.search(tenantId, { ...filters, limit: 10000 })).fsm;
 };
@@ -31,6 +32,9 @@ const tlApplications = async (tenantId, filters) => {
 
 const svApplications = async (tenantId, filters) => {
   return (await SVService.search({ tenantId, filters })).SVDetail;
+};
+const bpaApplications = async (tenantId, filters) => {
+  return (await OBPSV2Services.search({ tenantId, filters })).bpa;
 };
 
 const chbApplications = async (tenantId, filters) => {
@@ -103,6 +107,11 @@ const refObj = (tenantId, filters) => {
       key: "consumerCode",
       label: "REFERENCE_NO",
     },
+    bpa: {
+      searchFn: () => bpaApplications(tenantId, filters),
+      key: "consumerCode",
+      label: "BPA_APPLICATION_NO",
+    },
     street: {
       searchFn: () => svApplications(null, { ...filters, applicationNo: consumerCodes }),
       key: "applicationNo",
@@ -152,6 +161,9 @@ export const useApplicationsForBusinessServiceSearch = ({ tenantId, businessServ
   }
   if (window.location.href.includes("pet-services")) {
     _key = "ptr"
+  }
+  if (window.location.href.includes("BPA.PLANNING_PERMIT_FEE")) {
+    _key = "bpa"
   } 
   if (window.location.href.includes("sv-services")) {
     _key = "street"

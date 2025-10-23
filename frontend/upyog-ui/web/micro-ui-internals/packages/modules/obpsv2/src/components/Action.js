@@ -110,6 +110,10 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           const redirectingUrl = `${window.location.origin}/upyog-ui/citizen/obpsv2/editApplication/${applicationNo}`;
           redirectToPage(redirectingUrl);
           break;
+        case "PAY":
+          let redirectURL = `${window.location.origin}/upyog-ui/citizen/payment/my-bills/BPA.PLANNING_PERMIT_FEE/${applicationNo}`;
+          redirectToPage(redirectURL);
+          break;
           case "APPLY_FOR_SCRUTINY":
             let scrutinyurl=window.location.href;
             let scrutinyRedirectingUrl= scrutinyurl.split("/inbox")[0] + `/apply/home?applicationNo=${applicationNo}`;

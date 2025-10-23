@@ -343,14 +343,13 @@ public class CommonFeatureConstants {
     public static final String PROJECTION_AREA_INCREASED = "PROJECTION_AREA_INCREASED";
     public static final String PROJECTION_AREA_INCREASED_DESC = "total projections Area is greater than the permitted area.";
 
-
-    public static final String BALCONY_WIDTH_EXCEEDED = "BALCONY_WIDTH_EXCEEDED";
+    public static final String BUILDING_LENGTH_NULL = "BUILDING_LENGTH_NULL";
     public static final String BALCONY_SETBACK_VIOLATION = "BALCONY_SETBACK_VIOLATION";
     public static final String BALCONY_LENGTH_EXCEEDED = "BALCONY_LENGTH_EXCEEDED";
     public static final String BALCONY = "Balcony ";
-    public static final String BALCONY_WIDTH_DESC = "m exceeds 1.5m limit";
+    public static final String BUILDING_LENGTH_NOT_DEFINED = "Building length is not defined for block ";
     public static final String BALCONY_SETBACK_DESC = " within 1.5m setback from plot boundary";
-    public static final String BALCONY_LENGTH_DESC = " length exceeds 1/4 of building dimension";
+    public static final String BALCONY_LENGTH_DESC = "Balcony Length/Width exceeded the permissible limit for floor ";
 
     public static final String WC_BATH_STORE = "WC, bath & store";
     public static final String KITCHEN_DINING = "Kitchen & Dining";

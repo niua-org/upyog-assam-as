@@ -10,7 +10,7 @@ const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
   const Inbox = Digit.ComponentRegistryService.getComponent("OBPSV2Inbox");
   const RTPInbox = Digit.ComponentRegistryService.getComponent("RTPInbox");
-  const BPAApplicationDetails = Digit?.ComponentRegistryService?.getComponent("BPAApplicationDetails");
+  const BPAApplicationDetails = Digit?.ComponentRegistryService?.getComponent("BPAEmployeeDetails");
 
   return (
     <Fragment>

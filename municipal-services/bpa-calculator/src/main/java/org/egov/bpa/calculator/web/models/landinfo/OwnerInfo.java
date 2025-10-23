@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import org.egov.bpa.calculator.web.models.Address;
 import org.egov.bpa.calculator.web.models.AuditDetails;
 import org.springframework.validation.annotation.Validated;
 
@@ -49,7 +50,7 @@ public class OwnerInfo {
 	private String fatherOrHusbandName = null;
 
 	@JsonProperty("correspondenceAddress")
-	private String correspondenceAddress = null;
+	private Address correspondenceAddress = null;
 
 	@JsonProperty("isPrimaryOwner")
 	private Boolean isPrimaryOwner = null;
@@ -107,9 +108,9 @@ public class OwnerInfo {
     @JsonProperty("aadhaarNumber")
     private String aadhaarNumber;
 
-    @Size(max=300)
+//    @Size(max=300)
     @JsonProperty("permanentAddress")
-    private String permanentAddress;
+    private Address permanentAddress;
 
     @Size(max=300)
     @JsonProperty("permanentCity")
@@ -318,7 +319,7 @@ public class OwnerInfo {
 		this.fatherOrHusbandName = fatherOrHusbandName;
 	}
 
-	public OwnerInfo correspondenceAddress(String correspondenceAddress) {
+	public OwnerInfo correspondenceAddress(Address correspondenceAddress) {
 		this.correspondenceAddress = correspondenceAddress;
 		return this;
 	}
@@ -330,12 +331,12 @@ public class OwnerInfo {
 	 **/
 	@ApiModelProperty(value = "The current address of the owner for correspondence.")
 
-	@Size(max = 1024)
-	public String getCorrespondenceAddress() {
+//	@Size(max = 1024)
+	public Address getCorrespondenceAddress() {
 		return correspondenceAddress;
 	}
 
-	public void setCorrespondenceAddress(String correspondenceAddress) {
+	public void setCorrespondenceAddress(Address correspondenceAddress) {
 		this.correspondenceAddress = correspondenceAddress;
 	}
 
@@ -682,7 +683,7 @@ public class OwnerInfo {
 		this.aadhaarNumber = aadhaarNumber;
 	}
 
-	public OwnerInfo permanentAddress(String permanentAddress) {
+	public OwnerInfo permanentAddress(Address permanentAddress) {
 		this.permanentAddress = permanentAddress;
 		return this;
 	}
@@ -695,11 +696,11 @@ public class OwnerInfo {
 	 **/
 	@ApiModelProperty(value = "Json object to capture any extra information which is not accommodated of model")
 
-	public String getPermanentAddress() {
+	public Address getPermanentAddress() {
 		return permanentAddress;
 	}
 
-	public void setPermanentAddress(String permanentAddress) {
+	public void setPermanentAddress(Address permanentAddress) {
 		this.permanentAddress = permanentAddress;
 	}
 

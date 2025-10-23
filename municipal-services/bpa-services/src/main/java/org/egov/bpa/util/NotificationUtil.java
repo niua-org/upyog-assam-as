@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.constraints.Size;
+
 import org.apache.commons.lang3.StringUtils;
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.producer.Producer;
@@ -114,7 +116,7 @@ public class NotificationUtil {
 //		Map<String, String> edcrResponse = edcrService.getEDCRDetails(requestInfo, bpa);
 //		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
 //		String serviceType = edcrResponse.get(BPAConstants.SERVICETYPE);
-		String messageCode = getMessageCode(bpa.getStatus());
+		String messageCode = getMessageCode(bpa.getStatus(), bpa.getWorkflow().getAction());
 		String message = getMessageTemplate(messageCode, localizationMessage);
 
 		if (!StringUtils.isEmpty(message)) {
@@ -520,9 +522,10 @@ public class NotificationUtil {
 	public List<EmailRequest> createEmailRequest(BPARequest bpaRequest,String message, Map<String, String> mobileNumberToEmailId, Map<String, String> mobileNumberToOwner) {
 
 		List<EmailRequest> emailRequest = new LinkedList<>();
+		String salutation = "Dear {1}, ";
 
 		for (Map.Entry<String, String> entryset : mobileNumberToEmailId.entrySet()) {
-			String customizedMsg = message.replace("{1}",mobileNumberToOwner.get(entryset.getKey()));
+			String customizedMsg = salutation.replace("{1}",mobileNumberToOwner.get(entryset.getKey()))+message;
 			customizedMsg = customizedMsg.replace("{MOBILE_NUMBER}",entryset.getKey());
 			if (customizedMsg.contains("{RECEIPT_LINK}")) {
 				String linkToReplace = getApplicationDetailsPageLink(bpaRequest, entryset.getKey());
@@ -634,33 +637,33 @@ public class NotificationUtil {
 	/**
      * Maps the incoming status string to the internal message code constant.
      * @param status The string representing the current workflow status (e.g., "SCRUTINY_PASS").
+	 * @param action 
      * @return The corresponding constant from BPAConstants, or a default error code.
      */
-    private String getMessageCode(String status) {
+    private String getMessageCode(String status, String action) {
     	
-        String messageCode;
-        switch (status) {
-            case "APPLY":
-                messageCode = BPAConstants.REGISTRATION_LOGIN;
-                break;
+		String messageCode;
+		StringBuilder status_action = new StringBuilder();
+		status_action.append(status.toUpperCase()).append("_").append(action.toUpperCase());
 
-            case "PENDING_RTP_APPROVAL":
+        switch (status_action.toString()) {
+            case "INITIATED_APPLY":
                 messageCode = BPAConstants.APPLICATION_SUBMISSION;
                 break;
 
-            case "EDIT_APPLICATION":
+            case "PENDING_RTP_APPROVAL_ACCEPT":
                 messageCode = BPAConstants.RTP_ACCEPTANCE;
                 break;
 
-            case "GIS_VALIDATION":
+            case "PENDING_FOR_SCRUTINY_APPLY_FOR_SCRUTINY":
                 messageCode = BPAConstants.DOCUMENT_UPLOAD_BY_RTP;
                 break;
 
-            case "SCRUTINY_PASS":
+            case "CITIZEN_APPROVAL_APPROVE":
                 messageCode = BPAConstants.SCRUTINY_PASS;
                 break;
 
-            case "SCRUTINY_FAIL":
+            case "CITIZEN_APPROVAL_SEND_BACK_TO_RTP":
                 messageCode = BPAConstants.SCRUTINY_FAIL;
                 break;
 
@@ -708,11 +711,11 @@ public class NotificationUtil {
                 messageCode = BPAConstants.BUILDING_PAYMENT_LINK;
                 break;
 
-            case "APPLICATION_COMPLETED":
+            case "PENDING_DD_AD_DEVELOPMENT_AUTHORITY":
                 messageCode = BPAConstants.POST_PAYMENT_BUILDING_PERMIT;
                 break;
 
-            case "":
+            case "APPLICATION_COMPLETED":
                 messageCode = BPAConstants.COMPLETION;
                 break;
 

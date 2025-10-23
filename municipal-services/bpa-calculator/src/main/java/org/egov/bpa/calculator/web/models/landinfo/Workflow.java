@@ -91,8 +91,8 @@ public class Workflow   {
    * @return comments
   **/
   @ApiModelProperty(value = "Unique Identifier scrutinized number")
-  
-  @Size(min=1,max=64)   public String getComments() {
+
+  public String getComments() {
     return comments;
   }
 

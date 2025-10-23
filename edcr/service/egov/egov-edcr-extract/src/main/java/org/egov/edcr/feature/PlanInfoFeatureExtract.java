@@ -118,26 +118,25 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 
 				}
 
-		}
+            List<DXFDimension> buildingDimensions = Util.getDimensionsByLayer(pl.getDoc(), s);
+            if (buildingDimensions != null && !buildingDimensions.isEmpty())
+                for (Object dxfEntity : buildingDimensions) {
+                    DXFDimension dimension = (DXFDimension) dxfEntity;
+                    List<BigDecimal> values = new ArrayList<>();
+                    Util.extractDimensionValue(pl, values, dimension, s);
 
-        List<DXFDimension> buildingDimensions = Util.getDimensionsByLayer(pl.getDoc(), buildingFootPrint);
-        if (buildingDimensions != null && !buildingDimensions.isEmpty())
-            for (Object dxfEntity : buildingDimensions) {
-                DXFDimension dimension = (DXFDimension) dxfEntity;
-                List<BigDecimal> values = new ArrayList<>();
-                Util.extractDimensionValue(pl, values, dimension, buildingFootPrint);
-
-                if (pl.getBlocks().isEmpty())
-                    for (Block bl : pl.getBlocks()) {
-                        if (!values.isEmpty()) {
-                            for (BigDecimal length : values) {
-                                if (length.compareTo(bl.getBuilding().getBuildingLength()) < 0 || (bl.getBuilding().getBuildingLength().compareTo(BigDecimal.ZERO) == 0)) {
-                                    bl.getBuilding().setBuildingLength(length);
+                    if (!pl.getBlocks().isEmpty())
+                        for (Block bl : pl.getBlocks()) {
+                            if (!values.isEmpty()) {
+                                for (BigDecimal length : values) {
+//                                    if (length.compareTo(bl.getBuilding().getBuildingLength()) < 0 || (bl.getBuilding().getBuildingLength().compareTo(BigDecimal.ZERO) == 0)) {
+                                        bl.getBuilding().setBuildingLength(length);
+//                                    }
                                 }
                             }
                         }
-                    }
-            }
+                }
+		}
 
 		if (pl.getBlocks().isEmpty())
 			pl.addError(layerNames.getLayerName("LAYER_NAME_BUILDING_FOOT_PRINT"),

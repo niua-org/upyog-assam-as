@@ -90,11 +90,14 @@ import {
     const bpaId = get(data, "bpa[0].applicationNo", []);
     const [loader, setLoader] = useState(false);
     let bpa_details = (bpaApplicationDetail && bpaApplicationDetail.length > 0 && bpaApplicationDetail[0]) || {};
+    // const [submitReport, setSubmitReport] = useState({
+    //   bpa_details: bpa_details,
+    // });
     const application = bpa_details;
     const [isUploading, setIsUploading] = useState(false);
     const [file, setFile] = useState(null);
     sessionStorage.setItem("bpa", JSON.stringify(application));
-  
+    //const SiteReport = Digit.ComponentRegistryService.getComponent("siteReport")
     const mutation = Digit.Hooks.obpsv2.useBPACreateUpdateApi(tenantId, "update");
   
     const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
@@ -106,6 +109,11 @@ import {
       },
       { enabled: acknowledgementIds ? true : false }
     );
+    // useEffect(() => {
+    //   if (bpa_details && Object.keys(bpa_details).length > 0) {
+    //     setSubmitReport({ bpa_details });
+    //   }
+    // }, [bpa_details]);
     useEffect(() => {
       (async () => {
         setActionError(null);
@@ -312,6 +320,10 @@ import {
         setPopup(true);
         setDisplayMenu(false);
         break;
+      case "PAY":
+        let redirectURL = `${window.location.origin}/upyog-ui/citizen/payment/my-bills/BPA.PLANNING_PERMIT_FEE/${bpaId}`;
+        redirectToPage(redirectURL);
+        break;
       default:
         setDisplayMenu(false);
     }
@@ -353,6 +365,9 @@ import {
             )} */}
           </div>
           <Card>
+          {/* {window.location.href.includes("/employee/") && bpa_details?.status==="PENDING_GMDA_ENGINEER" && (
+            <SiteReport submitReport={submitReport} onChange={setSubmitReport}/>
+          )} */}
             <StatusTable>
               <Row className="border-none" label={t("BPA_APPLICATION_NO")} text={bpa_details?.applicationNo || t("CS_NA")} />
             </StatusTable>

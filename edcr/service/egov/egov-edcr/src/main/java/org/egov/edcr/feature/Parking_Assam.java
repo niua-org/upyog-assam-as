@@ -1397,10 +1397,10 @@ public class Parking_Assam extends Parking {
 
 		return new ParkingRuleResult(noOfParking != null ? noOfParking : 0d,
 				permissibleCar != null ? permissibleCar : 0d,
-				permissibleCarOpen != null ? permissibleCarOpen : 0d,
-				permissibleCarBasement != null ? permissibleCarBasement : 0d,
+				permissibleCarOpen != null ? permissibleCarOpen : 0d,				
 				permissibleCarStilt != null ? permissibleCarStilt : 0d,
 				permissibleTwoWheeler != null ? permissibleTwoWheeler : 0d,
+			    permissibleCarBasement != null ? permissibleCarBasement : 0d,
 				permissibleVisitor != null ? permissibleVisitor : 0d, perAreaCar != null ? perAreaCar : 0d,
 				perAreaTwoWheeler != null ? perAreaTwoWheeler : 0d, perAreaVisitor != null ? perAreaVisitor : 0d,
 				perAreaHotelWithoutBanquetCar != null ? perAreaHotelWithoutBanquetCar : 0d,

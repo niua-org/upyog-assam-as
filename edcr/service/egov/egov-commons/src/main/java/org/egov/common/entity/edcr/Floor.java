@@ -154,7 +154,7 @@ public class Floor extends Measurement {
 
     private List<Measurement> overHangs;
 
-    private List<BigDecimal> floorProjectedBalconies;
+    private List<Measurement> floorProjectedBalconies;
 
     private List<Measurement> constructedAreas = new ArrayList<>();
 
@@ -811,11 +811,11 @@ public class Floor extends Measurement {
         this.corridor = corridor;
     }
 
-    public List<BigDecimal> getFloorProjectedBalconies() {
+    public List<Measurement> getFloorProjectedBalconies() {
         return floorProjectedBalconies;
     }
 
-    public void setFloorProjectedBalconies(List<BigDecimal> floorProjectedBalconies) {
+    public void setFloorProjectedBalconies(List<Measurement> floorProjectedBalconies) {
         this.floorProjectedBalconies = floorProjectedBalconies;
     }
 

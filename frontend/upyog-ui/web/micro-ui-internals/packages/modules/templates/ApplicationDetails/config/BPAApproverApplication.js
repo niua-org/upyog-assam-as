@@ -23,7 +23,48 @@ export const configBPAApproverApplication = ({
   if(action?.action == "REVOCATE" || action?.action == "REJECT") {
     isCommentRequired = true;
   }
-  
+
+  if (window.location.href.includes("obpsv2")) {
+  return {
+      label: {
+        heading: `WF_${action?.action}_APPLICATION`,
+        submit: `WF_${businessService}_${action?.action}`,
+        cancel: "BPA_CITIZEN_CANCEL_BUTTON",
+      },
+      form: [
+        {
+          body: [
+            {
+              label: t("WF_COMMON_COMMENTS"),
+              type: "textarea",
+              isMandatory: isCommentRequired,
+              populators: {
+                name: "comments",
+              },
+            },
+            {
+              label: t("WF_APPROVAL_UPLOAD_HEAD"),
+              populators: (
+                <UploadFile
+                  id="workflow-doc"
+                  onUpload={selectFile}
+                  onDelete={() => setUploadedFile(null)}
+                  message={
+                    uploadedFile
+                      ? `1 ${t("ES_PT_ACTION_FILEUPLOADED")}`
+                      : t("CS_ACTION_NO_FILEUPLOADED")
+                  }
+                  accept=".pdf, .png, .jpeg, .jpg, image/*"
+                  iserror={error}
+                />
+              ),
+            },
+          ],
+        },
+      ],
+    };
+  }
+
   return {
     label: {
       heading: `WF_${action?.action}_APPLICATION`,

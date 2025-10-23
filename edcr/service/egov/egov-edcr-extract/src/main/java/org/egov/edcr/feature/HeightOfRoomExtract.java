@@ -8,19 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.egov.common.entity.edcr.Block;
-import org.egov.common.entity.edcr.Door;
-import org.egov.common.entity.edcr.Floor;
-import org.egov.common.entity.edcr.FloorUnit;
-import org.egov.common.entity.edcr.Measurement;
-import org.egov.common.entity.edcr.Occupancy;
-import org.egov.common.entity.edcr.Room;
-import org.egov.common.entity.edcr.RoomHeight;
-import org.egov.common.entity.edcr.TypicalFloor;
-import org.egov.common.entity.edcr.Window;
+import org.egov.common.entity.edcr.*;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.OccupancyDetail;
@@ -83,6 +75,8 @@ public class HeightOfRoomExtract extends FeatureExtract {
                             extractWindows(pl, block, floor, unit, layerNames);
                             
                             extractWindowsForUnitLevel(pl, block, floor, unit, layerNames);
+
+                            extractProjectionForUnitLevel(pl, block, floor, unit);
 
                         }
                     }
@@ -1057,6 +1051,50 @@ public class HeightOfRoomExtract extends FeatureExtract {
 
         LOG.debug("Completed window extraction for Unit Level - Block [{}], Floor [{}], Unit [{}]", 
                   block.getNumber(), floor.getNumber(), unit.getUnitNumber());
+    }
+
+    /**
+     * Extracts projection details for a specific floor unit.
+     * Processes CAD layers to identify and extract building projections
+     * (balconies, bay windows, etc.) at the unit level.
+     *
+     * @param pl the PlanDetail containing the CAD drawing and plan metadata
+     * @param block the Block to which the floor unit belongs
+     * @param floor the Floor containing the unit
+     * @param floorUnit the FloorUnit for which projections are being extracted
+     */
+    private void extractProjectionForUnitLevel(PlanDetail pl, Block block, Floor floor, FloorUnit floorUnit) {
+        LOG.debug("Starting projection extraction for Unit Level - Block [{}], Floor [{}], Unit [{}]",
+                block.getNumber(), floor.getNumber(), floorUnit.getUnitNumber());
+
+        if (!floorUnit.getRegularRooms().isEmpty()) {
+            for (Room room : floorUnit.getRegularRooms()) {
+                String projectionLayer = String.format(layerNames.getLayerName("LAYER_NAME_UNIT_PROJECTION"), block.getNumber(), floor.getNumber(), floorUnit.getUnitNumber(), room.getNumber(), "+\\d");
+                List<String> projectionRoomLayers = Util.getLayerNamesLike(pl.getDoc(), projectionLayer);
+
+                List<Projections> projection = new ArrayList<>();
+                for (String projectionlayer : projectionRoomLayers) {
+                    List<DXFLWPolyline> polylines = Util.getPolyLinesByLayer(pl.getDoc(), projectionlayer);
+                    List<BigDecimal> projectionLength = Util.getListOfDimensionByColourCode(pl, projectionlayer,
+                            DxfFileConstants.INDEX_COLOR_ONE);
+                    List<Projections> projectionMeasurements = polylines.stream()
+                            .map(pline -> {
+                                Projections proj = new Projections();
+                                MeasurementDetail measurement = new MeasurementDetail(pline, true);
+                                proj.setArea(measurement.getArea());
+                                proj.setWidth(measurement.getWidth());
+                                proj.setHeight(measurement.getHeight());
+                                proj.setLength(projectionLength.get(0));  // Assuming first value is the required length, because there will always be only one length for projection
+                                return proj;
+                            }).collect(Collectors.toList());
+
+                    projection.addAll(projectionMeasurements);
+
+                }
+                room.setRoomProjections(projection);
+            }
+        }
+
     }
 
 
