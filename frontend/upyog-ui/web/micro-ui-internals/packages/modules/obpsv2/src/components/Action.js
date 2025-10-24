@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  Modal,
-  TextArea,
-  UploadFile,
-  Heading,
-  CloseBtn,
-  CardLabel,
-  CardLabelDesc,
-  SubmitBar,
-  Toast,
-} from "@upyog/digit-ui-react-components";
+import { Card, Modal, TextArea, UploadFile, Heading, CloseBtn, CardLabel, CardLabelDesc, SubmitBar, Toast } from "@upyog/digit-ui-react-components";
 import { OBPSV2Services } from "../../../../libraries/src/services/elements/OBPSV2";
 import { useTranslation } from "react-i18next";
 
@@ -25,10 +14,10 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
   const [popup, setPopup] = useState(false);
   const [error, setError] = useState(null);
   const [file, setFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false); 
+  const [isUploading, setIsUploading] = useState(false);
 
   const [assignResponse, setAssignResponse] = useState(null);
-  const tenantId =  Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   useEffect(() => {
     if (toast || error) {
       const timer = setTimeout(() => {
@@ -77,10 +66,10 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
     if (selectedAction) {
       switch (selectedAction) {
         case "NEWRTP":
-            setPopup(true);
+          setPopup(true);
           break;
         case "REJECT":
-            setPopup(true);
+          setPopup(true);
           break;
         case "APPROVE":
           setPopup(true);
@@ -104,8 +93,8 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           setPopup(true);
           break;
         case "VALIDATE_GIS":
-            setPopup(true);
-            break;
+          setPopup(true);
+          break;
         case "EDIT":
           const redirectingUrl = `${window.location.origin}/upyog-ui/citizen/obpsv2/editApplication/${applicationNo}`;
           redirectToPage(redirectingUrl);
@@ -114,11 +103,11 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           let redirectURL = `${window.location.origin}/upyog-ui/citizen/payment/my-bills/BPA.PLANNING_PERMIT_FEE/${applicationNo}`;
           redirectToPage(redirectURL);
           break;
-          case "APPLY_FOR_SCRUTINY":
-            let scrutinyurl=window.location.href;
-            let scrutinyRedirectingUrl= scrutinyurl.split("/inbox")[0] + `/apply/home?applicationNo=${applicationNo}`;
-            redirectToPage(scrutinyRedirectingUrl);
-            break;
+        case "APPLY_FOR_SCRUTINY":
+          let scrutinyurl = window.location.href;
+          let scrutinyRedirectingUrl = scrutinyurl.split("/inbox")[0] + `/apply/home?applicationNo=${applicationNo}`;
+          redirectToPage(scrutinyRedirectingUrl);
+          break;
         default:
           setPopup(false);
       }
@@ -147,9 +136,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
     );
   };
 
-  const LoadingSpinner = () => (
-    <div className="loading-spinner" />
-  );
+  const LoadingSpinner = () => <div className="loading-spinner" />;
   const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;
   };
@@ -158,7 +145,6 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
     setToast(false);
   }
   function close(state) {
-    
     switch (state) {
       case popup:
         setPopup(!popup);
@@ -172,112 +158,122 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
   }
 
   async function onAssign(selectedAction, comments) {
-
-        const bpaDetails = await OBPSV2Services.search({
-            tenantId,
-            filters: { applicationNo },
-            config: { staleTime: Infinity, cacheTime: Infinity }
-        });
-        if(bpaDetails?.bpa?.[0]){
-            bpaDetails.bpa[0].workflow = {
-            ...(bpaDetails.bpa[0].workflow || {}),
-            action: selectedAction ,
-            assignes: null,
-            comments: comments,
-            varificationDocuments: uploadedFile ? [
+    const bpaDetails = await OBPSV2Services.search({
+      tenantId,
+      filters: { applicationNo },
+      config: { staleTime: Infinity, cacheTime: Infinity },
+    });
+    if (bpaDetails?.bpa?.[0]) {
+      bpaDetails.bpa[0].workflow = {
+        ...(bpaDetails.bpa[0].workflow || {}),
+        action: selectedAction,
+        assignes: null,
+        comments: comments,
+        varificationDocuments: uploadedFile
+          ? [
               {
                 documentType: file.type,
                 fileName: file?.name,
                 fileStoreId: uploadedFile,
               },
-            ] : null
-            };
-            try {
-                const response = await OBPSV2Services.update({BPA : bpaDetails?.bpa[0]}, tenantId);
-                setAssignResponse(response);
-                
-                // Close popup first
-                setPopup(false);
-                
-                // Then show toast after a small delay
-                setTimeout(() => {
-                    if (setToastMessage && typeof setToastMessage === 'function') {
-                        setToastMessage(t(`CS_ACTION_UPDATE_${selectedAction}_TEXT`));
-                    }
-                    if (typeof parentSetShowToast === 'function') {
-                        parentSetShowToast(true);
-                    }
-                    // Reset selected action to hide modal
-                    if (setSelectedAction && typeof setSelectedAction === 'function') {
-                        setSelectedAction(null);
-                    }
-                }, 100);
-                
-                // Refresh data if refetch function is available
-                if (typeof refetch === 'function') {
-                    await refetch();
-                }
-                
-                return response;
-            }
-            catch(error){
-                setError(error?.response?.data?.Errors?.[0]?.message || 'An error occurred');
-                setPopup(false); // Close popup on error
-                console.error('Update error:', error);
-            }
-        }
-      
+            ]
+          : null,
+      };
+      try {
+        const response = await OBPSV2Services.update({ BPA: bpaDetails?.bpa[0] }, tenantId);
+        setAssignResponse(response);
 
-      if (closeModal && typeof closeModal === 'function') {
-        closeModal();
+        // Close popup first
+        setPopup(false);
+
+        // Then show toast after a small delay
+        setTimeout(() => {
+          if (setToastMessage && typeof setToastMessage === "function") {
+            setToastMessage(t(`CS_ACTION_UPDATE_${selectedAction}_TEXT`));
+          }
+          if (typeof parentSetShowToast === "function") {
+            parentSetShowToast(true);
+          }
+          // Reset selected action to hide modal
+          if (setSelectedAction && typeof setSelectedAction === "function") {
+            setSelectedAction(null);
+          }
+        }, 100);
+
+        // Refresh data if refetch function is available
+        if (typeof refetch === "function") {
+          await refetch();
+        }
+
+        return response;
+      } catch (error) {
+        setError(error?.response?.data?.Errors?.[0]?.message || "An error occurred");
+        setPopup(false); // Close popup on error
+        console.error("Update error:", error);
       }
+    }
+
+    if (closeModal && typeof closeModal === "function") {
+      closeModal();
+    }
   }
 
   return (
     <React.Fragment>
       {selectedAction && popup && (
         <Modal
-            headerBarMain={<Heading label={t(`CS_ACTION_${selectedAction}`)} />}
-            headerBarEnd={<CloseBtn onClick={() => {
-            setPopup(false);
-            if (setSelectedAction && typeof setSelectedAction === 'function') {
-              setSelectedAction(null);
-            }
-          }} />}
+          headerBarMain={<Heading label={t(`CS_ACTION_${selectedAction}`)} />}
+          headerBarEnd={
+            <CloseBtn
+              onClick={() => {
+                setPopup(false);
+                if (setSelectedAction && typeof setSelectedAction === "function") {
+                  setSelectedAction(null);
+                }
+              }}
+            />
+          }
           actionCancelLabel={t("CS_COMMON_CANCEL")}
           actionCancelOnSubmit={() => {
             setPopup(false);
-            if (setSelectedAction && typeof setSelectedAction === 'function') {
+            if (setSelectedAction && typeof setSelectedAction === "function") {
               setSelectedAction(null);
             }
           }}
           actionSaveLabel={t("CS_COMMON_SUBMIT")}
           popupStyles={{ zIndex: 1001 }}
           actionSaveOnSubmit={() => {
-        if(selectedAction==="APPROVE"||selectedAction==="ACCEPT"||selectedAction==="SEND"||selectedAction==="REJECT"||selectedAction==="SEND_BACK_TO_RTP"||selectedAction==="VALIDATE_GIS" || selectedAction==="SUBMIT_REPORT" ||  selectedAction==="RECOMMEND_TO_CEO" || selectedAction==="SEND_BACK_TO_GMDA")
-           onAssign(selectedAction, comments);
-      if(selectedAction==="NEWRTP"&&!oldRTPName)
-        setActionError(t("CS_OLD_RTP_NAME_MANDATORY"))
-      if(selectedAction==="NEWRTP" &&!newRTPName)
-        setActionError(t("CS_NEW_RTP_NAME_MANDATORY"))
-      }}
+            if (
+              selectedAction === "APPROVE" ||
+              selectedAction === "ACCEPT" ||
+              selectedAction === "SEND" ||
+              selectedAction === "REJECT" ||
+              selectedAction === "SEND_BACK_TO_RTP" ||
+              selectedAction === "VALIDATE_GIS" ||
+              selectedAction === "SUBMIT_REPORT" ||
+              selectedAction === "RECOMMEND_TO_CEO" ||
+              selectedAction === "SEND_BACK_TO_GMDA"
+            )
+              onAssign(selectedAction, comments);
+            if (selectedAction === "NEWRTP" && !oldRTPName) setActionError(t("CS_OLD_RTP_NAME_MANDATORY"));
+            if (selectedAction === "NEWRTP" && !newRTPName) setActionError(t("CS_NEW_RTP_NAME_MANDATORY"));
+          }}
           error={error}
-          
         >
           <Card>
             <React.Fragment>
-              {(selectedAction === "APPROVE" || selectedAction === "ACCEPT" || selectedAction === "SEND" || selectedAction === "REJECT" || selectedAction==="SEND_BACK_TO_RTP" || selectedAction==="SUBMIT_REPORT" ||  selectedAction==="RECOMMEND_TO_CEO" || selectedAction==="SEND_BACK_TO_GMDA") && (
+              {(selectedAction === "APPROVE" ||
+                selectedAction === "ACCEPT" ||
+                selectedAction === "SEND" ||
+                selectedAction === "REJECT" ||
+                selectedAction === "SEND_BACK_TO_RTP" ||
+                selectedAction === "SUBMIT_REPORT" ||
+                selectedAction === "RECOMMEND_TO_CEO" ||
+                selectedAction === "SEND_BACK_TO_GMDA") && (
                 <div>
                   <CardLabel>{t("COMMENTS")}</CardLabel>
-                  <TextArea
-                    name="reason"
-                    onChange={addComment}
-                    value={comments}
-                    maxLength={500}
-                  />
-                  <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>
-                    {comments.length}/500
-                  </div>
+                  <TextArea name="reason" onChange={addComment} value={comments} maxLength={500} />
+                  <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>{comments.length}/500</div>
                   <CardLabel>{t("CS_ACTION_SUPPORTING_DOCUMENTS")}</CardLabel>
                   <CardLabelDesc>{t("CS_UPLOAD_RESTRICTIONS")}</CardLabelDesc>
                   <UploadFile
@@ -285,52 +281,50 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
                     accept=".jpg"
                     onUpload={selectFile}
                     onDelete={() => setUploadedFile(null)}
-                    message={isUploading ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <LoadingSpinner />
-                        <span>Uploading...</span>
-                      </div>
-                      ) : uploadedFile
-                        ? `1 ${t("CS_ACTION_FILEUPLOADED")}`
-                        : t("CS_ACTION_NO_FILEUPLOADED")
+                    message={
+                      isUploading ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <LoadingSpinner />
+                          <span>Uploading...</span>
+                        </div>
+                      ) : uploadedFile ? (
+                        `1 ${t("CS_ACTION_FILEUPLOADED")}`
+                      ) : (
+                        t("CS_ACTION_NO_FILEUPLOADED")
+                      )
                     }
                   />
                 </div>
               )}
               {selectedAction === "VALIDATE_GIS" && (
-        <div>
-         <CardLabel>{t("CS_ACTION_UPLOAD_LOCATION_FILE")}</CardLabel>
-          <UploadFile
-            id="pgr-doc"
-            accept=".jpg"
-            onUpload={selectFile}
-            onDelete={() => setUploadedFile(null)}
-            message={isUploading ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <LoadingSpinner />
-                        <span>Uploading...</span>
-                      </div>
-                      ) : 
-              uploadedFile
-                ? `1 ${t("CS_ACTION_FILEUPLOADED")}`
-                : t("CS_ACTION_NO_FILEUPLOADED")
-            }
-          />
-        </div>
-      )}
+                <div>
+                  <CardLabel>{t("CS_ACTION_UPLOAD_LOCATION_FILE")}</CardLabel>
+                  <UploadFile
+                    id="pgr-doc"
+                    accept=".pdf, .jpg, .jpeg, .kml"
+                    onUpload={selectFile}
+                    onDelete={() => setUploadedFile(null)}
+                    message={
+                      isUploading ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <LoadingSpinner />
+                          <span>Uploading...</span>
+                        </div>
+                      ) : uploadedFile ? (
+                        `1 ${t("CS_ACTION_FILEUPLOADED")}`
+                      ) : (
+                        t("CS_ACTION_NO_FILEUPLOADED")
+                      )
+                    }
+                  />
+                </div>
+              )}
 
               {selectedAction === "REJECT" && (
                 <div>
                   <CardLabel>{t("COMMENTS")}</CardLabel>
-                  <TextArea
-                    name="reason"
-                    onChange={addComment}
-                    value={comments}
-                    maxLength={500}
-                  />
-                  <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>
-                    {comments.length}/500
-                  </div>
+                  <TextArea name="reason" onChange={addComment} value={comments} maxLength={500} />
+                  <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>{comments.length}/500</div>
                 </div>
               )}
             </React.Fragment>
@@ -338,16 +332,15 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
         </Modal>
       )}
 
-      {(toast||error) && (
-          <Toast
-            error={error ? error : null}
-            
-            label={error ? error : t(`CS_ACTION_UPDATE_${selectedAction}_TEXT`)}
-            onClose={() => {
-              setToast(false);
-            }}
-          />
-        )}
+      {(toast || error) && (
+        <Toast
+          error={error ? error : null}
+          label={error ? error : t(`CS_ACTION_UPDATE_${selectedAction}_TEXT`)}
+          onClose={() => {
+            setToast(false);
+          }}
+        />
+      )}
     </React.Fragment>
   );
 };
