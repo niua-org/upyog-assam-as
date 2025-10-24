@@ -269,9 +269,6 @@ public class Far_Assam extends Far {
         BigDecimal farCanopyLength = mdmsRule.getFarCanopyLength();
         BigDecimal farCanopyWidth = mdmsRule.getFarCanopyWidth();
         BigDecimal farCanopyHeight = mdmsRule.getFarCanopyHeight();
-        BigDecimal farBalconyWidth = mdmsRule.getFarBalconyWidth();
-        BigDecimal farBalconySetback = mdmsRule.getFarBalconySetback();
-        BigDecimal farBalconyLength = mdmsRule.getFarBalconyLength();
         BigDecimal farEntranceLobbyArea = mdmsRule.getFarEntranceLobbyArea();
         BigDecimal farMaxBalconyExemption = mdmsRule.getFarMaxBalconyExemption();
         BigDecimal farCorridorArea = mdmsRule.getFarCorridorArea();
@@ -289,7 +286,6 @@ public class Far_Assam extends Far {
         }
 
         BigDecimal farCommonDeduction = farCommonDeductions(pl, farGuardRoomArea, farCareTakerRoomArea, farCanopyHeight, farCanopyWidth, farCanopyLength);
-        validateBlockBalconies(pl, farBalconyLength, farBalconyWidth, farBalconySetback);
 
         totalAreaToDeduct = totalAreaToDeduct.add(floorWiseAreaToDeduct).add(farCommonDeduction);
 
@@ -515,70 +511,6 @@ public class Far_Assam extends Far {
         pl.getVirtualBuilding().subtractFloorArea(totalAreaToDeduct);
 
         return totalAreaToDeduct;
-    }
-
-    /**
-     * Validates balcony projections
-     */
-
-    private void validateBlockBalconies(Plan plan, BigDecimal farBalconyLength, BigDecimal farBalconyWidth, BigDecimal farBalconySetback) {
-        for (Block block : plan.getBlocks()) {
-            if (block.getBuilding() != null) {
-                for (Floor floor : block.getBuilding().getFloors()) {
-                        validateBalconyProjection(plan, block, floor, farBalconyLength, farBalconyWidth, farBalconySetback);
-                }
-            }
-        }
-    }
-
-    private void validateBalconyProjection(Plan plan, Block block, Floor floor, BigDecimal farBalconyLength, BigDecimal farBalconyWidth, BigDecimal farBalconySetback) {
-
-        LOG.info("Validating Balcony Projections...");
-        if(floor.getNumber() > 0) {
-            // Check min setback 1.5m
-            if (!isBalconyWithinMinSetback(floor, farBalconySetback)) {
-                plan.addError(BALCONY_SETBACK_VIOLATION,
-                        BALCONY + EdcrReportConstants.AT_FLOOR + floor.getNumber() + BALCONY_SETBACK_DESC);
-            }
-
-            // Check max length 1/4 of building dimension and max width 1.5m
-            if (!isBalconyWidthCompliant(block, plan, floor, farBalconyLength, farBalconyWidth)) {
-                plan.addError(BALCONY_LENGTH_EXCEEDED, BALCONY_LENGTH_DESC + floor.getNumber());
-            }
-        }
-    }
-
-    private boolean isBalconyWithinMinSetback(Floor floor, BigDecimal farBalconySetback) {
-        LOG.info("Checking if Balcony is within Minimum Setback...");
-        for (BigDecimal balconyDistance: floor.getBalconyDistanceFromPlotBoundary()){
-            if(balconyDistance.compareTo(farBalconySetback) <= 0)
-                return false;
-        }
-
-        return true;
-    }
-
-    private boolean isBalconyWidthCompliant(Block block, Plan plan, Floor floor, BigDecimal farBalconyLength, BigDecimal farBalconyWidth) {
-        LOG.info("Checking if Balcony Length is within 1/4th of Building Length...");
-        BigDecimal buildingLength = block.getBuilding().getBuildingLength();
-        BigDecimal quarterBuildingLength = BigDecimal.ZERO;
-
-        if(buildingLength == null || buildingLength.compareTo(BigDecimal.ZERO) == 0){
-            plan.addError(BUILDING_LENGTH_NULL, BUILDING_LENGTH_NOT_DEFINED + block.getNumber());
-        }
-        else{
-            quarterBuildingLength = buildingLength.divide(farBalconyLength, 2, RoundingMode.HALF_UP);
-        }
-
-        if(floor.getFloorProjectedBalconies() != null || !floor.getFloorProjectedBalconies().isEmpty())
-            for (Measurement projectedBalcony : floor.getFloorProjectedBalconies()) {
-                if(projectedBalcony != null && projectedBalcony.getWidth().compareTo(farBalconyWidth) > 0)
-                    return false;
-                if (projectedBalcony != null && projectedBalcony.getWidth().compareTo(quarterBuildingLength) > 0)
-                    return false;
-            }
-
-        return true;
     }
 
     /**

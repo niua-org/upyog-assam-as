@@ -12,7 +12,9 @@ public class EdcrReportConstants {
 
     // Balcony
     public static final String RULE45_IV = "4.4.4 (iii)";
+    public static final String RULE32_2_1 = "32.2 (i)";
     public static final String WIDTH_BALCONY_DESCRIPTION = "Maximum width for balcony %s";
+    public static final String MIN_SETBACK_PLOT_BOUNDARY = "Minimum setback from plot boundary";
 
     // Additional Feature
     public static final String RULE_4_4_4 = "4.4.4 (ii)";
