@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
  * Main Spring Boot application class for GIS service.
  * 
  * <p>This service handles GIS operations including KML file processing,
- * WFS queries, and Kafka-based logging using the standard eGov tracer pattern.</p>
+ * GISTCP API integration, WFS queries, and Kafka-based logging.</p>
  */
 @Import({ TracerConfiguration.class })
 @SpringBootApplication

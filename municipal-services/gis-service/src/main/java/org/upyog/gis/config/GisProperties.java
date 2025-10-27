@@ -6,14 +6,22 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * Configuration properties for GIS service like WMS/WFS URLs and Filestore settings.
+ * Configuration properties for GIS service including GISTCP API, WFS, and Filestore settings.
  */
 @Data
 @Component
 @ConfigurationProperties(prefix = "gis")
 public class GisProperties {
 
-    private String wmsUrl;
+    // GISTCP API configuration
+    private String gistcpApiUrl;
+    private String districtAttribute = "district";
+    private String landuseAttribute = "landuse";
+    private String wardAttribute = "ward_no";
+    private String villageAttribute = "village";
+    private String masterplanAttribute = "masterplan";
+    
+    // WFS configuration (kept for future use)
     private String wfsUrl;
     private String wfsTypeName = "topp:states";
     private String wfsGeometryColumn = "the_geom";

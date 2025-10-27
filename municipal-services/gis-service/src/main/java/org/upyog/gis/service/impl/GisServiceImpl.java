@@ -2,25 +2,24 @@ package org.upyog.gis.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.upyog.gis.client.FilestoreClient;
+import org.upyog.gis.client.GistcpClient;
 import org.upyog.gis.config.GisProperties;
 import org.upyog.gis.model.GisLog;
 import org.upyog.gis.model.GISResponse;
 import org.upyog.gis.model.GISRequestWrapper;
 import org.upyog.gis.model.GISRequest;
-import org.upyog.gis.model.WfsFeature;
-import org.upyog.gis.model.WfsResponse;
+import org.upyog.gis.model.GistcpResponse;
 import org.egov.common.contract.response.ResponseInfo;
 import org.upyog.gis.repository.GisLogRepository;
 import org.upyog.gis.service.GisService;
 import org.upyog.gis.util.KmlParser;
-import org.upyog.gis.wfs.WfsClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.WKTWriter;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,9 +28,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Service implementation for GIS operations such as finding zone information from polygon files,
- * interacting with WFS, and logging GIS-related activities.
- * Handles KML uploads, WFS queries, and response formatting.
+ * Service implementation for GIS operations including KML parsing, GISTCP API integration, and logging.
+ * Handles KML uploads, centroid extraction, GISTCP queries, and response formatting.
  */
 @Slf4j
 @Service
@@ -43,7 +41,7 @@ public class GisServiceImpl implements GisService {
     private static final String STATUS_SUCCESS = "SUCCESS";
     private static final String STATUS_FAILURE = "FAILURE";
 
-    private final WfsClient wfsClient;
+    private final GistcpClient gistcpClient;
     private final GisLogRepository logRepository;
     private final GisProperties gisProperties;
     private final ObjectMapper objectMapper;
@@ -51,12 +49,12 @@ public class GisServiceImpl implements GisService {
 
     /**
      * Finds zone information from a geometry file (KML/XML), uploads it to filestore, parses the geometry,
-     * queries WFS for district/zone, logs the operation, and returns a structured response.
+     * extracts centroid coordinates, queries GISTCP API, logs the operation, and returns a structured response.
      * Supports polygon, line, and point geometries.
      *
      * @param file the uploaded geometry file (KML/XML)
      * @param gisRequestWrapper the GIS request wrapper containing RequestInfo and GIS request data
-     * @return structured response containing district, zone, and WFS data
+     * @return structured response containing district, zone, landuse, and GISTCP data
      * @throws Exception if any processing step fails
      */
     @Override
@@ -77,39 +75,46 @@ public class GisServiceImpl implements GisService {
             Geometry geometry = parseKmlFile(file);
             log.info("Successfully parsed {} geometry with {} vertices", geometry.getGeometryType(), geometry.getCoordinates().length);
 
-            // Convert geometry to WKT format for WFS query
-            WKTWriter wktWriter = new WKTWriter();
-            String geometryWkt = wktWriter.write(geometry);
-            log.info("Converted geometry to WKT: {}", geometryWkt);
+            // Extract centroid coordinates from geometry
+            Point centroid = geometry.getCentroid();
+            double latitude = centroid.getY();
+            double longitude = centroid.getX();
+            log.info("Extracted centroid coordinates: latitude={}, longitude={}", latitude, longitude);
 
-            // Query WFS for district/zone information
-            log.info("Querying WFS for district/zone information");
-            WfsResponse wfsResponse = wfsClient.queryFeatures(geometryWkt);
-            log.info("WFS query completed successfully");
+            // Query GISTCP API for district/zone/landuse information
+            log.info("Querying GISTCP API for location information");
+            GistcpResponse gistcpResponse = gistcpClient.queryLocation(latitude, longitude, gisRequest.getTenantId());
+            log.info("GISTCP query completed successfully");
 
-            // Extract district and zone from WFS response
-            String district = extractDistrict(wfsResponse);
-            String zone = extractZone(wfsResponse);
-            log.info("Extracted district: {}, zone: {}", district, zone);
+            // Extract information from GISTCP response
+            String district = gistcpResponse.getDistrict();
+            String ward = gistcpResponse.getWardNo();
+            String landuse = gistcpResponse.getLanduse();
+            String village = gistcpResponse.getVillage();
+            log.info("Extracted district: {}, ward: {}, landuse: {}, village: {}", district, ward, landuse, village);
 
             // Create details for logging
             ObjectNode detailsJson = objectMapper.createObjectNode();
             detailsJson.put("fileName", file.getOriginalFilename());
             detailsJson.put("fileSize", file.getSize());
             detailsJson.put("district", district);
-            detailsJson.put("zone", zone);
+            detailsJson.put("ward", ward);
+            detailsJson.put("landuse", landuse);
+            detailsJson.put("village", village);
             detailsJson.put("geometryType", geometry.getGeometryType());
             detailsJson.put("geometryVertices", geometry.getCoordinates().length);
+            detailsJson.put("centroidLatitude", latitude);
+            detailsJson.put("centroidLongitude", longitude);
 
             // Send success log to Kafka via persister
             GisLog successLog = createGisLog(gisRequest.getApplicationNo(), gisRequest.getRtpiId(), fileStoreId,
-                    gisRequest.getTenantId(), STATUS_SUCCESS, "SUCCESS", "Successfully processed geometry and found district/zone", detailsJson,
+                    gisRequest.getTenantId(), STATUS_SUCCESS, "SUCCESS", "Successfully processed geometry and retrieved location data from GISTCP", detailsJson,
                     gisRequestWrapper.getRequestInfo() != null && gisRequestWrapper.getRequestInfo().getUserInfo() != null
                         ? gisRequestWrapper.getRequestInfo().getUserInfo().getUuid() : "system");
             logRepository.save(successLog);
 
-            // Clean WFS response for return
-            JsonNode cleanWfsResponse = cleanWfsResponse(wfsResponse);
+            // Convert GISTCP response to JSON for the GIS response
+            ObjectNode gistcpJson = objectMapper.valueToTree(gistcpResponse);
 
             // Create ResponseInfo
             ResponseInfo responseInfo = ResponseInfo.builder()
@@ -125,13 +130,13 @@ public class GisServiceImpl implements GisService {
             return GISResponse.builder()
                     .responseInfo(responseInfo)
                     .district(district)
-                    .zone(zone)
-                    .wfsResponse(cleanWfsResponse)
+                    .zone(ward) // Using ward as zone
+                    .wfsResponse(gistcpJson) // GISTCP response replaces WFS response
                     .fileStoreId(fileStoreId)
                     .build();
 
         } catch (Exception e) {
-            log.error("Error finding zone from polygon file: {}", e.getMessage(), e);
+            log.error("Error finding zone from geometry file: {}", e.getMessage(), e);
 
             // Send failure log to Kafka via persister
             ObjectNode errorDetails = objectMapper.createObjectNode();
@@ -147,7 +152,7 @@ public class GisServiceImpl implements GisService {
                         ? gisRequestWrapper.getRequestInfo().getUserInfo().getUuid() : "system");
             logRepository.save(failureLog);
 
-            throw new RuntimeException("Failed to process polygon file: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to process geometry file: " + e.getMessage(), e);
         }
     }
 
@@ -182,107 +187,8 @@ public class GisServiceImpl implements GisService {
     }
 
     /**
-     * Extracts district information from WFS response using typed objects.
-     * 
-     * <p>This method provides type-safe access to WFS feature properties
-     * and extracts the district information from the first matching feature.</p>
-     *
-     * @param wfsResponse the WFS response containing features with properties
-     * @return district name or "Unknown" if not found
-     */
-    private String extractDistrict(WfsResponse wfsResponse) {
-        if (wfsResponse != null && wfsResponse.getFeatures() != null && !wfsResponse.getFeatures().isEmpty()) {
-            WfsFeature firstFeature = wfsResponse.getFeatures().get(0);
-            if (firstFeature.getProperties() != null) {
-                Object districtValue = firstFeature.getProperties().get(gisProperties.getWfsDistrictAttribute());
-                if (districtValue != null) {
-                    return districtValue.toString();
-                }
-            }
-        }
-        return "Unknown";
-    }
-
-    /**
-     * Extracts zone information from WFS response using typed objects.
-     * 
-     * <p>This method provides type-safe access to WFS feature properties
-     * and extracts the zone information from the first matching feature.</p>
-     *
-     * @param wfsResponse the WFS response containing features with properties
-     * @return zone name or "Unknown" if not found
-     */
-    private String extractZone(WfsResponse wfsResponse) {
-        if (wfsResponse != null && wfsResponse.getFeatures() != null && !wfsResponse.getFeatures().isEmpty()) {
-            WfsFeature firstFeature = wfsResponse.getFeatures().get(0);
-            if (firstFeature.getProperties() != null) {
-                Object zoneValue = firstFeature.getProperties().get(gisProperties.getWfsZoneAttribute());
-                if (zoneValue != null) {
-                    return zoneValue.toString();
-                }
-            }
-        }
-        return "Unknown";
-    }
-
-    /**
-     * Cleans WFS response for client consumption using typed objects.
-     * 
-     * <p>This method creates a simplified JSON response containing only essential
-     * information from the WFS features, excluding demographic data and geometry objects.</p>
-     *
-     * @param wfsResponse the typed WFS response containing features
-     * @return cleaned JsonNode with only essential properties
-     */
-    private JsonNode cleanWfsResponse(WfsResponse wfsResponse) {
-        if (wfsResponse == null) {
-            return objectMapper.createObjectNode();
-        }
-        
-        // Create a simplified response with only essential information
-        ObjectNode cleanResponse = objectMapper.createObjectNode();
-        cleanResponse.put("type", "FeatureCollection");
-
-        if (wfsResponse.getFeatures() != null && !wfsResponse.getFeatures().isEmpty()) {
-        ArrayNode cleanFeatures = objectMapper.createArrayNode();
-
-            for (WfsFeature feature : wfsResponse.getFeatures()) {
-                ObjectNode cleanFeature = objectMapper.createObjectNode();
-                cleanFeature.put("type", "Feature");
-
-                // Only include essential properties, exclude demographic and geometric data
-                if (feature.getProperties() != null) {
-                ObjectNode cleanProperties = objectMapper.createObjectNode();
-                    
-                    // Only include state-related fields as per requirements
-                    if (feature.getProperties().containsKey("STATE_NAME")) {
-                        cleanProperties.put("STATE_NAME", feature.getProperties().get("STATE_NAME").toString());
-                    }
-                    if (feature.getProperties().containsKey("STATE_ABBR")) {
-                        cleanProperties.put("STATE_ABBR", feature.getProperties().get("STATE_ABBR").toString());
-                    }
-                    if (feature.getProperties().containsKey("STATE_FIPS")) {
-                        cleanProperties.put("STATE_FIPS", feature.getProperties().get("STATE_FIPS").toString());
-                }
-
-                cleanFeature.set("properties", cleanProperties);
-                }
-                
-                // Exclude geometry object entirely as requested
-                // cleanFeature.set("geometry", null);
-
-                cleanFeatures.add(cleanFeature);
-            }
-
-            cleanResponse.set("features", cleanFeatures);
-        }
-
-        return cleanResponse;
-    }
-
-    /**
      * Creates a GIS log entry with a unique ID for Kafka publishing.
-     * 
+     *
      * @param applicationNo the application number
      * @param rtpiId the RTPI ID
      * @param fileStoreId the file store ID
