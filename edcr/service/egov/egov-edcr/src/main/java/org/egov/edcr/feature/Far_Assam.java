@@ -76,7 +76,7 @@ import org.apache.logging.log4j.Logger;
 import org.egov.common.constants.MdmsFeatureConstants;
 import org.egov.common.entity.edcr.*;
 import org.egov.common.entity.edcr.Balcony;
-import org.egov.edcr.constants.EdcrReportConstants;
+import org.egov.common.entity.edcr.FarExemption;
 import org.egov.edcr.service.MDMSCacheManager;
 import org.egov.edcr.service.ProcessPrintHelper;
 import org.egov.edcr.utility.DcrConstants;
@@ -253,6 +253,11 @@ public class Far_Assam extends Far {
         BigDecimal parkingAndServiceFloorArea = BigDecimal.ZERO;
         BigDecimal totalAreaToDeduct = BigDecimal.ZERO;
 
+        // Initialize FarExemptions if not already initialized
+        if (pl.getFarExemptions() == null) {
+            pl.setFarExemptions(new FarExemption());
+        }
+
         List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.FAR.getValue(), false);
         LOG.info("Rules in Far Assam file :: " + rules);
         Optional<FarRequirement> matchedRule = rules.stream().filter(FarRequirement.class::isInstance)
@@ -329,6 +334,7 @@ public class Far_Assam extends Far {
             }
             LOG.info("Guard Room Area to Deduct: {}", guardRoomArea);
             totalAreaToDeduct = totalAreaToDeduct.add(guardRoomArea);
+            pl.getFarExemptions().addGuardRoom(guardRoomArea);
         }
 
         // care taker room (maximum 8 sq. m)
@@ -345,6 +351,7 @@ public class Far_Assam extends Far {
             }
             LOG.info("Care Taker Room Area to Deduct: {}", careTakerRoomArea);
             totalAreaToDeduct = totalAreaToDeduct.add(careTakerRoomArea);
+            pl.getFarExemptions().addCareTakerRoom(careTakerRoomArea);
         }
 
         if(pl.getBlocks()!=null){
@@ -381,6 +388,7 @@ public class Far_Assam extends Far {
                 if(basementCar.getArea().compareTo(BigDecimal.valueOf(0)) > 0){
                     totalAreaToDeduct = totalAreaToDeduct.add(basementCar.getArea());
                     parkingAndServiceFloorArea = parkingAndServiceFloorArea.add(basementCar.getArea());
+                    pl.getFarExemptions().addBasementParking(basementCar.getArea());
                     LOG.info("Subtracting Basement Parking Area from TotalBuildUpArea: " + basementCar.getArea());
                 }
             }
@@ -393,6 +401,7 @@ public class Far_Assam extends Far {
                     for (Measurement serviceFloor : floorUnit.getServiceRooms()) {
                         totalAreaToDeduct = totalAreaToDeduct.add(serviceFloor.getArea());
                         parkingAndServiceFloorArea = parkingAndServiceFloorArea.add(serviceFloor.getArea());
+                        pl.getFarExemptions().addBasementServiceFloor(serviceFloor.getArea());
                         LOG.info("Subtracting Basement ServiceRoom Area from totalBuildUpArea: " + serviceFloor.getArea());
                     }
         }
@@ -404,8 +413,10 @@ public class Far_Assam extends Far {
                     LOG.info("Subtracting EntranceLobby Area from totalBuildUpArea: " + lobby.getArea());
                     if(lobby.getArea().compareTo(farEntranceLobbyArea) <= 0){
                         totalAreaToDeduct = totalAreaToDeduct.add(lobby.getArea());
+                        pl.getFarExemptions().addEntranceLobby(lobby.getArea());
                     }else if(lobby.getArea().compareTo(farEntranceLobbyArea) > 0){
                         totalAreaToDeduct = totalAreaToDeduct.add(farEntranceLobbyArea);
+                        pl.getFarExemptions().addEntranceLobby(farEntranceLobbyArea);
                     }
                 }
             }
@@ -424,6 +435,7 @@ public class Far_Assam extends Far {
                 BigDecimal balconyExemption = balconyArea.compareTo(maxBalconyExemption) <= 0 ?
                         balconyArea : maxBalconyExemption;
                 totalAreaToDeduct = totalAreaToDeduct.add(balconyExemption);
+                pl.getFarExemptions().addBalcony(balconyExemption);
                 LOG.info("Subtracting Balcony Area from TotalBuildUpArea: {} (max 4% exemption applied)", balconyExemption);
             }
         }
@@ -450,6 +462,7 @@ public class Far_Assam extends Far {
             corridorExemption = corridorArea.compareTo(farCorridorArea) <= 0 ?
                     corridorArea : farCorridorArea;
             totalAreaToDeduct = totalAreaToDeduct.add(corridorExemption);
+            pl.getFarExemptions().addCorridor(corridorExemption);
             LOG.info("Subtracting Corridor Area from TotalBuildUpArea: {} (max 36 sq.m per floor)", corridorExemption);
         }
 
@@ -492,9 +505,11 @@ public class Far_Assam extends Far {
 
                         if (permittedRoomArea.compareTo(totalProjectionArea) < 0) {
                             totalAreaToDeduct = totalAreaToDeduct.add(permittedRoomArea);
-                            pl.addError(PROJECTION_AREA_INCREASED, PROJECTION_AREA_INCREASED_DESC);
+                            pl.getFarExemptions().addProjection(permittedRoomArea);
+//                            pl.addError(PROJECTION_AREA_INCREASED, PROJECTION_AREA_INCREASED_DESC);
                         } else if (permittedRoomArea.compareTo(totalProjectionArea) >= 0) {
                             totalAreaToDeduct = totalAreaToDeduct.add(totalProjectionArea);
+                            pl.getFarExemptions().addProjection(totalProjectionArea);
                         }
                     }
                 }
@@ -1603,7 +1618,7 @@ public class Far_Assam extends Far {
 //		    // Apply 25% EWS/LIG FAR increase only for Group Housing and validate specific carpet areas for EWS and LIG
             if (isEligibleForEWSLIGFarBonus(pl, occupancyType, plotArea)) {
                 additionalEWSLIGFar = permissibleFar.multiply(POINTTWOFIVE);
-               
+                permissibleFar = permissibleFar.add(additionalEWSLIGFar);
                 LOG.info("Applied 25% EWS/LIG FAR relaxation. New permissible FAR: {}", permissibleFar);
 //                permissibleFar = applyEWSLIGFarRelaxationIfApplicable(permissibleFar);
             }

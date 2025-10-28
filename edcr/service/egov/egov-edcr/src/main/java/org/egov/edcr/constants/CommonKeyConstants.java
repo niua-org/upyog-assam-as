@@ -118,4 +118,6 @@ public class CommonKeyConstants {
     public static final String COMMON_WATER_CLOSETS = "Common_Water Closets";
     public static final String WATER_CLOSETS_VENTILATION = "Water Closets Ventilation";
 
+    public static final String FAR_EXEMPTIONS = "Far Exemptions";
+
 }

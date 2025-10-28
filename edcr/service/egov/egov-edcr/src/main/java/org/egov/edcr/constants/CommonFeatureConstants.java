@@ -357,4 +357,13 @@ public class CommonFeatureConstants {
     public static final String MIN_WIDTH_SHAFT = " - Minimum width of shaft";
     public static final String MIN_AREA_STR = "Minimum area ";
 
+    public static final String DEDUCTED_BASEMENT_PARKING = "Deducted Basement Parking Area";
+    public static final String DEDUCTED_BASEMENT_SERVICE_FLOOR = "Deducted Basement Service Floor Area";
+    public static final String DEDUCTED_ENTRANCE_LOBBY = "Deducted Entrance Lobby Area";
+    public static final String DEDUCTED_BALCONY = "Deducted Balcony Area";
+    public static final String DEDUCTED_CORRIDOR = "Deducted Corridor Area";
+    public static final String DEDUCTED_TOTAL_PROJECTIONS = "Deducted Projections Total Area";
+    public static final String DEDUCTED_GUARDROOM = "Deducted Total Guardroom Area";
+    public static final String DEDUCTED_CARETAKERROOM = "Deducted Total CareTakerRoom Area";
+
 }
