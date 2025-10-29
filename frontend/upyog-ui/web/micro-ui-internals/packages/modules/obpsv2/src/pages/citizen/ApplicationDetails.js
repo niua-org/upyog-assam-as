@@ -20,7 +20,7 @@ import {
     CardLabelDesc,
     UploadFile
   } from "@upyog/digit-ui-react-components";
-  import React, { useEffect, useState } from "react";
+  import React, { useEffect, useState , Fragment} from "react";
   import { useTranslation } from "react-i18next";
   import { useParams } from "react-router-dom";
   import get from "lodash/get";
