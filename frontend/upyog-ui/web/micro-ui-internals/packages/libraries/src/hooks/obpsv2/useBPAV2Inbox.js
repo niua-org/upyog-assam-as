@@ -12,7 +12,7 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
         processSearchCriteria: {
           assignee : assignee === "ASSIGNED_TO_ME"?user?.info?.uuid:"",
           moduleName: "bpa-services", 
-          businessService: ["BPA_GMDA_GMC"],
+          businessService: ["BPA_DA_MB","BPA_DA_GP"],
           ...(applicationStatus?.length > 0 ? {status: applicationStatus} : {}),
         },
         moduleSearchCriteria: {

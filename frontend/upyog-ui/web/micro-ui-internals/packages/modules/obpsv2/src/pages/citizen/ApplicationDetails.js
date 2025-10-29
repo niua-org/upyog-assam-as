@@ -104,7 +104,7 @@ import {
     const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
       {
         tenantId: tenantId,
-        businessService: "BPA_GMDA_GMC",
+        businessService: ["BPA_DA_MB","BPA_DA_GP"],
         consumerCodes: acknowledgementIds,
         isEmployee: false,
       },
