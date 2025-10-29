@@ -6,8 +6,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum BuildingPermitAuthorityEnum {
-    MB("MUNICIPAL_BOARD"),
-    GP("GAON_PANCHAYAT"),
+
+    // Existing entries
+    MUNICIPAL_BOARD("MUNICIPAL_BOARD"),
+    GRAM_PANCHAYAT("GRAM_PANCHAYAT"),
     GMC("GUWAHATI_MUNICIPAL_CORPORATION"),
     NGMB("NORTH_GUWAHATI_MUNICIPAL_BOARD");
 

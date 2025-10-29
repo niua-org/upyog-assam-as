@@ -68,7 +68,7 @@ import { PGRAIService } from "./services/elements/PGRAI";
 import { PGRAIUpdate } from "./services/elements/PGRAIUpdate";
 
 import { OBPSV2Services } from "./services/elements/OBPSV2";
-import { EPramaanService } from "./services/elements/EPramaanService";
+// import { EPramaanService } from "./services/elements/EPramaanService";
 
 
 const setupLibraries = (Library, props) => {
@@ -145,7 +145,7 @@ const initLibraries = () => {
   setupLibraries("TPService", TPService);
   setupLibraries("PGRAIService", PGRAIService);
   setupLibraries("PGRAIUpdate", PGRAIUpdate);
-  setupLibraries("EPramaanService",EPramaanService)
+  // setupLibraries("EPramaanService",EPramaanService)
 
   return new Promise((resolve) => {
     initI18n(resolve);

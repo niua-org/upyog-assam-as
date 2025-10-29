@@ -388,14 +388,14 @@ import {
                 text={t(areaMapping?.planningPermitAuthority) || t("CS_NA")}
               />
               <Row
-                label={t("CONCERNED_AUTHORITY")}
-                text={t(areaMapping?.concernedAuthority) || t("CS_NA")}
-              />
-              <Row
                 label={t("BP_AUTHORITY")}
                 text={t(areaMapping?.buildingPermitAuthority) || t("CS_NA")}
               />
-              {areaMapping?.concernedAuthority === "ULB" && (
+              <Row
+                label={t(areaMapping?.buildingPermitAuthority + " NAME")}
+                text={t(areaMapping?.concernedAuthority) || t("CS_NA")}
+              />
+              {areaMapping?.buildingPermitAuthority === "MUNICIPAL_BOARD" && (
                 <>
                   <Row
                     label={t("WARD")}
@@ -407,7 +407,7 @@ import {
                   />
                 </>
               )}
-              {areaMapping?.concernedAuthority === "GRAM_PANCHAYAT" && (
+              {areaMapping?.buildingPermitAuthority === "GRAM_PANCHAYAT" && (
                 <Row
                   label={t("VILLAGE_NAME")}
                   text={t(areaMapping?.villageName) || t("CS_NA")}

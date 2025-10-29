@@ -226,21 +226,21 @@ export const OBPSV2Services = {
           value: bpa?.areaMapping?.planningPermitAuthority || "NA",
         },
         {
-          title: "CONCERNED_AUTHORITY",
-          value: bpa?.areaMapping?.concernedAuthority || "NA",
-        },
-        {
           title: "BP_AUTHORITY",
           value: bpa?.areaMapping?.buildingPermitAuthority || "NA",
         },
-        ...(bpa?.areaMapping?.concernedAuthority === "ULB" ? [
+        {
+          title: bpa?.areaMapping?.buildingPermitAuthority + " NAME" || "CONCERNED_AUTHORITY",
+          value: bpa?.areaMapping?.concernedAuthority || "NA",
+        },
+        ...(bpa?.areaMapping?.buildingPermitAuthority === "MUNICIPAL_BOARD" ? [
           { title: "WARD", value: bpa?.areaMapping?.ward || "NA" },
           {
             title: "REVENUE_VILLAGE",
             value: bpa?.areaMapping?.revenueVillage || "NA",
           },
         ] : []),
-        ...(bpa?.areaMapping?.concernedAuthority === "GRAM_PANCHAYAT" ? [
+        ...(bpa?.areaMapping?.buildingPermitAuthority === "GRAM_PANCHAYAT" ? [
           {
             title: "VILLAGE_NAME",
             value: bpa?.areaMapping?.villageName || "NA",

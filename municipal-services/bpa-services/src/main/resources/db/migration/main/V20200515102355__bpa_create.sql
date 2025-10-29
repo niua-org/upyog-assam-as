@@ -220,11 +220,11 @@ CREATE TABLE IF NOT EXISTS ug_bpa_rtp_detail_audit (
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'planning_permit_authority_enum') THEN
-        CREATE TYPE planning_permit_authority_enum AS ENUM ('DA', 'TACP', 'GMDA', 'CMA');
+        CREATE TYPE planning_permit_authority_enum AS ENUM ('DEVELOPMENT_AUTHORITY', 'TACP', 'GMDA', 'CMA');
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'building_permit_authority_enum') THEN
-        CREATE TYPE building_permit_authority_enum AS ENUM ('MB', 'GP', 'GMC', 'NGMB');
+        CREATE TYPE building_permit_authority_enum AS ENUM ('MUNICIPAL_BOARD', 'GRAM_PANCHAYAT', 'GMC', 'NGMB');
     END IF;
 END$$;
 
@@ -234,6 +234,8 @@ CREATE TABLE IF NOT EXISTS ug_bpa_area_mapping_detail (
     buildingplan_id            VARCHAR(64) NOT NULL,
     district                  VARCHAR(128),
     planning_area             VARCHAR(128),
+    concerned_authority       VARCHAR(128),
+    village_name              VARCHAR(128),
     planning_permit_authority planning_permit_authority_enum NOT NULL,
     building_permit_authority building_permit_authority_enum NOT NULL,
     revenue_village           VARCHAR(128),
@@ -256,6 +258,8 @@ CREATE TABLE IF NOT EXISTS ug_bpa_area_mapping_detail_audit (
     buildingplan_id           VARCHAR(64) NOT NULL,
     district                  VARCHAR(128),
     planning_area             VARCHAR(128),
+    concerned_authority       VARCHAR(128),
+    village_name              VARCHAR(128),
     planning_permit_authority planning_permit_authority_enum NOT NULL,
     building_permit_authority building_permit_authority_enum NOT NULL,
     revenue_village           VARCHAR(128),

@@ -247,14 +247,14 @@ const handleDownloadPdf = async (formType) => {
             text={checkForNA(t(areaMapping?.ppAuthority?.code))}
           />
           <Row
-            label={t("CONCERNED_AUTHORITY")}
-            text={checkForNA(t(areaMapping?.concernedAuthority?.code))}
-          />
-          <Row
             label={t("BP_AUTHORITY")}
             text={checkForNA(t(areaMapping?.bpAuthority?.code))}
           />
-          {areaMapping?.concernedAuthority?.code === "ULB" && (
+          <Row
+            label={t(areaMapping?.bpAuthority?.code + " NAME")}
+            text={checkForNA(t(areaMapping?.concernedAuthority?.code))}
+          />
+          {areaMapping?.bpAuthority?.code === "MUNICIPAL_BOARD" && (
             <>
               <Row
                 label={t("WARD")}
@@ -266,7 +266,7 @@ const handleDownloadPdf = async (formType) => {
               />
             </>
           )}
-          {areaMapping?.concernedAuthority?.code === "GRAM_PANCHAYAT" && (
+          {areaMapping?.bpAuthority?.code === "GRAM_PANCHAYAT" && (
             <Row
               label={t("VILLAGE_NAME")}
               text={checkForNA(t(areaMapping?.villageName?.code))}

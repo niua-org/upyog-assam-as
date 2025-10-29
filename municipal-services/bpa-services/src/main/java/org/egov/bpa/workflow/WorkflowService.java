@@ -44,11 +44,12 @@ public class WorkflowService {
 	// Map from AuthorityKey -> Business Service String
 	private static final Map<AuthorityKey, String> BUSINESS_SERVICE_MAP = new HashMap<>();
 	static {
-		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.DA, BuildingPermitAuthorityEnum.MB), "BPA_DA_MB");
-		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.TACP, BuildingPermitAuthorityEnum.GP), "BPA_TACP_GP");
+		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.DEVELOPMENT_AUTHORITY, BuildingPermitAuthorityEnum.MUNICIPAL_BOARD), "BPA_DA_MB");
+		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.DEVELOPMENT_AUTHORITY, BuildingPermitAuthorityEnum.GRAM_PANCHAYAT), "BPA_DA_GP");
+		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.TACP, BuildingPermitAuthorityEnum.GRAM_PANCHAYAT), "BPA_TACP_GP");
 		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.GMDA, BuildingPermitAuthorityEnum.GMC), "BPA_GMDA_GMC");
 		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.GMDA, BuildingPermitAuthorityEnum.NGMB), "BPA_GMDA_NGMB");
-		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.GMDA, BuildingPermitAuthorityEnum.GP), "BPA_GMDA_GP");
+		BUSINESS_SERVICE_MAP.put(new AuthorityKey(PlanningPermitAuthorityEnum.GMDA, BuildingPermitAuthorityEnum.GRAM_PANCHAYAT), "BPA_GMDA_GP");
 	}
 
 	@Autowired
@@ -173,13 +174,13 @@ public class WorkflowService {
 		PlanningPermitAuthorityEnum planning = areaMappingDetail.getPlanningPermitAuthority();
 		BuildingPermitAuthorityEnum building = areaMappingDetail.getBuildingPermitAuthority();
 
-		//TODO: Temporary condition added as modules is developed for GMDA and GMC condition only
+		/* TODO: Temporary condition added as modules is developed for GMDA and GMC condition only
 		if (!PlanningPermitAuthorityEnum.GMDA.equals(planning) || !BuildingPermitAuthorityEnum.GMC.equals(building)) {
 			log.info("Workflow not configured for the PlanningAuthority: {} and BuildingAuthority: {}", planning, building);
 			throw new CustomException(BPAErrorConstants.WORKFLOW_NOT_CONFIGURED,
 					"Workflow not configured for the PlanningAuthority: " + planning +
 							" and BuildingAuthority: " + building);
-		}
+		} */
 
 		log.debug("Evaluating business service with PlanningAuthority: {} and BuildingAuthority: {}", planning, building);
 
