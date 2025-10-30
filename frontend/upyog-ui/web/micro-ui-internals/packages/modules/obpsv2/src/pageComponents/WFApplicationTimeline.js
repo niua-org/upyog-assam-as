@@ -6,7 +6,7 @@ import WFCaption from "./WFCaption";
 const WFApplicationTimeline = (props) => {
   
   const { t } = useTranslation();
-  const businessService = ["BPA_DA_MB", "BPA_DA_GP"];
+  const businessService = props?.application?.businessService;
 
   const { isLoading, data, refetch } = Digit.Hooks.useWorkflowDetails({
     tenantId: props.application?.tenantId,
