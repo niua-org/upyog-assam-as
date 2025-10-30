@@ -3,24 +3,23 @@ import useInbox from "../useInbox"
 const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
     const { filterForm, searchForm , tableForm } = filters;
     const user = Digit.UserService.getUser();
-    let { moduleName, businessService, applicationStatus, locality, assignee, applicationType } = filterForm;
+    let { applicationStatus, locality, assignee, applicationType } = filterForm;
     const { mobileNumber, applicationNo, applicantName } = searchForm;
     const { sortBy, limit, offset, sortOrder } = tableForm;
-    let applicationNumber = "";
     let _filters = {
         tenantId,
         processSearchCriteria: {
           assignee : assignee === "ASSIGNED_TO_ME"?user?.info?.uuid:"",
           moduleName: "bpa-services", 
-          businessService: ["BPA_GMDA_GMC"],
+          businessService: ["BPA_DA_MB","BPA_DA_GP"],
           ...(applicationStatus?.length > 0 ? {status: applicationStatus} : {}),
         },
         moduleSearchCriteria: {
           ...(mobileNumber ? {mobileNumber}: {}),
           ...(applicantName ? {applicantName}: {}),
-          ...(!applicationNumber ? applicationNo ? {applicationNo} : {} : (applicationNumber ? {applicationNumber} : {})),
-          ...(sortOrder ? {sortOrder} : {}),
-          ...(sortBy ? {sortBy} : {}),
+          ...(applicationNo ? {applicationNo} : {}),
+          sortOrder: sortOrder || "DESC",
+          sortBy: sortBy || "createdTime",
           ...(applicationType && applicationType?.length > 0 ? {applicationType} : {}),
           ...(locality?.length > 0 ? {locality: locality.map((item) => item.code.split("_").pop()).join(",")} : {}),
         },
@@ -30,13 +29,11 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
     if (!applicationNo) {
       _filters = { ..._filters, offset}
     }
-     return useInbox({
+  const queryResult = useInbox({
   tenantId,
   filters: _filters,
   config: {
-    select: (data) => {
-
-      return {
+    select: (data) => ({
         statuses: data.statusMap,
         table: Array.isArray(data?.items) ? 
           data.items.map((application) => ({
@@ -67,15 +64,12 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
         totalCount: data?.totalCount,
         
         nearingSlaCount: data?.nearingSlaCount,
-      };
-    },
+      }),
     ...config,
   },
 });
 
-
-
-
-}
+return queryResult;
+};
 
 export default useBPAV2Inbox

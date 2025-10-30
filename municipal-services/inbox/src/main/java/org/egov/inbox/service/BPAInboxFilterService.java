@@ -138,7 +138,7 @@ public class BPAInboxFilterService {
 
                 result = restTemplate.postForObject(citizenUri.toString(), searcherRequest, Map.class);
 
-                List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.BPAs.*.applicationno");
+                List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.BPAs.*.application_no");
 
                 applicationNumbers.addAll(citizenApplicationsNumbers);
             }

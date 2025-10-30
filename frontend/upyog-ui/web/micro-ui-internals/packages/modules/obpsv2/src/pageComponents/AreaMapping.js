@@ -66,14 +66,30 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
     }
   }, [areaMappingData]);
 
+  // Update concerned authorities based on BP authority and PP authority
+  useEffect(() => {
+    if (bpAuthority && planningArea && areaMappingData?.bpAuthorities) {
+      const filteredConcernedAuthorities = areaMappingData.bpAuthorities
+        .filter(authority => authority.planningAreaCode === planningArea?.code && authority.authorityType === bpAuthority?.code)
+        .map(authority => ({
+          code: authority.bpAuthorityCode,
+          name: authority.bpAuthorityName,
+          i18nKey: authority.bpAuthorityCode,
+        }));
+      setConcernedAuthorities(filteredConcernedAuthorities);
+    } else {
+      setConcernedAuthorities([]);
+    }
+  }, [bpAuthority, planningArea, areaMappingData]);
+
   useEffect(() => {
     if (areaMappingData?.concernedAuthorities) {
-      const formattedConcernedAuthority = areaMappingData.concernedAuthorities.map((concernedAuthority) => ({
+      const formattedBpAuthorities = areaMappingData.concernedAuthorities.map((concernedAuthority) => ({
         code: concernedAuthority.authorityType,
         name: concernedAuthority.authorityType,
         i18nKey: concernedAuthority.authorityType,
       }));
-      setConcernedAuthorities(formattedConcernedAuthority);
+      setBpAuthorities(formattedBpAuthorities);
     }
   }, [areaMappingData]);
 
@@ -109,27 +125,13 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
     }
   }, [planningArea, areaMappingData]);
 
-  // Update BP authorities based on concerned authority and PP authority
-  useEffect(() => {
-    if (ppAuthority && concernedAuthority && areaMappingData?.bpAuthorities) {
-      const filteredBpAuthorities = areaMappingData.bpAuthorities
-        .filter(authority => authority.ppAuthorityCode === ppAuthority?.code && authority.authorityType === concernedAuthority?.code)
-        .map(authority => ({
-          code: authority.bpAuthorityCode,
-          name: authority.bpAuthorityName,
-          i18nKey: authority.bpAuthorityCode,
-        }));
-      setBpAuthorities(filteredBpAuthorities);
-    } else {
-      setBpAuthorities([]);
-    }
-  }, [ppAuthority, concernedAuthority, areaMappingData]);
 
-  // Update wards when BP authority changes (only for ULB)
+
+  // Update wards when concerned authority changes (only for MUNICIPAL_BOARD)
   useEffect(() => {
-    if (bpAuthority && concernedAuthority?.code === "ULB" && areaMappingData?.ulbWardDetails) {
+    if (concernedAuthority && bpAuthority?.code === "MUNICIPAL_BOARD" && areaMappingData?.ulbWardDetails) {
       const filteredWards = areaMappingData.ulbWardDetails
-        .filter(ward => ward.ulbCode === bpAuthority?.code)
+        .filter(ward => ward.ulbCode === concernedAuthority?.code)
         .map(ward => ({
           code: ward.wardCode,
           name: ward.wardName,
@@ -139,11 +141,11 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
     } else {
       setWards([]);
     }
-  }, [bpAuthority, concernedAuthority, areaMappingData]);
+  }, [concernedAuthority, bpAuthority, areaMappingData]);
 
-  // Update revenue villages when ward changes (only for ULB)
+  // Update revenue villages when ward changes (only for MUNICIPAL_BOARD)
   useEffect(() => {
-    if (ward && concernedAuthority?.code === "ULB" && areaMappingData?.revenueVillages) {
+    if (ward && bpAuthority?.code === "MUNICIPAL_BOARD" && areaMappingData?.revenueVillages) {
       const filteredRevenueVillages = areaMappingData.revenueVillages
         .filter(village => village.wardCode === ward?.code)
         .map(village => ({
@@ -155,13 +157,13 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
     } else {
       setRevenueVillages([]);
     }
-  }, [ward, concernedAuthority, areaMappingData]);
+  }, [ward, bpAuthority, areaMappingData]);
 
-  // Update villages when BP authority changes (only for GRAM_PANCHAYAT)
+  // Update villages when concerned authority changes (only for GRAM_PANCHAYAT)
   useEffect(() => {
-    if (bpAuthority && concernedAuthority?.code === "GRAM_PANCHAYAT" && areaMappingData?.villages) {
+    if (concernedAuthority && bpAuthority?.code === "GRAM_PANCHAYAT" && areaMappingData?.villages) {
       const filteredVillages = areaMappingData.villages
-        .filter(village => village.gramPanchayatCode === bpAuthority?.code)
+        .filter(village => village.gramPanchayatCode === concernedAuthority?.code)
         .map(village => ({
           code: village.villageCode,
           name: village.villageName,
@@ -171,7 +173,7 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
     } else {
       setVillages([]);
     }
-  }, [bpAuthority, concernedAuthority, areaMappingData]);
+  }, [concernedAuthority, bpAuthority, areaMappingData]);
 
   // Custom handlers for dropdown changes
   const handleDistrictChange = (selectedDistrict) => {
@@ -200,26 +202,22 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
   const handlePpAuthorityChange = (selectedPpAuthority) => {
     setPpAuthority(selectedPpAuthority);
     setConcernedAuthority("");
-    setBpAuthority("");
     setRevenueVillage("");
-    setMouza("");
-    setWard("");
-    setVillageName("");
-  };
-
-  const handleConcernedAuthorityChange = (selectedConcernedAuthority) => {
-    setConcernedAuthority(selectedConcernedAuthority);
-    setBpAuthority("");
-    setRevenueVillage("");
-    setMouza("");
     setWard("");
     setVillageName("");
   };
 
   const handleBpAuthorityChange = (selectedBpAuthority) => {
     setBpAuthority(selectedBpAuthority);
+    setConcernedAuthority("");
     setRevenueVillage("");
-    setMouza("");
+    setWard("");
+    setVillageName("");
+  };
+
+  const handleConcernedAuthorityChange = (selectedConcernedAuthority) => {
+    setConcernedAuthority(selectedConcernedAuthority);
+    setRevenueVillage("");
     setWard("");
     setVillageName("");
   };
@@ -227,16 +225,15 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
   const handleWardChange = (selectedWard) => {
     setWard(selectedWard);
     setRevenueVillage("");
-    setMouza("");
   };
 
-  // Validation logic based on concerned authority
+  // Validation logic based on BP authority
   const getValidationLogic = () => {
-    const baseValidation = !district || !planningArea || !ppAuthority || !concernedAuthority || !bpAuthority;
+    const baseValidation = !district || !planningArea || !ppAuthority || !bpAuthority || !concernedAuthority;
     
-    if (concernedAuthority?.code === "ULB") {
+    if (bpAuthority?.code === "MUNICIPAL_BOARD") {
       return baseValidation || !ward || !revenueVillage || !mouza;
-    } else if (concernedAuthority?.code === "GRAM_PANCHAYAT") {
+    } else if (bpAuthority?.code === "GRAM_PANCHAYAT") {
       return baseValidation || !villageName || !mouza;
     }
     
@@ -251,8 +248,8 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
       ppAuthority,
       concernedAuthority,
       bpAuthority,
-      ...(concernedAuthority?.code === "ULB" && { ward, revenueVillage }),
-      ...(concernedAuthority?.code === "GRAM_PANCHAYAT" && { villageName }),
+      ...(bpAuthority?.code === "MUNICIPAL_BOARD" && { ward, revenueVillage }),
+      ...(bpAuthority?.code === "GRAM_PANCHAYAT" && { villageName }),
       mouza
     };
 
@@ -308,18 +305,6 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
             placeholder={!planningArea ? t("SELECT_PLANNING_AREA_FIRST") : t("SELECT_PP_AUTHORITY")}
           />
 
-          {/* Concerned Authority */}
-          <CardLabel>{`${t("CONCERNED_AUTHORITY")}`} <span className="check-page-link-button">*</span></CardLabel>
-          <Dropdown
-            t={t}
-            option={concernedAuthorities}
-            optionKey="i18nKey"
-            selected={concernedAuthority}
-            select={handleConcernedAuthorityChange} 
-            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
-            placeholder={t("SELECT_CONCERNED_AUTHORITY")}
-          />
-          
           {/* BP Authority */}
           <CardLabel>{`${t("BP_AUTHORITY")}`} <span className="check-page-link-button">*</span></CardLabel>
           <Dropdown
@@ -329,11 +314,27 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
             selected={bpAuthority}
             select={handleBpAuthorityChange}
             optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
-            placeholder={!concernedAuthority ? t("SELECT_CONCERNED_AUTHORITY_FIRST") : t("SELECT_BP_AUTHORITY")}
+            placeholder={t("SELECT_BP_AUTHORITY")}
           />
 
-          {/* Conditional fields based on concerned authority */}
-          {concernedAuthority?.code === "ULB" && (
+          {/* Concerned Authority - Dynamic Label */}
+          {bpAuthority && (
+            <>
+              <CardLabel>{`${t(bpAuthority.code + " NAME")}`} <span className="check-page-link-button">*</span></CardLabel>
+              <Dropdown
+                t={t}
+                option={concernedAuthorities}
+                optionKey="i18nKey"
+                selected={concernedAuthority}
+                select={handleConcernedAuthorityChange} 
+                optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
+                placeholder={t("SELECT_CONCERNED_AUTHORITY")}
+              />
+            </>
+          )}
+
+          {/* Conditional fields based on BP authority */}
+          {bpAuthority?.code === "MUNICIPAL_BOARD" && (
             <>
               {/* Ward */}
               <CardLabel>{`${t("WARD")}`} <span className="check-page-link-button">*</span></CardLabel>
@@ -344,7 +345,7 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
                 selected={ward}
                 select={handleWardChange}
                 optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
-                placeholder={!bpAuthority ? t("SELECT_BP_AUTHORITY_FIRST") : t("SELECT_WARD")}
+                placeholder={!concernedAuthority ? t("SELECT_CONCERNED_AUTHORITY_FIRST") : t("SELECT_WARD")}
               />
 
               {/* Revenue Village */}
@@ -362,7 +363,7 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
             </>
           )}
 
-          {concernedAuthority?.code === "GRAM_PANCHAYAT" && (
+          {bpAuthority?.code === "GRAM_PANCHAYAT" && (
             <>
               {/* Village Name */}
               <CardLabel>{`${t("VILLAGE_NAME")}`} <span className="check-page-link-button">*</span></CardLabel>
@@ -373,7 +374,7 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
                 selected={villageName}
                 select={setVillageName}
                 optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
-                placeholder={!bpAuthority ? t("SELECT_BP_AUTHORITY_FIRST") : t("SELECT_VILLAGE")}
+                placeholder={!concernedAuthority ? t("SELECT_CONCERNED_AUTHORITY_FIRST") : t("SELECT_VILLAGE")}
               />
             </>
           )}

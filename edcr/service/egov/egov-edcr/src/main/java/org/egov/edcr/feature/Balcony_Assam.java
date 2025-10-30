@@ -255,11 +255,13 @@ public class Balcony_Assam extends FeatureProcess {
                     BigDecimal.ZERO :
                     floor.getBalconyDistanceFromPlotBoundary().stream().reduce(BigDecimal::min).orElse(BigDecimal.ZERO);
 
+            String truncatedActualSetback = actualSetback.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+
             ReportScrutinyDetail setbackDetail = new ReportScrutinyDetail();
             setbackDetail.setRuleNo(RULE32_2_1);
             setbackDetail.setDescription(MIN_SETBACK_PLOT_BOUNDARY);
             setbackDetail.setPermissible(farBalconySetback.toString());
-            setbackDetail.setProvided(actualSetback.toString());
+            setbackDetail.setProvided(truncatedActualSetback);
             setbackDetail.setStatus(isSetbackCompliant ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
             setbackDetail.setFloorNo(floor.getNumber().toString());
 
@@ -277,11 +279,13 @@ public class Balcony_Assam extends FeatureProcess {
                         .orElse(BigDecimal.ZERO);
             }
 
+            String truncatedActualWidth = actualWidth.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+
             ReportScrutinyDetail widthDetail = new ReportScrutinyDetail();
             widthDetail.setRuleNo(RULE32_2_1);
             widthDetail.setDescription("Maximum Balcony Width");
             widthDetail.setPermissible(farBalconyWidth.toString());
-            widthDetail.setProvided(actualWidth.toString());
+            widthDetail.setProvided(truncatedActualWidth);
             widthDetail.setStatus(isWidthCompliant ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
             widthDetail.setFloorNo(floor.getNumber().toString());
 

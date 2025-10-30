@@ -250,6 +250,8 @@ public class Plan implements Serializable {
     private BigDecimal totalBathrooms = BigDecimal.ZERO;
     private BigDecimal totalLatrines = BigDecimal.ZERO;
     private BigDecimal totalUrinals = BigDecimal.ZERO;
+
+    private FarExemption farExemptions;
     
     public BigDecimal getRiver() {
 		return river;
@@ -818,5 +820,13 @@ public class Plan implements Serializable {
 
     public void setTotalUrinals(BigDecimal totalUrinals) {
         this.totalUrinals = totalUrinals;
+    }
+
+    public FarExemption getFarExemptions() {
+        return farExemptions;
+    }
+
+    public void setFarExemptions(FarExemption farExemptions) {
+        this.farExemptions = farExemptions;
     }
 }

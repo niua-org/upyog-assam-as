@@ -6,7 +6,7 @@ import { Dropdown, Toast, SubmitBar } from "@upyog/digit-ui-react-components";
 import { OBPSV2Services } from "../../../../../../libraries/src/services/elements/OBPSV2";
 import Action from "../../../components/Action";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table = [], dispatch, onSortingByData}) => {
+const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table = [], dispatch, onSortingByData, refetch}) => {
     const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
     const GetStatusCell = (value) => value === "CS_NA" ? t(value) : value === "Active" || value>0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span> 
     const { t } = useTranslation()
@@ -20,12 +20,12 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     useEffect(() => {
         if (showToast || error) {
           const timer = setTimeout(() => {
-            setShowToast(false);
+            setShowToast(null);
             setError(null);
             setToastMessage("");
             setSelectedAction(null);
             setApplicationNo(null);
-            window.location.reload(); // Reload page after toast
+            //window.location.reload(); // Reload page after toast
           }, 1000);
           return () => clearTimeout(timer);
         }
@@ -189,19 +189,27 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                         setToastMessage={setToastMessage}
                         closeModal={closeModal}
                         setSelectedAction={setSelectedAction}
+                        refetch={refetch}
                     />
                 )}
                 {(showToast||error) && !selectedAction && (
-                        <Toast
-                          error={error ? error : null}
-                          label={error ? error : (toastMessage || t(`CS_ACTION_${selectedAction}_SUCCESS`))}
-                          onClose={() => {
-                            setShowToast(false);
+                 <Toast
+                        error={
+                            error 
+                            ? error 
+                            : (typeof showToast === 'object' && showToast?.error) 
+                                ? true 
+                                : null
+                        }
+                        warning={typeof showToast === 'object' && showToast?.warning ? true : null}
+                        label={error ? error : (toastMessage || t(`CS_ACTION_${selectedAction}_SUCCESS`))}
+                        onClose={() => {
+                            setShowToast(null);
                             setError(null);
                             setToastMessage("");
-                          }}
+                        }}
                         />
-                )}
+                    )}
                 </React.Fragment>
                 );
             },
