@@ -30,13 +30,11 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
     if (!applicationNo) {
       _filters = { ..._filters, offset}
     }
-     return useInbox({
+  const queryResult = useInbox({
   tenantId,
   filters: _filters,
   config: {
-    select: (data) => {
-
-      return {
+    select: (data) => ({
         statuses: data.statusMap,
         table: Array.isArray(data?.items) ? 
           data.items.map((application) => ({
@@ -67,15 +65,12 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
         totalCount: data?.totalCount,
         
         nearingSlaCount: data?.nearingSlaCount,
-      };
-    },
+      }),
     ...config,
   },
 });
 
-
-
-
-}
+return queryResult;
+};
 
 export default useBPAV2Inbox

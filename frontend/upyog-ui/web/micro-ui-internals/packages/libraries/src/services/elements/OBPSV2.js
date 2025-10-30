@@ -31,6 +31,216 @@ import WFApplicationTimeline from "../../../../modules/obpsv2/src/pageComponents
 import DocumentsPreview from "../../../../modules/templates/ApplicationDetails/components/DocumentsPreview";
 import { UploadServices } from "../atoms/UploadServices";
 
+
+export const ScrutinyFormService = {
+  async getDetails(edcrNumber, tenantId) {
+    try {
+      const response = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber });
+      const scrutinyData = response?.edcrDetail?.[0];
+      if (!scrutinyData) return {};
+
+      const plan = scrutinyData?.planDetail || {};
+      const block = plan?.blocks?.[0] || {};
+      const building = block?.building || {};
+      const floors = building?.floors || [];
+      const floorAreaCalculation = floors.map((f, i) => ({
+        floor: `Floor ${i + 1}`,
+        builtUpArea: f?.occupancies?.[0]?.builtUpArea || "",
+        existingFloorArea: f?.existingFloorArea || "",
+      }));
+
+      const totalFloorAreaBeforeDeduction = floors.map((f, i) => ({
+        floor: `Floor ${i + 1}`,
+        area: f?.occupancies?.[0]?.builtUpArea || "",
+      }));
+
+      const totalFloorAreaAfterDeduction = floors.map((f, i) => ({
+        floor: `Floor ${i + 1}`,
+        area: f?.occupancies?.[0]?.floorArea || "",
+      }));
+
+      const form22 = {
+        plotArea: plan?.planInformation?.plotArea || "",
+        existingPlinthArea: plan?.existingPlinthArea || "",
+        proposedPlinthArea: block?.setBacks?.[0]?.buildingFootPrint?.area || "",
+        floorAreaCalculation,
+        mezzanineFloorArea: plan?.mezzanineFloorArea || "",
+        deductionCalculation:
+          (building?.totalArea?.[0]?.deduction + building?.totalArea?.[0]?.existingDeduction) || 0,
+        totalFloorAreaAfterDeduction,
+        totalFloorAreaBeforeDeduction,
+        coverage: plan?.coverage || "",
+        floorAreaRatio: plan?.farDetails?.providedFar || "",
+      };
+      const roadFacingPlot = [
+        {
+          existingWidth: plan?.planInformation?.roadWidth || "",
+          proposedWidth: "",
+          remarks: "",
+        },
+      ];
+
+      const principalBylaws = [
+        {
+          desc: "Max Ground Coverage",
+          proposed: building?.coverageArea || "",
+          use: plan?.planInformation?.occupancy || "",
+          permissible: "",
+          carpetArea: "",
+          remarks: "",
+        },
+        ...floors.map((floor) => ({
+          desc: `Floor ${floor?.number}`,
+          proposed: floor?.occupancies?.[0]?.builtUpArea || "",
+          use: plan?.planInformation?.occupancy || "",
+          permissible: "",
+          carpetArea: "",
+          remarks: "",
+        })),
+        {
+          desc: "Total floor area",
+          proposed: building?.totalFloorArea || "",
+          use: plan?.planInformation?.occupancy || "",
+          permissible: "",
+          carpetArea: "",
+          remarks: "",
+        },
+        {
+          desc: "Floor Area Ratio",
+          proposed: plan?.farDetails?.providedFar || "",
+          use: "",
+          permissible: "",
+          carpetArea: "",
+          remarks: "",
+        },
+        {
+          desc: "No. of Dwelling units",
+          proposed: "",
+          use: "",
+          permissible: "",
+          carpetArea: "",
+          remarks: "",
+        },
+      ];
+
+      const setBacks = block?.setBacks?.[0] || {};
+      const setbacks = [
+        { side: "Front", clear: setBacks?.frontYard?.area || "", cantilever: "", reqClear: "", reqCantilever: "", remarks: "" },
+        { side: "Rear", clear: setBacks?.rearYard?.area || "", cantilever: "", reqClear: "", reqCantilever: "", remarks: "" },
+        { side: "Left", clear: setBacks?.sideYard1?.area || "", cantilever: "", reqClear: "", reqCantilever: "", remarks: "" },
+        { side: "Right", clear: setBacks?.sideYard2?.area || "", cantilever: "", reqClear: "", reqCantilever: "", remarks: "" },
+      ];
+
+      const ducts =
+        building?.ducts?.length > 0
+          ? building.ducts.map((d) => ({
+              no: d.no || "",
+              area: d.area || "",
+              width: d.width || "",
+            }))
+          : [{ no: "", area: "", width: "" }];
+
+      const electricLine =
+        plan?.electricLine?.length > 0
+          ? plan.electricLine.map((e) => ({
+              nature: e.nature || "",
+              verticalDistance: e.verticalDistance || "",
+              horizontalDistance: e.horizontalDistance || "",
+            }))
+          : [{ nature: "", verticalDistance: "", horizontalDistance: "" }];
+
+      const parkingProvided =
+        plan?.reportOutput?.scrutinyDetails
+          ?.find((p) => p.key === "Common_Parking")
+          ?.detail?.filter((d) => d.Description?.toLowerCase().includes("open parking"))
+          ?.map((d) => ({
+            open: d.Provided || "",
+            stilt: "",
+            basement: "",
+            total: "",
+          })) || [{ open: "", stilt: "", basement: "", total: "" }];
+
+      const parkingRequired =
+        plan?.reportOutput?.scrutinyDetails
+          ?.find((p) => p.key === "Common_Parking")
+          ?.detail?.filter((d) => d.Description?.toLowerCase().includes("car parking"))
+          ?.map((d) => ({
+            type: "Residential",
+            car: d.Required || "",
+            scooter: "",
+            remarks: "",
+          })) || [{ type: "", car: "", scooter: "", remarks: "" }];
+
+      const visitorsParking = [{ type: "", car: "", scooter: "" }];
+
+      const form23A = {
+        classificationOfProposal: "",
+        revenueVillage: plan?.planInformation?.revenueVillage || "",
+        mouza: plan?.planInformation?.mouza || "",
+        dagNo: plan?.planInfoProperties?.["DAG NO"] || "",
+        pattaNo: "",
+        sitePlanArea: plan?.planInformation?.plotArea || "",
+        landDocumentArea: "",
+        buildingHeight: building?.buildingHeight || "",
+        heightofPlinth: block?.plinthHeight?.[0] || "",
+        permitFee: "",
+        cityInfrastructureCharges: "",
+        additionalFloorSpaceCharges: "",
+        peripheralCharges: "",
+        otherCharges: "",
+        totalAmount: "",
+        receiptNo: "",
+        dateValue: "",
+        roadFacingPlot,
+        principalBylaws,
+        setbacks,
+        ducts,
+        electricLine,
+        parkingProvided,
+        parkingRequired,
+        visitorsParking,
+      };
+      const floorData =
+        plan?.blocks?.[0]?.building?.floors?.map((f, i) => {
+          const occ = f?.occupancies?.[0] || {};
+          return {
+            label: f?.name || `Floor ${f?.number ?? i + 1}`,
+            existing: occ?.builtUpArea || "",
+            proposed: occ?.proposed || "",
+            total: occ?.total || "",
+          };
+        }) || [];
+
+      const sanitaryDetails = [
+        { description: "NUMBER OF URINALS", total: plan?.totalUrinals ?? 0 },
+        { description: "NUMBER OF BATHROOMS", total: plan?.totalBathrooms ?? 0 },
+        { description: "NUMBER OF LATRINES", total: plan?.totalLatrines ?? 0 },
+        { description: "NUMBER OF KITCHENS", total: plan?.totalKitchens ?? 0 },
+      ];
+
+      const form23B = {
+        purpose: plan?.planInformation?.occupancy || "",
+        noOfInhabitants: plan?.noOfInhabitants || "",
+        waterSource: plan?.waterSource || "",
+        distanceFromSewer: plan?.distanceFromSewer || "",
+        materials: plan?.materials || "",
+        architectName: plan?.architectName || "",
+        registrationNumber: plan?.registrationNumber || "",
+        architectAddress: plan?.architectAddress || "",
+        dwellingUnitSize: plan?.dwellingUnitSize || "",
+        constructionValidUpto: plan?.constructionValidUpto || null,
+        leaseExtensionUpto: plan?.leaseExtensionUpto || null,
+        floors: floorData,
+        sanitaryDetails,
+      };
+      
+      return { form22, form23A, form23B };
+    } catch (err) {
+      console.error("Error fetching scrutiny details:", err);
+      return { form22: null, form23A: null, form23B: null, error: err };
+    }
+  },
+};
 // This file defines the OBPSV2Services object, providing methods for creating, searching, and updating OBPSV2 resources through structured API requests.
 export const OBPSV2Services = {
   create: (details) =>
@@ -101,6 +311,11 @@ export const OBPSV2Services = {
     let appDocumentFileStoreIds = response?.bpa?.[0]?.documents?.map(
       (docId) => docId.fileStoreId
     );
+    const edcrNumber = response?.bpa?.[0]?.edcrNumber
+    let form22 = null, form23A = null, form23B = null, loading = false;
+    if (edcrNumber) {
+      ({ form22, form23A, form23B, loading } = await ScrutinyFormService.getDetails(edcrNumber, "assam"));
+    }
     if (!appDocumentFileStoreIds) appDocumentFileStoreIds = [];
     response?.bpa?.[0]?.additionalDetails?.fieldinspection_pending?.map(
       (fiData) => {
@@ -470,6 +685,26 @@ export const OBPSV2Services = {
         }]
       },
     };
+    const formDetails = form22 && form23A &&{
+      title: "BPA_FORM_DETAILS",
+      asSectionHeader: true,
+      isScrutinyDetails: true,
+      isBackGroundColor: true,
+      additionalDetails: {
+        values: [
+          { title: "BPA_FORM22_HEADER", value: " ", isHeader: true },
+        ],
+        form22Details: [
+          { title: "BPA_FORM22_DETAILS", value: form22 || "NA" },
+        ],
+        form23ADetails: [
+          { title: "BPA_FORM23A_DETAILS", value: form23A || "NA" },
+        ],
+        form23BDetails: [
+          { title: "BPA_FORM23B_DETAILS", value: form23B || "NA" },
+        ],
+      },
+    };
     
     let reportDetails = null;
 
@@ -502,7 +737,8 @@ if (bpa?.additionalDetails?.submitReportinspection_pending?.length) {
       futureProvisions,
       rtpDetails,
       documentDetails,
-      reportDetails
+      reportDetails,
+      formDetails,
     ];
     let bpaFilterDetails = details?.filter((data) => data);
     let envCitizenName = window.location.href.includes("/employee")

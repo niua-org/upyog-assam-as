@@ -19,6 +19,7 @@ import { checkForNA, getOrderDocuments } from "../../../utils";
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
 import Timeline from "../../../components/Timeline";
 import FormAcknowledgement from "./FormAcknowledgement";
+import useScrutinyFormDetails from "../../../../../../libraries/src/hooks/obpsv2/useScrutinyFormDetails";
 const ActionButton = ({ jumpTo }) => {
   const history = useHistory();
 
@@ -50,6 +51,15 @@ const CheckPage = ({ onSubmit, value = {} }) => {
   const toggleExpanded = (key) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+  // let form22 = null, form23A = null, form23B = null, loading = false;
+
+  //   const edcrNumber = response?.bpa?.[0]?.edcrNumber;
+  //   const stateId = Digit.ULBService.getStateId();
+
+  //   if (edcrNumber) {
+  //     ({ form22, form23A, form23B, loading } = useScrutinyFormDetails("DCR102025WDMEL", "assam"));
+  //   }
+  const { form22, form23A, form23B, loading } = useScrutinyFormDetails("DCR102025WDMEL", "assam");
   const {areaMapping={}, applicant = {}, address = {}, land = {}, documents = {} } = value;
   const flow = window.location.href.includes("editApplication") ? "editApplication" : "buildingPermit"
   const setDeclarationHandler = () => {
@@ -70,13 +80,13 @@ const handleDownloadPdf = async (formType) => {
     const tenantInfo  = tenants.find((tenant) => tenant.code === tenantId);
     switch (formType) {
       case "FORM_22":
-        formData = value?.form;
+        formData = value?.form||form22;
         break;
       case "FORM_23A":
-        formData = value?.form23A;
+        formData = value?.form23A || form23A;
         break;
       case "FORM_23B":
-        formData = value?.form23B;
+        formData = value?.form23B||form23B;
         break;
       default:
         formData = null;
@@ -683,7 +693,7 @@ const handleDownloadPdf = async (formType) => {
               {expanded.form22 && (
                 <React.Fragment>
                   <StatusTable>
-                  {getDetailsRow(value?.form)}
+                  {getDetailsRow(value?.form||form22)}
 
                   <div style={{ marginTop: "1rem" }}>
                     <LinkButton
@@ -731,7 +741,7 @@ const handleDownloadPdf = async (formType) => {
 
               {expanded.form23A && (
                 <React.Fragment>
-                  {getDetailsRow(value?.form23A)}
+                  {getDetailsRow(value?.form23A||form23A)}
 
                   <div style={{ marginTop: "1rem" }}>
                     <LinkButton
@@ -777,7 +787,7 @@ const handleDownloadPdf = async (formType) => {
 
               {expanded.form23B && (
                 <React.Fragment>
-                  {getDetailsRow(value?.form23B)}
+                  {getDetailsRow(value?.form23B||form23B)}
 
                   <div style={{ marginTop: "1rem" }}>
                     <LinkButton

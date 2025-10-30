@@ -116,7 +116,7 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {} } = useBPAV2Inbox({
+  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, refetch } = useBPAV2Inbox({
     tenantId,
     filters: { ...formState },
   });
@@ -187,7 +187,7 @@ const Inbox = ({ parentRoute }) => {
     onFilterFormReset,
   };
 
-  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData } });
+  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData , refetch} });
   const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table, getRedirectionLink });
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };

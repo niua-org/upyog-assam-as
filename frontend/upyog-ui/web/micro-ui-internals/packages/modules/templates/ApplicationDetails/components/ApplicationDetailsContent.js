@@ -13,6 +13,7 @@ import {
   EditIcon,
   ViewsIcon,
   DeleteIcon,
+  CardLabel
 } from "@upyog/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment,useState } from "react";
@@ -39,6 +40,8 @@ import DocumentsPreview from "./DocumentsPreview";
 import InfoDetails from "./InfoDetails";
 import ViewBreakup from"./ViewBreakup";
 import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary"
+import useScrutinyFormDetails from "../../../../libraries/src/hooks/obpsv2/useScrutinyFormDetails";
+import FormAcknowledgement from "../../../obpsv2/src/pages/citizen/Create/FormAcknowledgement";
 function ApplicationDetailsContent({
   applicationDetails,
   workflowDetails,
@@ -61,7 +64,14 @@ function ApplicationDetailsContent({
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
-
+  const [expanded, setExpanded] = useState({
+    form22: false,
+    form23A: false,
+    form23B: false,
+  });
+  const toggleExpanded = (key) => {
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
   const [fetchBillData, updatefetchBillData] = useState({});
 
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
@@ -243,7 +253,131 @@ function ApplicationDetailsContent({
       return "WS_CLICK_ON_INFO_LABEL";
     }
   };
-
+  const cellStyle = {
+    border: "1px solid #ccc",
+    padding: "8px",
+    textAlign: "left",
+    fontSize: "14px",
+  };
+  const getDetailsRow = (formDetails) => {
+    if (!formDetails) return null;
+  
+    const renderValue = (val) => {
+      if (val === null || val === undefined) return "NA";
+      if (typeof val === "string" && val.trim() === "") return "NA";
+      return val?.toString().trim() || "NA";
+    };
+  
+    const renderTable = (data, key) => {
+      if (!Array.isArray(data) || data.length === 0) return null;
+  
+      const headers = Object.keys(data[0] || {});
+  
+      return (
+        <div key={key} style={{ marginTop: "20px" }}>
+          <h4>{t(key.toUpperCase())}</h4>
+          <table
+            style={{
+              borderCollapse: "collapse",
+              border: "1px solid #ccc",
+              tableLayout: "auto",
+              width: "100%",
+              fontSize: "12px",
+              lineHeight: "1.5",
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: "#f0f0f0" }}>
+                <th style={cellStyle}>Sl. No.</th>
+                {headers.map((header) => (
+                  <th key={header} style={cellStyle}>
+                    {t(header.toUpperCase())}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row, idx) => (
+                <tr key={idx}>
+                  <td style={cellStyle}>{idx + 1}</td>
+                  {headers.map((field) => (
+                    <td key={field} style={cellStyle}>
+                      {renderValue(row[field])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    };
+  
+    return (
+      <div>
+        <StatusTable>
+          {Object.entries(formDetails)
+            .filter(([key]) => key !== "scrutinyDetails")
+            .map(([key, value], index) => {
+              if (
+                typeof value === "string" ||
+                typeof value === "number" ||
+                typeof value === "boolean"
+              ) {
+                return (
+                  <Row
+                    key={index}
+                    label={t(key.toUpperCase())}
+                    text={renderValue(value)}
+                  />
+                );
+              }
+  
+              if (Array.isArray(value)) {
+                return renderTable(value, key);
+              }
+  
+              return null;
+            })}
+        </StatusTable>
+      </div>
+    );
+  };
+  const handleDownloadPdf = async (formType) => {
+    try {
+      let formData = null;
+      let tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+      const tenantInfo  = tenants.find((tenant) => tenant.code === tenantId);
+      switch (formType) {
+        case "FORM_22":
+          formData = form22;
+          break;
+        case "FORM_23A":
+          formData =form23A;
+          break;
+        case "FORM_23B":
+          formData = form23B;
+          break;
+        default:
+          formData = null;
+      }
+  
+      if (!formData) {
+        console.error("No data found for", formType);
+        return;
+      }
+  
+      const acknowledgementData = await FormAcknowledgement(
+        { formType, formData },
+        tenantInfo,
+        t
+      );
+  
+      Digit.Utils.pdf.generate(acknowledgementData);
+    } catch (err) {
+      console.error("PDF download failed for", formType, err);
+    }
+  };
 
   const [showAllTimeline, setShowAllTimeline] = useState(false);
   const getClickInfoDetails1 = () => {
@@ -532,6 +666,152 @@ function ApplicationDetailsContent({
               bpaActionsDetails={workflowDetails}
             />
           )}
+          {detail?.additionalDetails?.form22Details && window.location.href.includes("obpsv2")  ? (
+            <div>
+            <StatusTable>
+            <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <CardLabel style={{ fontSize: "20px", marginTop: "24px", fontWeight: "bold" }}>{t("FORM_22_DETAILS")}</CardLabel>
+                {!expanded.form22 && (
+                  <LinkButton
+                    label={t("VIEW_DETAILS")}
+                    onClick={() => toggleExpanded("form22")}
+                    style={{ marginRight: "1rem" }}
+                  />
+                )}
+                <LinkButton
+                  label={
+                    <div className="response-download-button">
+                      <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#a82227">
+                          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                      </span>
+                      <span className="download-button">{t("CS_COMMON_DOWNLOAD")}</span>
+                    </div>
+                  }
+                  onClick={() => handleDownloadPdf("FORM_22")}
+                  className="w-full"
+                />
+
+              </div>
+
+              {expanded.form22 && (
+                <React.Fragment>
+                  <StatusTable>
+                  {getDetailsRow(form22)}
+
+                  <div style={{ marginTop: "1rem" }}>
+                    <LinkButton
+                      label={t("COLLAPSE")}
+                      onClick={() => toggleExpanded("form22")}
+                    />
+                  </div>
+                  </StatusTable>
+                </React.Fragment>
+              )}
+           
+            </StatusTable>
+            <StatusTable>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <CardLabel style={{ fontSize: "20px", marginTop: "24px", fontWeight: "bold" }}>{t("FORM_23A_DETAILS")}</CardLabel>
+                {!expanded.form23A && (
+                  <LinkButton
+                    label={t("VIEW_DETAILS")}
+                    onClick={() => toggleExpanded("form23A")}
+                    style={{ marginRight: "1rem" }}
+                  />
+                )}
+                <LinkButton
+                  label={
+                    <div className="response-download-button">
+                      <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#a82227">
+                          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                      </span>
+                      <span className="download-button">{t("CS_COMMON_DOWNLOAD")}</span>
+                    </div>
+                  }
+                  onClick={() => handleDownloadPdf("FORM_23A")}
+                  className="w-full"
+                />
+
+              </div>
+
+              {expanded.form23A && (
+                <React.Fragment>
+                  {getDetailsRow(form23A)}
+
+                  <div style={{ marginTop: "1rem" }}>
+                    <LinkButton
+                      label={t("COLLAPSE")}
+                      onClick={() => toggleExpanded("form23A")}
+                    />
+                  </div>
+                </React.Fragment>
+              )}
+            </StatusTable>
+            <StatusTable>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <CardLabel style={{ fontSize: "20px", marginTop: "24px", fontWeight: "bold" }}>{t("FORM_23B_DETAILS")}</CardLabel>
+                {!expanded.form23B && (
+                  <LinkButton
+                    label={t("VIEW_DETAILS")}
+                    onClick={() => toggleExpanded("form23B")}
+                    style={{ marginRight: "1rem" }}
+                  />
+                )}
+                <LinkButton
+                  label={
+                    <div className="response-download-button">
+                      <span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#a82227">
+                          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                      </span>
+                      <span className="download-button">{t("CS_COMMON_DOWNLOAD")}</span>
+                    </div>
+                  }
+                  onClick={() => handleDownloadPdf("FORM_23B")}
+                  className="w-full"
+                />
+
+              </div>
+
+              {expanded.form23B && (
+                <React.Fragment>
+                  {getDetailsRow(form23B)}
+
+                  <div style={{ marginTop: "1rem" }}>
+                    <LinkButton
+                      label={t("COLLAPSE")}
+                      onClick={() => toggleExpanded("form23B")}
+                    />
+                  </div>
+                </React.Fragment>
+              )}
+            </StatusTable>
+            </div>
+          ):null}
+          
           {detail?.additionalDetails?.scruntinyDetails && <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} />}
           {detail?.additionalDetails?.buildingExtractionDetails && <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} />}
           {detail?.additionalDetails?.subOccupancyTableDetails && (

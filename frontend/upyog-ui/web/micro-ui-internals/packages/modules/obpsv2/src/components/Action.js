@@ -2,9 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Card, Modal, TextArea, UploadFile, Heading, CloseBtn, CardLabel, CardLabelDesc, SubmitBar, Toast } from "@upyog/digit-ui-react-components";
 import { OBPSV2Services } from "../../../../libraries/src/services/elements/OBPSV2";
 import { useTranslation } from "react-i18next";
-
 ///TODO: Remove unwanted multiple search calls, instead use once and cache the response in a state of useRef 
-const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, setToastMessage, setShowToast: parentSetShowToast }) => {
+const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, setToastMessage, setShowToast: parentSetShowToast, refetch}) => {
   const { t } = useTranslation();
   const [comments, setComments] = useState("");
   const [uploadedFile, setUploadedFile] = useState(null);
