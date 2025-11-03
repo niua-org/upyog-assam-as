@@ -4,6 +4,7 @@ import { useQueryClient } from "react-query";
 import { configBPAApproverApplication } from "../config";
 import * as predefinedConfig from "../config";
 import  FormComposer  from "../../../../react-components/src/hoc/FormComposer";
+import { useHistory } from "react-router-dom";
 
 const Heading = (props) => {
   return <h1 style={{marginLeft:"22px"}} className="heading-m BPAheading-m">{props.label}</h1>;
@@ -48,6 +49,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const [error, setError] = useState(null);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
   const mobileView = Digit.Utils.browser.isMobile() ? true : false;
+  const history = useHistory();
 
   useEffect(() => {
     setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
@@ -163,6 +165,11 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   useEffect(() => {
     if (action) {
+      if (action.action === "PAY") {
+        let servicePath = "BPA.PLANNING_PERMIT_FEE";
+        console.log(servicePath);
+        return history.push(`/upyog-ui/employee/payment/collect/${servicePath}/${applicationData.applicationNo}`);
+      }
       setConfig(
         configBPAApproverApplication({
           t,

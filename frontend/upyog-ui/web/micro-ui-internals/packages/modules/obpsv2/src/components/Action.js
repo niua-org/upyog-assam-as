@@ -16,6 +16,19 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  const WORKFLOW_ACTIONS = [
+    "APPROVE",
+    "ACCEPT",
+    "SEND",
+    "REJECT",
+    "SEND_BACK_TO_RTP",
+    "RECOMMEND_TO_CEO",
+    "SEND_BACK_TO_GMDA",
+    "RECOMMEND_TO_CHAIRMAN_DA",
+    "SEND_BACK_TO_DA",
+    "FORWARD"
+  ];
+
   const [assignResponse, setAssignResponse] = useState(null);
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const { data: mdmsData, isLoading } = Digit.Hooks.useEnabledMDMS("as", "BPA", [{ name: "PermissibleZone" }], {
@@ -89,7 +102,8 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           setPopup(true);
           break;
         case "SUBMIT_REPORT":
-          setPopup(true);
+          const submitReportUrl = `${window.location.origin}/upyog-ui/employee/obpsv2/application/${applicationNo}/${tenantId}`;
+          redirectToPage(submitReportUrl);
           break;
         case "RECOMMEND_TO_CEO":
           setPopup(true);
@@ -105,13 +119,25 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           redirectToPage(redirectingUrl);
           break;
         case "PAY":
-          let redirectURL = `${window.location.origin}/upyog-ui/citizen/payment/my-bills/BPA.PLANNING_PERMIT_FEE/${applicationNo}`;
+          const isEmployeeRoute = window.location.href.includes("/employee/");
+          let redirectURL = isEmployeeRoute 
+            ? `${window.location.origin}/upyog-ui/employee/payment/collect/BPA.PLANNING_PERMIT_FEE/${applicationNo}`
+            : `${window.location.origin}/upyog-ui/citizen/payment/my-bills/BPA.PLANNING_PERMIT_FEE/${applicationNo}`;
           redirectToPage(redirectURL);
           break;
         case "APPLY_FOR_SCRUTINY":
           let scrutinyurl = window.location.href;
           let scrutinyRedirectingUrl = scrutinyurl.split("/inbox")[0] + `/apply/home?applicationNo=${applicationNo}`;
           redirectToPage(scrutinyRedirectingUrl);
+          break;
+        case "RECOMMEND_TO_CHAIRMAN_DA":
+          setPopup(true);
+          break;
+        case "SEND_BACK_TO_DA":
+          setPopup(true);
+          break;
+        case "FORWARD":
+          setPopup(true);
           break;
         default:
           setPopup(false);
@@ -374,16 +400,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
                   // if GIS validation passed, call onAssign
                   await onAssign(selectedAction, comments);
                 }
-              } else if (
-                selectedAction === "APPROVE" ||
-                selectedAction === "ACCEPT" ||
-                selectedAction === "SEND" ||
-                selectedAction === "REJECT" ||
-                selectedAction === "SEND_BACK_TO_RTP" ||
-                selectedAction === "SUBMIT_REPORT" ||
-                selectedAction === "RECOMMEND_TO_CEO" ||
-                selectedAction === "SEND_BACK_TO_GMDA"
-              ) {
+              } else if (WORKFLOW_ACTIONS.includes(selectedAction)) {
                 await onAssign(selectedAction, comments);
               }
 
@@ -397,14 +414,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
         >
           <Card>
             <React.Fragment>
-              {(selectedAction === "APPROVE" ||
-                selectedAction === "ACCEPT" ||
-                selectedAction === "SEND" ||
-                selectedAction === "REJECT" ||
-                selectedAction === "SEND_BACK_TO_RTP" ||
-                selectedAction === "SUBMIT_REPORT" ||
-                selectedAction === "RECOMMEND_TO_CEO" ||
-                selectedAction === "SEND_BACK_TO_GMDA") && (
+              {WORKFLOW_ACTIONS.includes(selectedAction) && (
                 <div>
                   <CardLabel>{t("COMMENTS")}</CardLabel>
                   <TextArea name="reason" onChange={addComment} value={comments} maxLength={500} />

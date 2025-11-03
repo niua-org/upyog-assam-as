@@ -320,7 +320,7 @@ const [villageName, setVillageName] = useState(formData?.areaMapping?.villageNam
           {/* Concerned Authority - Dynamic Label */}
           {bpAuthority && (
             <>
-              <CardLabel>{`${t(bpAuthority.code + " NAME")}`} <span className="check-page-link-button">*</span></CardLabel>
+              <CardLabel>{`${t(bpAuthority.code + "_NAME")}`} <span className="check-page-link-button">*</span></CardLabel>
               <Dropdown
                 t={t}
                 option={concernedAuthorities}

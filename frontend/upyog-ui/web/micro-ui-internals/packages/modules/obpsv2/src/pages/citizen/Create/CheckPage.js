@@ -261,7 +261,7 @@ const handleDownloadPdf = async (formType) => {
             text={checkForNA(t(areaMapping?.bpAuthority?.code))}
           />
           <Row
-            label={t(areaMapping?.bpAuthority?.code + " NAME")}
+            label={t(areaMapping?.bpAuthority?.code + "_NAME")}
             text={checkForNA(t(areaMapping?.concernedAuthority?.code))}
           />
           {areaMapping?.bpAuthority?.code === "MUNICIPAL_BOARD" && (

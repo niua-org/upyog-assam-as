@@ -446,7 +446,7 @@ export const OBPSV2Services = {
           value: bpa?.areaMapping?.buildingPermitAuthority || "NA",
         },
         {
-          title: bpa?.areaMapping?.buildingPermitAuthority + " NAME" || "CONCERNED_AUTHORITY",
+          title: bpa?.areaMapping?.buildingPermitAuthority + "_NAME" || "CONCERNED_AUTHORITY",
           value: bpa?.areaMapping?.concernedAuthority || "NA",
         },
         ...(bpa?.areaMapping?.buildingPermitAuthority === "MUNICIPAL_BOARD" ? [

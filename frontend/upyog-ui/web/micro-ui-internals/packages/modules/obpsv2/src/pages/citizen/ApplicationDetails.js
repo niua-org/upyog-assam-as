@@ -535,7 +535,7 @@ import {
                 text={t(areaMapping?.buildingPermitAuthority) || t("CS_NA")}
               />
               <Row
-                label={t(areaMapping?.buildingPermitAuthority + " NAME")}
+                label={t(areaMapping?.buildingPermitAuthority + "_NAME")}
                 text={t(areaMapping?.concernedAuthority) || t("CS_NA")}
               />
               {areaMapping?.buildingPermitAuthority === "MUNICIPAL_BOARD" && (

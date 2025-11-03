@@ -82,7 +82,7 @@ const OBPSEmployeeHomeCard = () => {
     if (!isInboxLoading && !isInboxLoadingOfStakeholder) {
       const bpaCount = dataOfBPA?.totalCount ? dataOfBPA?.totalCount : 0;
       const stakeHolderCount = dataOfStakeholder?.totalCount ? dataOfStakeholder?.totalCount : 0;
-      setTotalCount(bpaCount + stakeHolderCount);
+      setTotalCount(bpaCount);
       setTotalCountEs(dataOfBPA?.nearingSlaCount||0 + dataOfStakeholder?.nearingSlaCount||0  )
     }
   }, [dataOfBPA, dataOfStakeholder]);
@@ -102,7 +102,7 @@ const OBPSEmployeeHomeCard = () => {
         //     label: t("TOTAL_FSM"),
         //     link: `/upyog-ui/employee/obpsv2/inbox`
         // },
-        {   count:!isInboxLoading && !isInboxLoadingOfStakeholder ? totalCountEs : "",
+        {   count:!isInboxLoading && !isInboxLoadingOfStakeholder ? totalCount : "",
             label: t("TOTAL_NEARING_SLA"),
             link: `/upyog-ui/employee/obpsv2/inbox`
         }  
