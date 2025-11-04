@@ -137,11 +137,11 @@ public class SetBackService_Assam extends FeatureProcess {
             errors.put(FRONTYARDNOTDEFINED, getLocaleMessage(OBJECTNOTDEFINED, FRONT_SETBACK + blockName + AT_LEVEL_ZERO));
         }
 
-        if (pl.getPlot().getArea().compareTo(TWO_HUNDRED) > 0) {
+        
             if (setback.getRearYard() == null &&
                 !DcrConstants.YES.equalsIgnoreCase(pl.getPlanInformation().getNocToAbutRearDesc())) {
                 errors.put(REARYARDNOTDEFINED, getLocaleMessage(OBJECTNOTDEFINED, REAR_SETBACK + blockName + AT_LEVEL_ZERO));
-            }
+            
 
             // Uncomment and use these if side yard validation is needed
 //            if (setback.getSideYard1() == null) {
@@ -267,7 +267,7 @@ public class SetBackService_Assam extends FeatureProcess {
                         }
                     }
                     rearYardService.processRearYard(pl);
-                } else if (largePlot) {
+                } else  {
                     rearYardService.processRearYard(pl);
                 }
             }

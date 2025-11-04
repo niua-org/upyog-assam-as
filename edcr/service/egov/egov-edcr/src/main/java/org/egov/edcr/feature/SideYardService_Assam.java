@@ -378,37 +378,23 @@ public class SideYardService_Assam extends SideYardService {
 	    String rule = SIDE_YARD_DESC;
 
 	    if (plotArea.compareTo(BigDecimal.valueOf(53.56)) >= 0
-	            && plotArea.compareTo(BigDecimal.valueOf(93.73)) <= 0) {
+	            && plotArea.compareTo(BigDecimal.valueOf(134)) <= 0) {
 
 	        minVal = BigDecimal.valueOf(0.90);
 	        meanVal = BigDecimal.valueOf(0.90);
 	        subRule = "Side setback: 1.50 m";
 	        LOG.info("Matched Plot Area range 53.56 - 93.73 sqm → {}", subRule);
 
-	    } else if (plotArea.compareTo(BigDecimal.valueOf(93.73)) > 0
-	            && plotArea.compareTo(BigDecimal.valueOf(134)) <= 0) {
-
-	        minVal = BigDecimal.ZERO;
-	        subRule = "Side setback: 2.00 m";
-	        LOG.info("Matched Plot Area range 93.73 - 134 sqm → {}", subRule);
 	    }
-
-	    BigDecimal providedMin1 = sideYard1Result.actualDistance;
-	    BigDecimal providedMin2 = sideYard2Result.actualDistance;
-
-	    Boolean valid = (providedMin1 != null && providedMin1.compareTo(minVal) >= 0)
-	            && (providedMin2 != null && providedMin2.compareTo(minVal) >= 0);
+	   
+	    Boolean valid = (BigDecimal.valueOf(min) != null && BigDecimal.valueOf(min).compareTo(minVal) >= 0)
+	            && (BigDecimal.valueOf(max) != null && BigDecimal.valueOf(max).compareTo(minVal) >= 0);
 	    compareSideYardResult(blockName, minVal, BigDecimal.valueOf(min), mostRestrictiveOccupancy,
 		        subRule, rule, valid, level, sideYard1Result, sideYard2Result, BigDecimal.valueOf(max));
 
-	    if (!valid) {
-	        errors.put(blockName + "_SideYard",
-	                "Side setback must be at least " + minVal + " m (provided "
-	                        + providedMin1 + " m, " + providedMin2 + " m)");
-	    }
 
 	    LOG.info("Special side yard rule applied → RequiredMin: {}, ProvidedMin1: {}, ProvidedMin2: {}, Status: {}",
-	            minVal, providedMin1, providedMin2, valid);
+	            minVal, BigDecimal.valueOf(min), BigDecimal.valueOf(max), valid);
 
 	    return valid;
 	}
@@ -465,17 +451,27 @@ public class SideYardService_Assam extends SideYardService {
 		String occupancyCode = mostRestrictiveOccupancy.getType().getCode();
 		Boolean valid = false;
 		BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
-		   if (roadWidth != null && roadWidth.compareTo(BigDecimal.valueOf(2.40)) == 0) {
+		if (roadWidth != null 
+		        && roadWidth.compareTo(BigDecimal.valueOf(2.40)) >= 0 
+		        && roadWidth.compareTo(BigDecimal.valueOf(3.60)) <= 0) {
 		        LOG.info("Checking special narrow road rule (SideYard) for Block: {}, Level: {}, RoadWidth: {}",
 		                blockName, level, roadWidth);
 
 		        BigDecimal allowedFloors = BigDecimal.valueOf(2); // G + 1 floors
-		        BigDecimal actualFloors = building.getTotalFloors();
+
+		        BigDecimal actualFloors = BigDecimal.ZERO;
+		        if (building != null) {
+		            if (building.getTotalFloors() != null) {
+		                actualFloors = building.getTotalFloors();
+		            } else if (building.getFloors() != null) {
+		                actualFloors = BigDecimal.valueOf(building.getFloors().size());
+		            }
+		        }
 
 		        if (actualFloors.compareTo(allowedFloors) > 0) {
 		            errors.put("NARROW_ROAD_RULE", String.format(ERR_NARROW_ROAD_RULE, actualFloors));
 		            LOG.warn("Narrow road violation (SideYard): Allowed = {}, Actual = {}", allowedFloors, actualFloors);
-		            return; 
+		            return;
 		        }
 
 		        Boolean specialValid = applySpecialRuleForNarrowRoadSideYard(

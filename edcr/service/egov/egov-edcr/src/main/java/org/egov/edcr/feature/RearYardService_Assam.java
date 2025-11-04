@@ -1185,15 +1185,23 @@ public class RearYardService_Assam extends RearYardService {
 	        LOG.info("Checking special narrow road rule for REAR yard → Block: {}, Level: {}, RoadWidth: {}", 
 	                  block.getName(), level, roadWidth);
 
-	        BigDecimal allowedFloors = BigDecimal.valueOf(2); // G + 1
-	        BigDecimal actualFloors = building.getTotalFloors();
+	        BigDecimal allowedFloors = BigDecimal.valueOf(2); // G + 1 floors
+
+	        BigDecimal actualFloors = BigDecimal.ZERO;
+	        if (building != null) {
+	            if (building.getTotalFloors() != null) {
+	                actualFloors = building.getTotalFloors();
+	            } else if (building.getFloors() != null) {
+	                actualFloors = BigDecimal.valueOf(building.getFloors().size());
+	            }
+	        }
 
 	        if (actualFloors.compareTo(allowedFloors) > 0) {
-	            errors.put(ERR_NARROW_ROAD_RULE,
-	                    String.format(ERR_NARROW_ROAD_RULE, actualFloors));
-	            LOG.warn("Narrow road violation (Rear Yard): Allowed = {}, Actual = {}", allowedFloors, actualFloors);
-	            return false; 
+	            errors.put("NARROW_ROAD_RULE", String.format(ERR_NARROW_ROAD_RULE, actualFloors));
+	            LOG.warn("Narrow road violation (Rear): Allowed = {}, Actual = {}", allowedFloors, actualFloors);
+	           
 	        }
+
 
 	        Boolean specialValid = applySpecialRuleForNarrowRoadRear(
 	                pl, building, block.getName(), level, plot,
@@ -1314,7 +1322,7 @@ public class RearYardService_Assam extends RearYardService {
 	        BigDecimal buildingHeight, HashMap<String, String> errors,
 	        BigDecimal roadWidth, BigDecimal plotArea) {
 
-	    LOG.info("Applying special narrow road rule (Road Width = 2.40m) for Rear Yard → Block: {}, Level: {}, Plot Area: {}", 
+	    LOG.info("Applying special narrow road rule (Road Width  2.40m to 3.6) for Rear Yard → Block: {}, Level: {}, Plot Area: {}", 
 	             blockName, level, plotArea);
 
 	    BigDecimal minVal = BigDecimal.ZERO;  
@@ -1323,22 +1331,14 @@ public class RearYardService_Assam extends RearYardService {
 	    String rule = REAR_YARD_DESC;
 
 	    if (plotArea.compareTo(BigDecimal.valueOf(53.56)) >= 0 
-	            && plotArea.compareTo(BigDecimal.valueOf(93.73)) <= 0) {
+	            && plotArea.compareTo(BigDecimal.valueOf(134)) <= 0) {
 
 	        minVal = BigDecimal.valueOf(1.80);  
 	        meanVal = BigDecimal.valueOf(1.80); 
 	        subRule = "Rear setback";
-	        LOG.info("Rear Yard → Matched Plot Area 53.56 - 93.73 sqm → {}", subRule);
+	        LOG.info("Rear Yard → Matched Plot Area 53.56 - 134 sqm → {}", subRule);
 
-	    } else if (plotArea.compareTo(BigDecimal.valueOf(93.73)) > 0 
-	            && plotArea.compareTo(BigDecimal.valueOf(134)) <= 0) {
-
-	        minVal = BigDecimal.valueOf(2.00);  
-	        meanVal = BigDecimal.valueOf(1.00); 
-	        subRule = "Rear setback";
-	        LOG.info("Rear Yard → Matched Plot Area 93.73 - 134 sqm → {}", subRule);
-	    }
-
+	    } 
 	    BigDecimal providedMin = rearYardResult.actualMinDistance;   
 	    BigDecimal providedMean = rearYardResult.actualMeanDistance;
 

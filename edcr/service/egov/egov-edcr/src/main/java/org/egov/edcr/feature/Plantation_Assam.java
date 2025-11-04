@@ -96,23 +96,20 @@ public class Plantation_Assam extends FeatureProcess {
      */
     @Override
     public Plan process(Plan pl) {
-    	validate(pl);
-    	ScrutinyDetail scrutinyDetail = createScrutinyDetail();
-    	ReportScrutinyDetail details = createInitialDetails();
+        validate(pl);
+        ScrutinyDetail scrutinyDetail = createScrutinyDetail();
+        ReportScrutinyDetail details = createInitialDetails();
 
-    	BigDecimal totalArea = getTotalPlantationArea(pl);
-    	BigDecimal plotArea = getPlotArea(pl);
-    	String type = getOccupancyType(pl);
-    	String subType = getOccupancySubType(pl);
+        String type = getOccupancyType(pl);
+        String subType = getOccupancySubType(pl);
 
-    	BigDecimal plantationPer = calculatePlantationPercentage(totalArea, plotArea);
+        if (isRelevantOccupancyType(type, subType)) {
+            processPlantationRule(pl, scrutinyDetail, details);
+        }
 
-    	if (isRelevantOccupancyType(type, subType) && plantationPer.compareTo(BigDecimal.ZERO) > 0) {
-    		processPlantationRule(pl, plantationPer, scrutinyDetail, details);
-    	}
-
-    	return pl;
+        return pl;
     }
+
 
     /**
      * Creates and returns an initialized ScrutinyDetail object for plantation scrutiny.
@@ -137,7 +134,7 @@ public class Plantation_Assam extends FeatureProcess {
      */
     private ReportScrutinyDetail createInitialDetails() {
 		ReportScrutinyDetail detail = new ReportScrutinyDetail();
-		detail.setRuleNo(RULE_32);
+		detail.setRuleNo(RULE_104_iii);
 		detail.setDescription(PLANTATION_TREECOVER_DESCRIPTION);
 		return detail;
 	}
@@ -225,16 +222,18 @@ public class Plantation_Assam extends FeatureProcess {
     }
 
     /**
-     * Processes plantation rule comparison and adds the result to scrutiny details.
+     * Processes plantation rule comparison based on number of trees and adds the result to scrutiny details.
      *
-     * @param pl              The plan object.
-     * @param plantationPer   Calculated plantation percentage.
-     * @param scrutinyDetail  ScrutinyDetail object to be updated.
-     * @param detail         Initial rule details map to be filled.
+     * @param pl             The plan object.
+     * @param scrutinyDetail ScrutinyDetail object to be updated.
+     * @param detail          Initial rule details map to be filled.
      */
-    private void processPlantationRule(Plan pl, BigDecimal plantationPer, ScrutinyDetail scrutinyDetail, ReportScrutinyDetail detail) {
-        BigDecimal percent = BigDecimal.ZERO;
+    private void processPlantationRule(Plan pl, ScrutinyDetail scrutinyDetail, ReportScrutinyDetail detail) {
 
+        BigDecimal requiredTrees = null;
+        BigDecimal providedTrees = null;
+
+        //  Get rules from MDMS
         List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.PLANTATION.getValue(), false);
         Optional<PlantationRequirement> matchedRule = rules.stream()
             .filter(PlantationRequirement.class::isInstance)
@@ -243,28 +242,38 @@ public class Plantation_Assam extends FeatureProcess {
 
         if (matchedRule.isPresent()) {
             PlantationRequirement rule = matchedRule.get();
-            percent = rule.getPercent(); 
+            requiredTrees = rule.getNoOfTreesToBePlant(); // from MDMS
         }
 
-        // Required: MDMS percent (e.g. 30%)
-        detail.setRequired(percent.toString() + PERCENTAGE_SYMBOL);
+        //  Get provided number of trees from plan
+        if (pl.getPlantation() != null && pl.getPlantation().getNoOfTreesToBePlant() != null) {
+            providedTrees = pl.getPlantation().getNoOfTreesToBePlant();
+        }
+        
+        // Skip report entry if any value is missing
+        if (providedTrees == null) {
+            LOGGER.info("Skipping plantation scrutiny: missing provided tree count ( Provided={})",
+                   providedTrees);
+            return;
+        }
 
-        // Provided: plantation area in percent of plot area
-        BigDecimal providedPercent = plantationPer.multiply(BigDecimal.valueOf(100));
-        detail.setProvided(providedPercent.setScale(2, ROUNDMODE_MEASUREMENTS).toString() + PERCENTAGE_SYMBOL);
+        //  Populate report details
+        detail.setRequired(requiredTrees.toPlainString());
+        detail.setProvided(providedTrees.toPlainString());
 
-        // Compare provided% with required% from MDMS
-        if (providedPercent.compareTo(percent) >= 0) {
+        //  Compare required vs provided
+        if (providedTrees.compareTo(requiredTrees) >= 0) {
             detail.setStatus(Result.Accepted.getResultVal());
-            LOGGER.info("Plantation requirement met. Provided={}%, Required={}%", providedPercent, percent);
+            LOGGER.info("Plantation requirement met. Provided={} trees, Required={} trees", providedTrees, requiredTrees);
         } else {
             detail.setStatus(Result.Not_Accepted.getResultVal());
-            LOGGER.info("Plantation requirement NOT met. Provided={}%, Required={}%", providedPercent, percent);
+            LOGGER.info("Plantation requirement NOT met. Provided={} trees, Required={} trees", providedTrees, requiredTrees);
         }
 
         Map<String, String> details = mapReportDetails(detail);
         addScrutinyDetailtoPlan(scrutinyDetail, pl, details);
     }
+
 
 
     @Override
