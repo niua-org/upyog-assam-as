@@ -76,6 +76,7 @@ public class WorkflowIntegrator {
 	 * @param bpaRequest The BPARequest containing the BPA and RequestInfo
 	 */
 	public void callWorkFlow(BPARequest bpaRequest) {
+		log.info("Integrating with workflow for BPA: {}", bpaRequest.getBPA().getApplicationNo());
 		String wfTenantId = bpaRequest.getBPA().getTenantId();
 		JSONArray array = new JSONArray();
 		BPA bpa = bpaRequest.getBPA();
@@ -145,6 +146,7 @@ public class WorkflowIntegrator {
 		});
 		// setting the status back to BPA object from wf response
 		bpa.setStatus(idStatusMap.get(bpa.getApplicationNo()));
+		log.info("Workflow integration completed for BPA: {} with status: {}", bpa.getApplicationNo(), bpa.getStatus());
 
 	}
 }

@@ -2,6 +2,7 @@ package org.egov.bpa.consumer;
 
 import java.util.HashMap;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.bpa.service.PaymentUpdateService;
 import org.egov.bpa.util.BPAConstants;
 import org.slf4j.MDC;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import static org.egov.bpa.util.BPAConstants.TENANTID_MDC_STRING;
 
 @Component
+@Slf4j
 public class ReceiptConsumer {
 
 	private PaymentUpdateService paymentUpdateService;
@@ -27,7 +29,7 @@ public class ReceiptConsumer {
 
 	@KafkaListener(topicPattern = "${kafka.topics.receipt.create.pattern}" )
 	public void listenPayments(final HashMap<String, Object> record) {
-		
+		log.info("Received message in ReceiptConsumer: " + record);
 		// Adding in MDC so that tracer can add it in header
 		MDC.put(BPAConstants.TENANTID_MDC_STRING, stateLevelTenantID);
 		

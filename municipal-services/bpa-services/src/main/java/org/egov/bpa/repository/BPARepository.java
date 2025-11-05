@@ -57,6 +57,7 @@ public class BPARepository {
 	 * @param bpaRequest
 	 */
 	public void update(BPARequest bpaRequest, String type) {
+		log.info("BPARepository update type : {}", type);
 		switch (type) {
 			case BPAConstants.RTP_UPDATE:
 				producer.push(bpaRequest.getBPA().getTenantId(), config.getUpdateRTPDetailsTopic(), bpaRequest);

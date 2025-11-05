@@ -82,18 +82,23 @@ public class PaymentUpdateService {
 
 				List<String> businessServices = new ArrayList<String>(
 						Arrays.asList(config.getBusinessService().split(",")));
+				log.info("Business Service from config: " + businessServices);
 				if (businessServices.contains(paymentDetail.getBusinessService())) {
 					BPASearchCriteria searchCriteria = new BPASearchCriteria();
 					searchCriteria.setTenantId(tenantId);
 //					List<String> codes = Arrays.asList(paymentDetail.getBill().getConsumerCode());
 					searchCriteria.setApplicationNo(paymentDetail.getBill().getConsumerCode());
+					log.info("Processing payment update for Business Service: "
+							+ paymentDetail.getBusinessService());
+					log.info("Fetching BPA for Consumer Code: "
+							+ paymentDetail.getBill().getConsumerCode());
 					List<BPA> bpas = repository.getBPAData(searchCriteria, null);
 					if (CollectionUtils.isEmpty(bpas)) {
 						throw new CustomException(BPAErrorConstants.INVALID_RECEIPT,
 								"No Building Plan Application found for the comsumerCode "
 										+ searchCriteria.getApplicationNo());
 					}
-					Workflow workflow = Workflow.builder().action("PAY").build();
+					Workflow workflow = Workflow.builder().action("FORWARDED_TO_TECHNICAL_ENGINEER_MB").build();
 					bpas.forEach(bpa -> bpa.setWorkflow(workflow));
 					
 					// FIXME check if the update call to repository can be avoided
@@ -113,11 +118,12 @@ public class PaymentUpdateService {
 
 					log.debug(" the status of the application is : " + updateRequest.getBPA().getStatus());
 
+					//TODO: generate aproval no and validity i9n this lateral stage
+				//	enrichmentService.postStatusEnrichment(updateRequest);
+
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */
-					enrichmentService.postStatusEnrichment(updateRequest);
-
 					repository.update(updateRequest, BPAConstants.UPDATE);
 
 				}
