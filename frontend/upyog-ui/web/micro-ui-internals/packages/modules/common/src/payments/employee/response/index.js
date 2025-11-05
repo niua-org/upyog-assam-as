@@ -252,11 +252,11 @@ export const SuccessfulPayment = (props) => {
           //       ],  
              
           // }
-          response = await Digit.PaymentService.generatePdf("pg", { Payments: payments.Payments}, "bpa-receipt");
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments.Payments}, "bpa-receipt");
         }
         else {
           
-          response = await Digit.PaymentService.generatePdf(state, { Payments: payments.Payments }, generatePdfKey);
+          response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments.Payments }, generatePdfKey);
         }
       
     }

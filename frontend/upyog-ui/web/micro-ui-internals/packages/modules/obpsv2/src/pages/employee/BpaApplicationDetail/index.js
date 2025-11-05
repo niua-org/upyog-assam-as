@@ -58,8 +58,8 @@ const BPAEmployeeDetails = () => {
         else{
            response = await Digit.PaymentService.generatePdf(tenantId, { Payments: data?.collectionBillDetails}, "bpa-receipt");
         }
-        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response });
-        window.open(fileStore[response?.filestoreIds[0]], "_blank");      
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response?.fileStoreIds?.[0] || response });
+        window.open(fileStore[response?.fileStoreIds?.[0]] ||fileStore[response], "_blank");      
       },
     });
   }

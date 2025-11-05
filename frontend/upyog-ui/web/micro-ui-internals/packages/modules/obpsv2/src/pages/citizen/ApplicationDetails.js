@@ -246,9 +246,9 @@ import {
         let edcrData = edcrResponse?.edcrDetail?.[0];
     
       let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
-      let response = await Digit.PaymentService.generatePdf(bpaData?.tenantId, { Bpa: [reqData] }, "planningPermit");
-      const fileStore = await Digit.PaymentService.printReciept(bpaData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
-      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [reqData] }, "planningPermit");
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response?.filestoreIds?.[0] ||response });
+      window.open(fileStore[response?.filestoreIds?.[0]] || fileStore[response], "_blank");
 
     };
   
