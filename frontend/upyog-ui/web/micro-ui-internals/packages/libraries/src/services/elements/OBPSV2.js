@@ -316,7 +316,7 @@ export const OBPSV2Services = {
     if (edcrNumber) {
       ({ form22, form23A, form23B, loading } = await ScrutinyFormService.getDetails(edcrNumber, "assam"));
     }
-    console.log("form222",form22)
+
     if (!appDocumentFileStoreIds) appDocumentFileStoreIds = [];
     response?.bpa?.[0]?.additionalDetails?.fieldinspection_pending?.map(
       (fiData) => {
@@ -353,39 +353,39 @@ export const OBPSV2Services = {
         businessService: appBusinessService[1],
       });
     }
-    // for (let i = 0; i < appBusinessService?.length; i++) {
-    //   let collectionres = await Digit.PaymentService.recieptSearch(bpa?.tenantId, appBusinessService[i], { consumerCodes: bpa?.applicationNo, isEmployee: true });
-    //   if (collectionres?.Payments?.length > 0) {
-    //     collectionres?.Payments?.map(res => {
-    //       res?.paymentDetails?.map(resData => {
-    //         if (resData?.businessService == appBusinessService[i]) {
-    //           collectionBillRes.push(res);
-    //         }
-    //       })
-    //     })
-    //   }
-    //   if (collectionres?.Payments?.length > 0) collectionBillDetails.push(...collectionres?.Payments);
-    // }
-    // if (collectionBillRes?.length > 0) {
-    //   collectionBillRes?.map(ob => {
-    //     ob?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails.map((bill, index) => {
-    //       collectionBillArray.push(
-    //         { title: `${bill?.taxHeadCode}_DETAILS`, value: "", isSubTitle: true },
-    //         { title: bill?.taxHeadCode, value: `₹${bill?.amount}` },
-    //         { title: "BPA_STATUS_LABEL", value: "Paid" }
-    //       );
-    //       totalAmount = totalAmount + parseInt(bill?.amount);
-    //     })
-    //   })
-    // }
-    // if (fetchBillRes?.Bill?.length > 0) {
-    //   collectionBillArray.push(
-    //     { title: `${fetchBillRes?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails?.[0]?.taxHeadCode}_DETAILS` || `BPA_SANC_FEE_DETAILS`, value: "", isSubTitle: true},
-    //     { title: `BPA_SANC_FEE_LABEL`, value: `₹${fetchBillRes?.Bill?.[0]?.totalAmount}` },
-    //     { title: "BPA_STATUS_LABEL", value: `${fetchBillRes?.Bill?.[0]?.totalAmount == 0 ? "Paid" : "Unpaid"}` }
-    //   )
-    // }
-    // totalAmount > 0 && collectionBillArray.push({ title: "BPA_TOT_AMT_PAID", value: `₹${totalAmount}` });
+    for (let i = 0; i < appBusinessService?.length; i++) {
+      let collectionres = await Digit.PaymentService.recieptSearch(bpa?.tenantId, appBusinessService[i], { consumerCodes: bpa?.applicationNo, isEmployee: true });
+      if (collectionres?.Payments?.length > 0) {
+        collectionres?.Payments?.map(res => {
+          res?.paymentDetails?.map(resData => {
+            if (resData?.businessService == appBusinessService[i]) {
+              collectionBillRes.push(res);
+            }
+          })
+        })
+      }
+      if (collectionres?.Payments?.length > 0) collectionBillDetails.push(...collectionres?.Payments);
+    }
+    if (collectionBillRes?.length > 0) {
+      collectionBillRes?.map(ob => {
+        ob?.paymentDetails?.[0]?.bill?.billDetails?.[0]?.billAccountDetails.map((bill, index) => {
+          collectionBillArray.push(
+            { title: `${bill?.taxHeadCode}_DETAILS`, value: "", isSubTitle: true },
+            { title: bill?.taxHeadCode, value: `₹${bill?.amount}` },
+            { title: "BPA_STATUS_LABEL", value: "Paid" }
+          );
+          totalAmount = totalAmount + parseInt(bill?.amount);
+        })
+      })
+    }
+    if (fetchBillRes?.Bill?.length > 0) {
+      collectionBillArray.push(
+        { title: `${fetchBillRes?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails?.[0]?.taxHeadCode}_DETAILS` || `BPA_SANC_FEE_DETAILS`, value: "", isSubTitle: true},
+        { title: `BPA_SANC_FEE_LABEL`, value: `₹${fetchBillRes?.Bill?.[0]?.totalAmount}` },
+        { title: "BPA_STATUS_LABEL", value: `${fetchBillRes?.Bill?.[0]?.totalAmount == 0 ? "Paid" : "Unpaid"}` }
+      )
+    }
+    totalAmount > 0 && collectionBillArray.push({ title: "BPA_TOT_AMT_PAID", value: `₹${totalAmount}` });
 
     const billDetails = {
       title: "BPA_FEE_DETAILS_LABEL",

@@ -113,8 +113,7 @@ const siteReport = ({submitReport, onChange}) => {
       <CardLabel style={{
         fontWeight: 500,
         textAlign: "left",
-        whiteSpace: "normal",
-        wordBreak: "break-word",
+        whiteSpace: "nowrap",
         lineHeight: "1.4",
         alignSelf: "start"
       }}>

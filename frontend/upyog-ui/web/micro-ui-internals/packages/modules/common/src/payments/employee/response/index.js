@@ -167,11 +167,12 @@ export const SuccessfulPayment = (props) => {
   };
 
   const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
-    let queryObj = { applicationNo: data?.[0]?.applicationNo };
-    let bpaResponse = await Digit.OBPSService.BPASearch(data?.[0]?.tenantId, queryObj);
-    const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.[0]?.tenantId, { edcrNumber: data?.[0]?.edcrNumber });
-    let bpaData = bpaResponse?.BPA?.[0],
-      edcrData = edcrResponse?.edcrDetail?.[0];
+    let applicationNo =  data?.[0]?.applicationNo ;
+    let bpaResponse = await Digit.OBPSV2Services.search({tenantId,
+      filters: { applicationNo }});
+    const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.[0]?.edcrNumber });
+    let bpaData = bpaResponse?.bpa?.[0];
+    let edcrData = edcrResponse?.edcrDetail?.[0];
     let currentDate = new Date();
     bpaData.additionalDetails.runDate = convertDateToEpoch(
       currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
@@ -228,30 +229,30 @@ export const SuccessfulPayment = (props) => {
             printRecieptNew(payments)
         }
         else if(businessServ.includes("BPA")){
-          let queryObj = { applicationNo: payments.Payments[0].paymentDetails[0]?.bill?.consumerCode };
-          const paymentData=payments.Payments[0];
-          let bpaResponse = await Digit.OBPSService.BPASearch( payments.Payments[0].tenantId, queryObj);
-          const formattedStakeholderType=bpaResponse?.BPA[0]?.additionalDetails?.typeOfArchitect
-          const stakeholderType=formattedStakeholderType.charAt(0).toUpperCase()+formattedStakeholderType.slice(1).toLowerCase()
-          const updatedpayments={
-            ...paymentData,
+          // let queryObj = { applicationNo: payments.Payments[0].paymentDetails[0]?.bill?.consumerCode };
+          // const paymentData=payments.Payments[0];
+          // let bpaResponse = await Digit.OBPSService.BPASearch( payments.Payments[0].tenantId, queryObj);
+          // const formattedStakeholderType=bpaResponse?.BPA[0]?.additionalDetails?.typeOfArchitect
+          // const stakeholderType=formattedStakeholderType.charAt(0).toUpperCase()+formattedStakeholderType.slice(1).toLowerCase()
+          // const updatedpayments={
+          //   ...paymentData,
            
-                paymentDetails:[
-                  {
-                    ...paymentData.paymentDetails?.[0],
-                    additionalDetails:{
-                      ...paymentData.paymentDetails[0].additionalDetails,
-                      "propertyID":bpaResponse?.BPA[0]?.additionalDetails?.propertyID,
-                      "stakeholderType":formattedStakeholderType.charAt(0).toUpperCase()+formattedStakeholderType.slice(1).toLowerCase(),
-                      "contact":bpaResponse?.BPA[0]?.businessService==="BPA-PAP"? t("APPLICANT_CONTACT") : `${stakeholderType} Contact`,
-                        "idType":bpaResponse?.BPA[0]?.businessService==="BPA-PAP" ? t("APPLICATION_NUMBER"):`${stakeholderType} ID`,
-                        "name":bpaResponse?.BPA[0]?.businessService==="BPA-PAP" ? t("APPLICANT_NAME"):`${stakeholderType} Name`,
-                    },
-                  },
-                ],  
+          //       paymentDetails:[
+          //         {
+          //           ...paymentData.paymentDetails?.[0],
+          //           additionalDetails:{
+          //             ...paymentData.paymentDetails[0].additionalDetails,
+          //             "propertyID":bpaResponse?.BPA[0]?.additionalDetails?.propertyID,
+          //             "stakeholderType":formattedStakeholderType.charAt(0).toUpperCase()+formattedStakeholderType.slice(1).toLowerCase(),
+          //             "contact":bpaResponse?.BPA[0]?.businessService==="BPA-PAP"? t("APPLICANT_CONTACT") : `${stakeholderType} Contact`,
+          //               "idType":bpaResponse?.BPA[0]?.businessService==="BPA-PAP" ? t("APPLICATION_NUMBER"):`${stakeholderType} ID`,
+          //               "name":bpaResponse?.BPA[0]?.businessService==="BPA-PAP" ? t("APPLICANT_NAME"):`${stakeholderType} Name`,
+          //           },
+          //         },
+          //       ],  
              
-          }
-          response = await Digit.PaymentService.generatePdf(state, { Payments: [{...updatedpayments}] }, generatePdfKey);
+          // }
+          response = await Digit.PaymentService.generatePdf("pg", { Payments: payments.Payments}, "bpa-receipt");
         }
         else {
           
@@ -682,8 +683,18 @@ export const SuccessfulPayment = (props) => {
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
               </svg>
-              {t("CS_COMMON_PRINT_RECEIPT")}
+              {t("CS_COMMON_PRINT_RECEIPT77")}
             </div>)}
+            {(businessService == "BPA.PLANNING_PERMIT_FEE") ? (
+              <div
+                className="primary-label-btn d-grid"
+                style={{ marginLeft: "unset" }}
+                onClick={(r) => getPermitOccupancyOrderSearch("planningPermit")}
+              >
+                <DownloadPrefixIcon />
+                {t("BPA_PLANNING_PERMIT_ORDER")}
+              </div>
+            ) : null}
             {businessService == "TL" ? (
               <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printCertificate}>
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">

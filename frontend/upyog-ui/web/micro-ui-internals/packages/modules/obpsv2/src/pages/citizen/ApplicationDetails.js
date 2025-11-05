@@ -222,31 +222,44 @@ import {
      * This function handles the receipt generation and updates the BPA application details
      * with the generated receipt's file store ID.
      */
+
     async function getRecieptSearch({ tenantId, payments, ...params }) {
       let application = bpaApplicationDetail[0] || {};
       let fileStoreId = application?.paymentReceiptFilestoreId
       if (!fileStoreId) {
         let response = { filestoreIds: [payments?.fileStoreId] };
-        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "bpa-services-receipt");
-        const updatedApplication = {
-          ...application,
-          paymentReceiptFilestoreId: response?.filestoreIds[0]
-        };
-        await mutation.mutateAsync({
-          BPA: [updatedApplication]
-        });
+        response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "bpa-receipt");
+      
+        
         fileStoreId = response?.filestoreIds[0];
         refetch();
       }
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");
     }
+    const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
+      let applicationNo =  data?.bpa?.[0]?.applicationNo ;
+      let bpaResponse = await Digit.OBPSV2Services.search({tenantId,
+        filters: { applicationNo}});
+       const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.bpa?.[0]?.edcrNumber });
+      let bpaData = bpaResponse?.bpa?.[0];
+        let edcrData = edcrResponse?.edcrDetail?.[0];
+    
+      let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
+      let response = await Digit.PaymentService.generatePdf(bpaData?.tenantId, { Bpa: [reqData] }, "planningPermit");
+      const fileStore = await Digit.PaymentService.printReciept(bpaData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
+      window.open(fileStore[response?.filestoreIds[0]], "_blank");
+
+    };
   
     let dowloadOptions = [];
-    dowloadOptions.push({
-      label: t("BPA_DOWNLOAD_ACKNOWLEDGEMENT"),
-      onClick: () => getAcknowledgementData(),
-    });
+    if(data?.status==="PAYMENT_PENDING"){
+      dowloadOptions.push({
+        order: 3,
+        label: t("BPA_PERMIT_ORDER"),
+        onClick: () => getPermitOccupancyOrderSearch({tenantId: data?.applicationData?.tenantId},"buildingpermit"),
+      });
+    }
    const Heading = (props) => {
      return <h1 className="heading-m">{props.label}</h1>;
    };
@@ -482,6 +495,12 @@ import {
         label: t("BPA_FEE_RECEIPT"),
         onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
       });
+        dowloadOptions.push({
+          order: 3,
+          label: t("BPA_PERMIT_ORDER"),
+          onClick: () => getPermitOccupancyOrderSearch({tenantId: data?.applicationData?.tenantId},"buildingpermit"),
+        });
+      
     }
   
     // Extract data from response structure
@@ -499,14 +518,14 @@ import {
         <div>
           <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
             <Header styles={{ fontSize: "32px" }}>{t("BPA_APPLICATION_DETAILS")}</Header>
-            {/* {dowloadOptions && dowloadOptions.length > 0 && (
+            {dowloadOptions && dowloadOptions.length > 0 && (
               <MultiLink
                 className="multilinkWrapper"
                 onHeadClick={() => setShowOptions(!showOptions)}
                 displayOptions={showOptions}
                 options={dowloadOptions}
               />
-            )} */}
+            )}
           </div>
           <Card>
           {/* {window.location.href.includes("/employee/") && bpa_details?.status==="PENDING_GMDA_ENGINEER" && (

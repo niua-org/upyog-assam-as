@@ -7,6 +7,7 @@ import useWorkflowDetails from "../../../../../../libraries/src/hooks/workflow";
 import useBPAV2DetailsPage from "../../../../../../libraries/src/hooks/obpsv2/useBPAV2DetailsPage";
 import { newConfig as newConfigSubmitReport } from "../../../config/submitReportConfig";
 import useApplicationActions from "../../../../../../libraries/src/hooks/obpsv2/useApplicationActions";
+import { convertDateToEpoch } from "../../../utils"
 const BPAEmployeeDetails = () => {
   const { t } = useTranslation();
   const { acknowledgementIds, tenantId } = useParams();
@@ -28,16 +29,45 @@ const BPAEmployeeDetails = () => {
     id: acknowledgementIds,
     moduleCode: "OBPSV2",
   });
+  const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
+    let applicationNo=  data?.applicationData?.applicationNo ;
+    let bpaResponse = await Digit.OBPSV2Services.search({tenantId,
+      filters: { applicationNo }});
+     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.applicationData?.edcrNumber });
+    let bpaData = bpaResponse?.bpa?.[0];
+      let  edcrData = edcrResponse?.edcrDetail?.[0];
+    let currentDate = new Date();
+    bpaData.additionalDetails.runDate = convertDateToEpoch(
+      currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
+    );
+    let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
+    let response = await Digit.PaymentService.generatePdf(bpaData?.tenantId, { Bpa: [reqData] }, order);
+    const fileStore = await Digit.PaymentService.printReciept(bpaData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+    //reqData["applicationType"] = data?.[0]?.additionalDetails?.applicationType;
+  };
   let downloadOptions = [];
-  if (application?.paymentReceiptFilestoreId) {
+  if (data?.collectionBillDetails?.[0]) {
     downloadOptions.push({
       label: t("BPA_FEE_RECEIPT"),
       onClick: async () => {
-        const fileStore = await Digit.PaymentService.printReciept(tenantId, {
-          fileStoreIds: application.paymentReceiptFilestoreId,
-        });
-        window.open(fileStore[application.paymentReceiptFilestoreId], "_blank");
+        let response = null
+        if(data?.collectionBillDetails?.[0]?.fileStoreId){
+          response = data?.collectionBillDetails?.[0]?.fileStoreId          
+        }
+        else{
+           response = await Digit.PaymentService.generatePdf(tenantId, { Payments: data?.collectionBillDetails}, "bpa-receipt");
+        }
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response });
+        window.open(fileStore[response?.filestoreIds[0]], "_blank");      
       },
+    });
+  }
+  if(data?.collectionBillDetails?.[0]){
+    downloadOptions.push({
+      order: 3,
+      label: t("BPA_PERMIT_ORDER"),
+      onClick: () => getPermitOccupancyOrderSearch("planningPermit"),
     });
   }
   function checkHead(head) {
@@ -78,19 +108,19 @@ const BPAEmployeeDetails = () => {
           <div style={{zIndex: "10",display:"flex",flexDirection:"row-reverse",alignItems:"center",marginTop:"-25px"}}>
                
                <div style={{zIndex: "10",  position: "relative"}}>
-          {/* {downloadOptions.length > 0 && (
+          {downloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
               onHeadClick={() => setShowOptions(!showOptions)}
               displayOptions={showOptions}
               options={downloadOptions}
             />
-          )} */}
+          )}
           </div>
           
       <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         </div>
-        {(data?.applicationData?.status === "PENDING_DA_ENGINEER" || data?.applicationData?.status ==="PENDING_DD_AD_DEVELOPMENT_AUTHORITY") && (userInfo?.info?.roles.filter(role => role.code === "BPA_ENGINEER")).length>0 && <FormComposer
+        {(data?.applicationData?.status === "PENDING_DA_ENGINEER") && (userInfo?.info?.roles.filter(role => role.code === "BPA_ENGINEER")).length>0 && <FormComposer
         heading={t("")}
         isDisabled={!canSubmit}
         config={configs.map((config) => {
