@@ -66,9 +66,6 @@ import static org.egov.edcr.constants.CommonFeatureConstants.SINGLE_SPACE_STRING
 import static org.egov.edcr.constants.CommonFeatureConstants.STILT_PARKING_AREA;
 import static org.egov.edcr.constants.CommonKeyConstants.COMMON_PARKING;
 import static org.egov.edcr.constants.DxfFileConstants.A;
-import static org.egov.edcr.constants.DxfFileConstants.J;
-import static org.egov.edcr.constants.EdcrReportConstants.EWS;
-import static org.egov.edcr.constants.EdcrReportConstants.LIG;
 import static org.egov.edcr.constants.DxfFileConstants.C;
 import static org.egov.edcr.constants.DxfFileConstants.D_M;
 import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
@@ -81,7 +78,7 @@ import static org.egov.edcr.constants.DxfFileConstants.F_LD;
 import static org.egov.edcr.constants.DxfFileConstants.F_PB;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.H;
-import static org.egov.edcr.constants.DxfFileConstants.K;
+import static org.egov.edcr.constants.DxfFileConstants.J;
 import static org.egov.edcr.constants.DxfFileConstants.PARKING_SLOT;
 import static org.egov.edcr.constants.DxfFileConstants.S_BH;
 import static org.egov.edcr.constants.DxfFileConstants.S_CRC;
@@ -90,19 +87,21 @@ import static org.egov.edcr.constants.DxfFileConstants.S_SAS;
 import static org.egov.edcr.constants.EdcrReportConstants.AREA_UNIT_SQM;
 import static org.egov.edcr.constants.EdcrReportConstants.BSMNT_ECS;
 import static org.egov.edcr.constants.EdcrReportConstants.BSMNT_PARKING_DIM_DESC;
+import static org.egov.edcr.constants.EdcrReportConstants.CARPETAREA_THRESHHOLD;
 import static org.egov.edcr.constants.EdcrReportConstants.COVER_ECS;
 import static org.egov.edcr.constants.EdcrReportConstants.COVER_PARKING_DIM_DESC;
 import static org.egov.edcr.constants.EdcrReportConstants.DA_PARKING_MIN_AREA;
 import static org.egov.edcr.constants.EdcrReportConstants.EV_PARKING_DESCRIPTION;
 import static org.egov.edcr.constants.EdcrReportConstants.EV_PARKING_PROVIDED;
 import static org.egov.edcr.constants.EdcrReportConstants.EV_PARKING_REQUIRED;
+import static org.egov.edcr.constants.EdcrReportConstants.EWS;
 import static org.egov.edcr.constants.EdcrReportConstants.LABEL_CAR_PARKING;
 import static org.egov.edcr.constants.EdcrReportConstants.LABEL_TWO_WHEELER_PARKING;
 import static org.egov.edcr.constants.EdcrReportConstants.LABEL_VISITOR_PARKING;
+import static org.egov.edcr.constants.EdcrReportConstants.LIG;
 import static org.egov.edcr.constants.EdcrReportConstants.LOADING_UNLOADING_AREA;
 import static org.egov.edcr.constants.EdcrReportConstants.MECHANICAL_PARKING;
 import static org.egov.edcr.constants.EdcrReportConstants.MECH_PARKING_DESC;
-import static org.egov.edcr.constants.EdcrReportConstants.CARPETAREA_THRESHHOLD;
 import static org.egov.edcr.constants.EdcrReportConstants.MECH_PARKING_DIM_DESC;
 import static org.egov.edcr.constants.EdcrReportConstants.MECH_PARKING_DIM_DESC_NA;
 import static org.egov.edcr.constants.EdcrReportConstants.MECH_PARKING_HEIGHT;
@@ -113,6 +112,7 @@ import static org.egov.edcr.constants.EdcrReportConstants.NO_VIOLATION_OF_AREA;
 import static org.egov.edcr.constants.EdcrReportConstants.NUMBERS;
 import static org.egov.edcr.constants.EdcrReportConstants.OPEN_ECS;
 import static org.egov.edcr.constants.EdcrReportConstants.OPEN_PARKING_DIM_DESC;
+import static org.egov.edcr.constants.EdcrReportConstants.OPEN_PARKING_ERROR;
 import static org.egov.edcr.constants.EdcrReportConstants.OUT_OF;
 import static org.egov.edcr.constants.EdcrReportConstants.PARKING;
 import static org.egov.edcr.constants.EdcrReportConstants.PARKING_AREA_DIM;
@@ -123,6 +123,7 @@ import static org.egov.edcr.constants.EdcrReportConstants.PARKING_VIOLATED_DIM;
 import static org.egov.edcr.constants.EdcrReportConstants.PARKING_VIOLATED_MINIMUM_AREA;
 import static org.egov.edcr.constants.EdcrReportConstants.RULE117;
 import static org.egov.edcr.constants.EdcrReportConstants.RULE__DESCRIPTION;
+import static org.egov.edcr.constants.EdcrReportConstants.SECTION_92;
 import static org.egov.edcr.constants.EdcrReportConstants.SECTION_CAR_PARKING;
 import static org.egov.edcr.constants.EdcrReportConstants.SLOT_HAVING_GT_4_PTS;
 import static org.egov.edcr.constants.EdcrReportConstants.SPECIAL_PARKING_DIM_DESC;
@@ -151,6 +152,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -168,6 +170,7 @@ import org.egov.common.entity.edcr.ParkingRequirement;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.common.entity.edcr.SetBack;
 import org.egov.edcr.service.MDMSCacheManager;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.edcr.utility.Util;
@@ -204,16 +207,18 @@ public class Parking_Assam extends Parking {
 		            ? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
 		            : null;
 
+		 BigDecimal totalOpenArea = calculateTotalOpenArea(pl);
+		 
 		    if (mostRestrictiveOccupancy != null) {
 		        String typeCode = mostRestrictiveOccupancy.getType().getCode();
 
 		        if (A.equals(typeCode)) {
-		            processParking(pl, OccupancyType.OCCUPANCY_A1.getOccupancyType());
+		            processParking(pl, OccupancyType.OCCUPANCY_A1.getOccupancyType(), totalOpenArea);
 		        } else if (F.equals(typeCode)) {
-		            processParking(pl, OccupancyType.OCCUPANCY_F.getOccupancyType());
+		            processParking(pl, OccupancyType.OCCUPANCY_F.getOccupancyType(), totalOpenArea);
 		        } 
 		        else if (G.equals(typeCode)) {
-		            processParking(pl, OccupancyType.OCCUPANCY_G1.getOccupancyType());
+		            processParking(pl, OccupancyType.OCCUPANCY_G1.getOccupancyType(), totalOpenArea);
 		        } else {
 		            pl.addError("Parking", "Unsupported occupancy type for parking: " + typeCode);
 		        }
@@ -299,6 +304,57 @@ public class Parking_Assam extends Parking {
 						TWO_WHEELER_DIM_DESC + count + NO_TWO_WHEELER_PARKING_SLOT_POLYGON_4_PTS);
 		}
 	}
+	
+	
+	/**
+	 * Calculates the total open area for parking purpose.
+	 * Formula: Open Area = Plot Area - Building Footprint Area
+	 *
+	 * @param pl the plan object containing plot and building details
+	 * @return total open area as BigDecimal, or null if not computable
+	 */
+	private BigDecimal calculateTotalOpenArea(Plan pl) {
+	    if (pl == null || pl.getPlot() == null) {
+	        LOGGER.warn("Plan or Plot is null. Cannot calculate open area.");
+	        return null;
+	    }
+	    BigDecimal buildingFootPrintArea = BigDecimal.ZERO;
+	    for (Block block : pl.getBlocks()) {
+	        for (SetBack setBack : block.getSetBacks()) {
+	            Measurement buildingFootPrint = setBack.getBuildingFootPrint();
+	            if (buildingFootPrint != null) {
+	            	buildingFootPrintArea = buildingFootPrint.getArea();
+	                LOGGER.info("Building Footprint Area for block {}: {}", block.getNumber(), buildingFootPrintArea);
+	            }
+	        }
+	    }
+
+
+	    BigDecimal plotArea = pl.getPlot().getArea();
+
+	    if (plotArea == null) {
+	        LOGGER.warn("Plot area not available in Plan object.");
+	        return null;
+	    }
+
+	    BigDecimal totalOpenArea = plotArea.subtract(buildingFootPrintArea);
+	    if (totalOpenArea.compareTo(BigDecimal.ZERO) < 0) {
+	        LOGGER.warn("Calculated open area is negative, resetting to 0");
+	        totalOpenArea = BigDecimal.ZERO;
+	    }
+
+	    BigDecimal landscapingArea = totalOpenArea
+                .multiply(new BigDecimal("0.60"))
+                .setScale(2, RoundingMode.HALF_UP);
+	    
+	    // landscaping area (remaining 60%)
+        if (pl.getPlot() != null) {
+            pl.getPlot().setLandscapingArea(landscapingArea);
+            LOGGER.info("60% of total open area ({}) saved for landscaping: {}", totalOpenArea, landscapingArea);
+        }
+	    return totalOpenArea.setScale(2, RoundingMode.HALF_UP);
+	}
+
 
 	public void processParking(Plan pl) {
 		ParkingHelper helper = new ParkingHelper();
@@ -1123,7 +1179,7 @@ public class Parking_Assam extends Parking {
 	}
 
 	// For Assam
-	private ParkingAreas1 calculateParkingAreas1(Plan pl) {
+	private ParkingAreas1 calculateParkingAreas1(Plan pl, BigDecimal totalOpenArea) {
 		BigDecimal cover = BigDecimal.ZERO;
 		BigDecimal basement = BigDecimal.ZERO;
 		BigDecimal open = BigDecimal.ZERO;
@@ -1163,6 +1219,8 @@ public class Parking_Assam extends Parking {
 		stilt = stilt.setScale(2, RoundingMode.UP);
 		twoWheeler = twoWheeler.setScale(2, RoundingMode.UP);
 		visitor = visitor.setScale(2, RoundingMode.UP);
+		
+		open = applyOpenParkingLimit(pl, open, totalOpenArea);
 
 		BigDecimal total = open.add(cover).add(basement).add(stilt).add(twoWheeler).add(visitor).setScale(2,
 				RoundingMode.UP);
@@ -1170,7 +1228,47 @@ public class Parking_Assam extends Parking {
 		return new ParkingAreas1(open, cover, basement, stilt, twoWheeler, visitor, total);
 	}
 
-	public void processParking(Plan pl, String occupancyType) {
+	/**
+	 * Applies the 40% cap on open parking area based on total open area (plot - building footprint).
+	 * 
+	 * @param pl   the Plan object containing plot and building footprint details
+	 * @param open the calculated open parking area
+	 * @return the capped open parking area (cannot exceed 40% of total open area)
+	 */
+	private BigDecimal applyOpenParkingLimit(Plan pl, BigDecimal open, BigDecimal totalOpenArea) {
+	    try {
+	        if (pl == null || pl.getPlot() == null) {
+	            LOGGER.warn("Plan or Plot is null. Skipping open area 40% limit.");
+	            return open;
+	        }
+	        BigDecimal plotArea = pl.getPlot().getArea();
+	        if (plotArea != null) {
+	            if (totalOpenArea.compareTo(BigDecimal.ZERO) > 0) {
+	                BigDecimal maxAllowedOpenParking = totalOpenArea
+	                        .multiply(new BigDecimal("0.40"))
+	                        .setScale(2, RoundingMode.HALF_UP);
+
+	                if (open.compareTo(maxAllowedOpenParking) > 0) {
+	                    String errorMsg = String.format(
+	                    		OPEN_PARKING_ERROR, open, totalOpenArea, maxAllowedOpenParking);
+
+	                    LOGGER.error(errorMsg);
+	                    pl.addError("Parking", errorMsg);
+	                }
+	            } else {
+	                LOGGER.warn("Total open area is zero or negative. Skipping 40% cap check.");
+	            }
+	        } else {
+	            LOGGER.warn("Plot area not found. Cannot apply open area 40% limit.");
+	        }
+	    } catch (Exception e) {
+	        LOGGER.error("Error applying 40% open area limit in applyOpenParkingLimit(): ", e);
+	    }
+
+	    return open;
+	}
+
+	public void processParking(Plan pl, String occupancyType, BigDecimal totalOpenArea) {
 
 		BigDecimal totalCarpetArea = getTotalCarpetAreaByOccupancy(pl, occupancyType);
 
@@ -1183,7 +1281,7 @@ public class Parking_Assam extends Parking {
 		double requiredTwoWheelerParkingArea = processTwoWheelerParking(pl, occupancyType);
 		double requiredVisitorsParkingArea = processVisitorsParking(pl, occupancyType);
 
-		ParkingAreas1 parkingAreas = calculateParkingAreas1(pl);
+		ParkingAreas1 parkingAreas = calculateParkingAreas1(pl, totalOpenArea);
 
 		// Provided areas
 		double providedCarParkingArea = parkingAreas.getOpen().doubleValue() + parkingAreas.getCover().doubleValue()
@@ -1230,6 +1328,11 @@ public class Parking_Assam extends Parking {
 				overallOk = false;
 		}
 
+	    //  Landscaping report (60% of plot area)
+	    if (pl.getPlot().getLandscapingArea().compareTo(BigDecimal.ZERO) > 0) {
+	        setReportOutputDetails1(pl, SECTION_92, "Landscaping Area (60% of Open Area)",
+	                "-", pl.getPlot().getLandscapingArea() + AREA_UNIT_SQM, Result.Accepted.getResultVal());
+	    }
 		// Final Acceptance or Error
 		if (!overallOk) {
 			StringBuilder err = new StringBuilder("Parking not sufficient for: ");

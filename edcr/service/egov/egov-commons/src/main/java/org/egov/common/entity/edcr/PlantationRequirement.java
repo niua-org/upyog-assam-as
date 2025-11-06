@@ -8,6 +8,17 @@ public class PlantationRequirement extends MdmsFeatureRule {
 	
 	 @JsonProperty("percent")
 	    private BigDecimal percent;
+	 
+	 private BigDecimal noOfTreesToBePlant;
+
+
+	public BigDecimal getNoOfTreesToBePlant() {
+		return noOfTreesToBePlant;
+	}
+
+	public void setNoOfTreesToBePlant(BigDecimal noOfTreesToBePlant) {
+		this.noOfTreesToBePlant = noOfTreesToBePlant;
+	}
 
 	public BigDecimal getPercent() {
 		return percent;
@@ -19,7 +30,7 @@ public class PlantationRequirement extends MdmsFeatureRule {
 
 	@Override
 	public String toString() {
-		return "PlantationRequirement [percent=" + percent + "]";
+		return "PlantationRequirement [percent=" + percent + ", noOfTreesToBePlant=" + noOfTreesToBePlant + "]";
 	}
 
 }

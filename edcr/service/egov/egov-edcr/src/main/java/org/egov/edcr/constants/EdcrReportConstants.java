@@ -531,6 +531,7 @@ public class EdcrReportConstants {
     public static final String SUBRULE_59_10 = "59-10";
     public static final String SUBRULE_59_10_DESC = "Minimum distance from canopy to plot boundary";
     public static final String SECTION_CAR_PARKING = "26";
+    public static final String SECTION_92 = "92";
     public static final String SECTION_TWO_WHEELER_PARKING = "26";
     public static final String SECTION_VISITOR_PARKING = "26";
 
@@ -541,7 +542,10 @@ public class EdcrReportConstants {
 
     public static final String RULE_32 = "4.4.4 (XI)";
     public static final String PLANTATION_TREECOVER_DESCRIPTION = "Plantation tree cover";
-    public static final String RULE_37_6 = "37-6";
+    public static final String OPEN_PARKING_ERROR = "Open parking area (%.2f sq.m) exceeds the permissible 40%% of total open area (%.2f sq.m). Maximum allowed: %.2f sq.m";
+
+    public static final String RULE_104_iii = "104_iii";
+    public static final String RULE_37_6 = "92";
     public static final String RULE_34 = "34-1";
     public static final String PLOTAREA_DESCRIPTION = "Minimum Plot Area";
     public static final String SUBRULE_PORTICO = "PORTICO";

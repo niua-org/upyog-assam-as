@@ -100,8 +100,29 @@ public class Block extends Measurement {
     public List<BigDecimal> getRoofSlopes() {
         return roofSlopes;
     }
+    private List<Measurement> landscapingArea = new ArrayList<>();
 
-    public void setRoofSlopes(List<BigDecimal> roofSlopes) {
+    private List<Measurement> unpavedArea = new ArrayList<>();
+    
+    
+
+    public List<Measurement> getLandscapingArea() {
+		return landscapingArea;
+	}
+
+	public void setLandscapingArea(List<Measurement> landscapingArea) {
+		this.landscapingArea = landscapingArea;
+	}
+
+	public List<Measurement> getUnpavedArea() {
+		return unpavedArea;
+	}
+
+	public void setUnpavedArea(List<Measurement> unpavedArea) {
+		this.unpavedArea = unpavedArea;
+	}
+
+	public void setRoofSlopes(List<BigDecimal> roofSlopes) {
         this.roofSlopes = roofSlopes;
     }
 

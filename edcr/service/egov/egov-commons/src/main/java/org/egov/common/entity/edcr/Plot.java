@@ -75,8 +75,18 @@ public class Plot extends Measurement {
     private Boolean smallPlot = false;
 
     private BigDecimal plotBndryArea;
+    
+    private BigDecimal landscapingArea;
 
-    public SetBack getLevelZeroSetBack() {
+    public BigDecimal getLandscapingArea() {
+		return landscapingArea;
+	}
+
+	public void setLandscapingArea(BigDecimal landscapingArea) {
+		this.landscapingArea = landscapingArea;
+	}
+
+	public SetBack getLevelZeroSetBack() {
         SetBack setBack = null;
 
         for (SetBack setback : getSetBacks()) {

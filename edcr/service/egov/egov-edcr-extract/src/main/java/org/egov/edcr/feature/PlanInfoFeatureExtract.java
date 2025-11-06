@@ -963,8 +963,8 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
         if (StringUtils.isNotBlank(secondRoadWidth)) {
             secondRoadWidth = secondRoadWidth.replaceAll(digitsRegex, "");
             BigDecimal roadWidthValue = getNumericValue(secondRoadWidth, pl, DxfFileConstants.SECOND_ROAD_WIDTH);
-            if(roadWidthValue.compareTo(pi.getRoadWidth()) > 0){
-                pi.setRoadWidth(roadWidthValue);
+            if(roadWidthValue.compareTo(pi.getSecondRoadWidth()) > 0){
+                pi.setSecondRoadWidth(roadWidthValue);
             }
         }
 

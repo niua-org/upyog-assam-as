@@ -1,5 +1,6 @@
 package org.egov.edcr.feature;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,25 @@ public class PlantationExtract extends FeatureExtract {
 
         List<DXFLWPolyline> plantationPolylines = Util.getPolyLinesByLayer(pl.getDoc(),
                 layerNames.getLayerName("LAYER_NAME_PLANTATION_TREECOVER"));
+        
+        String noOftreesToBePlant = Util.getMtextByLayerName(pl.getDoc(),
+                layerNames.getLayerName("LAYER_NAME_PLANTATION_TREECOVER")
+               );
+        if (noOftreesToBePlant != null && !noOftreesToBePlant.isEmpty()) {
+            try {
+                if (noOftreesToBePlant.contains(";")) {
+                    String[] textSplit = noOftreesToBePlant.split(";");
+                    noOftreesToBePlant = textSplit[textSplit.length - 1];
+                }
+                noOftreesToBePlant = noOftreesToBePlant.replaceAll("[^\\d.]", "");
+                if (!noOftreesToBePlant.isEmpty()) {
+                    pl.getPlantation().setNoOfTreesToBePlant((BigDecimal.valueOf(Double.parseDouble(noOftreesToBePlant))));
+                }
+            } catch (NumberFormatException e) {
+                pl.addError(layerNames.getLayerName("LAYER_NAME_PLANTATION_TREECOVER"),
+                        "No of trees to be plant value contains non-numeric characters.");
+            }
+        }    
         for (DXFLWPolyline pline : plantationPolylines)
             pl.getPlantation().getPlantations().add(new MeasurementDetail(pline, true));
 

@@ -43,11 +43,17 @@ public class PlantationGreenStrip_Assam extends FeatureProcess {
         // We’ll take minimum threshold as 10–15% depending on rule
         BigDecimal requiredMinPercentage = maxPercentage; // if range exists, use higher end (15%)
 
-        BigDecimal plotArea = pl.getPlot().getArea();
-        BigDecimal minRequiredArea = plotArea.multiply(requiredMinPercentage).divide(BigDecimal.valueOf(100));
+        BigDecimal landscapeArea = pl.getPlot().getLandscapingArea(); // 15% of landscaping area (which h 60 percnt of open area)
+        
+     // Calculate Unpaved Area = 50% of Landscaping Area
+        BigDecimal unpavedArea = landscapeArea
+                .multiply(new BigDecimal("0.50"))
+                .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
+        
+        BigDecimal minRequiredArea = landscapeArea.multiply(requiredMinPercentage).divide(BigDecimal.valueOf(100));
 
         for (Block block : pl.getBlocks()) {
-            processBlock(pl, block, minRequiredArea, requiredMinPercentage);
+            processBlock(pl, block, minRequiredArea, requiredMinPercentage, landscapeArea, unpavedArea);
         }
 
         return pl;
@@ -61,7 +67,7 @@ public class PlantationGreenStrip_Assam extends FeatureProcess {
                 .findFirst();
     }
 
-    private void processBlock(Plan pl, Block block, BigDecimal minRequiredArea, BigDecimal minPercentage) {
+    private void processBlock(Plan pl, Block block, BigDecimal minRequiredArea, BigDecimal minPercentage, BigDecimal landscapeArea, BigDecimal unpavedArea) {
         ScrutinyDetail scrutinyDetail = createScrutinyDetailForBlock(block);
 
         List<BigDecimal> areas = block.getPlantationGreenStripes().stream()
@@ -74,15 +80,55 @@ public class PlantationGreenStrip_Assam extends FeatureProcess {
             //  Only minimum check (no max restriction)
             boolean valid = totalGreenArea.compareTo(minRequiredArea) >= 0;
 
-            String permissible = "Minimum " + minPercentage + "% of Plot Area (≥ "
+            String permissible = "Minimum " + minPercentage + "% of Landscaping Area (≥ "
                     + minRequiredArea.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
                     + " sq.m)";
 
             buildResult(pl, scrutinyDetail, valid,
-                    "Area of Plantation Green Strip (Minimum " + minPercentage + "% of Plot Area)",
+                    "Area of Organised Open Space:  (Minimum " + minPercentage + "% of Landscaping Area)",
                     permissible,
                     totalGreenArea.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
                             .toString());
+            
+            ///  Landscaping Area (should be ≥ 60% of Total Open Area)
+            if (landscapeArea != null && block.getLandscapingArea() != null && !block.getLandscapingArea().isEmpty()) {
+                BigDecimal providedLandscaping = block.getLandscapingArea().stream()
+                        .map(Measurement::getArea)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
+
+                boolean validLandscape = providedLandscaping.compareTo(landscapeArea) >= 0;
+
+                buildResult(pl, scrutinyDetail, validLandscape,
+                        "Landscaping Area (60% of Total Open Area)",
+                        landscapeArea + " sq.m", providedLandscaping + " sq.m");
+
+                LOG.info("Landscaping for Block {} => Provided: {} sq.m | Required ≥ {} sq.m | Status: {}",
+                        block.getNumber(), providedLandscaping, landscapeArea, valid ? "Accepted" : "Not Accepted");
+            } else {
+                LOG.info("Skipping Landscaping Area validation for Block {} (no data found).", block.getNumber());
+            }
+
+            // Unpaved Area (should be ≥ 50% of Landscaping Area)
+            if (unpavedArea != null && block.getUnpavedArea() != null && !block.getUnpavedArea().isEmpty()) {
+                BigDecimal providedUnpaved = block.getUnpavedArea().stream()
+                        .map(Measurement::getArea)
+                        .filter(Objects::nonNull)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
+
+                boolean validUnpaved = providedUnpaved.compareTo(unpavedArea) >= 0;
+
+                buildResult(pl, scrutinyDetail, validUnpaved,
+                        "Unpaved Area (50% of Landscaping Area)",
+                        unpavedArea + " sq.m", providedUnpaved + " sq.m");
+
+                LOG.info("Unpaved Area for Block {} => Provided: {} sq.m | Required ≥ {} sq.m | Status: {}",
+                        block.getNumber(), providedUnpaved, unpavedArea, valid ? "Accepted" : "Not Accepted");
+            } else {
+                LOG.info("Skipping Unpaved Area validation for Block {} (no data found).", block.getNumber());
+            }
         }
     }
 

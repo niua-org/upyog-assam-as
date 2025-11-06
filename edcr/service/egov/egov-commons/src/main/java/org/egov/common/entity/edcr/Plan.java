@@ -238,13 +238,13 @@ public class Plan implements Serializable {
     
     private String coreArea;
     
-    private BigDecimal river = BigDecimal.ZERO;
-    private BigDecimal bharaluMoraBondajan = BigDecimal.ZERO;
-    private BigDecimal otherChannels = BigDecimal.ZERO;
+    private BigDecimal river;
+    private BigDecimal bharaluMoraBondajan;
+    private BigDecimal otherChannels;
     private BigDecimal minorDrains = BigDecimal.ZERO;
-    private BigDecimal notifiedWaterBodies = BigDecimal.ZERO;
-	private BigDecimal otherNotifiedWaterBodies = BigDecimal.ZERO;
-    private BigDecimal otherLargePondsOrWaterBody = BigDecimal.ZERO;
+    private BigDecimal notifiedWaterBodies;
+	private BigDecimal otherNotifiedWaterBodies;
+    private BigDecimal otherLargePondsOrWaterBody;
     private BigDecimal smallPonds = BigDecimal.ZERO;
     private BigDecimal totalKitchens = BigDecimal.ZERO;
     private BigDecimal totalBathrooms = BigDecimal.ZERO;

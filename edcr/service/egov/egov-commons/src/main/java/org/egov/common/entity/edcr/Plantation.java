@@ -1,5 +1,6 @@
 package org.egov.common.entity.edcr;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,4 +16,13 @@ public class Plantation {
 		this.plantations = plantations;
 	}
 
+	BigDecimal noOfTreesToBePlant;
+
+	public BigDecimal getNoOfTreesToBePlant() {
+		return noOfTreesToBePlant;
+	}
+
+	public void setNoOfTreesToBePlant(BigDecimal noOfTreesToBePlant) {
+		this.noOfTreesToBePlant = noOfTreesToBePlant;
+	}
 }

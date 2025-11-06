@@ -615,39 +615,74 @@ public class Far_Assam extends Far {
         return BigDecimal.ZERO;
     }
 
-    private boolean applySpecialFarForNarrowRoad(Plan pl, BigDecimal roadWidth, BigDecimal providedFar, HashMap<String, String> errorMsgs) {
-        if (roadWidth != null && roadWidth.compareTo(BigDecimal.valueOf(2.40)) == 0) {
-            int allowedFloors = 2; // Ground + 1
-            BigDecimal permissibleFar = BigDecimal.valueOf(125);
+	private boolean applySpecialFarForNarrowRoad(Plan pl, BigDecimal roadWidth, BigDecimal providedFar,
+			HashMap<String, String> errorMsgs, OccupancyTypeHelper occupancyType, String typeOfArea) {
 
-            int actualFloors = pl.getBlocks().stream()
-                    .mapToInt(block -> block.getBuilding() != null ? block.getBuilding().getTotalFloors().intValue() : 0)
-                    .max()
-                    .orElse(0);
+       // Check if road width is within 2.40m to 3.60m
+		if (roadWidth != null && roadWidth.compareTo(BigDecimal.valueOf(2.40)) >= 0
+				&& roadWidth.compareTo(BigDecimal.valueOf(3.60)) <= 0) {
 
-            if (actualFloors > allowedFloors) {
-                String errMsg = "For 2.40m road width, only Ground + 1 floors are permitted.";
-                errorMsgs.put("FAR_RULE", errMsg);
-                LOG.info("Validation failed: {}", errMsg);
-                return true;
-            }
+			int allowedFloors = 2; // Ground + 1
+			BigDecimal permissibleFar = BigDecimal.valueOf(1.25);
 
-            if (providedFar.compareTo(permissibleFar) > 0) {
-                String errMsg = "Provided FAR exceeds permissible FAR (125) for 2.40m road width.";
-                errorMsgs.put("FAR_RULE", errMsg);
-                LOG.info("Validation failed: {}", errMsg);
-                return true;
-            }
+            // Get occupancy name
+			String occupancyName = occupancyType.getSubtype() != null ? occupancyType.getSubtype().getName()
+					: occupancyType.getType().getName();
 
-            LOG.info("Applied special FAR rule for 2.40m road width: AllowedFloors={}, PermissibleFAR={}, ActualFloors={}, ProvidedFAR={}",
-                    allowedFloors, permissibleFar, actualFloors, providedFar);
-            LOG.info("Applied special FAR condition for 2.40m road width: AllowedFloors={}, PermissibleFAR={}", allowedFloors, permissibleFar);
-            return true;
-        }
-        return false;
-    }
+            // Calculate actual floors from all blocks
+			int actualFloors = pl.getBlocks().stream().mapToInt(block -> {
+				if (block.getBuilding() != null) {
+					if (block.getBuilding().getTotalFloors() != null) {
+						return block.getBuilding().getTotalFloors().intValue();
+					} else if (block.getBuilding().getFloors() != null) {
+						return block.getBuilding().getFloors().size();
+					}
+				}
+				return 0;
+			}).max().orElse(0);
 
+// Check floor and FAR violations
+			boolean floorsValid = actualFloors <= allowedFloors;
+			boolean farValid = providedFar.compareTo(permissibleFar) <= 0;
+			boolean isAccepted = floorsValid && farValid;
 
+			String message = "";
+			if (!floorsValid) {
+				message += "Only Ground + 1 floors permitted; ";
+				errorMsgs.put("FLOOR_RULE",
+						"Narrow road floor violation: Allowed = " + allowedFloors + ", Actual = " + actualFloors);
+				LOG.warn("Narrow road floor violation: Allowed = {}, Actual = {}", allowedFloors, actualFloors);
+			}
+
+			if (!farValid) {
+				message += "Maximum permissible FAR = 1.25; ";
+				errorMsgs.put("FAR_RULE",
+						"Narrow road FAR violation: Permissible = " + permissibleFar + ", Provided = " + providedFar);
+				LOG.warn("Narrow road FAR violation: Permissible = {}, Provided = {}", permissibleFar, providedFar);
+			}
+
+// Log compliance if valid
+			if (isAccepted) {
+				LOG.info(
+						"Applied special FAR rule for road width between 2.40m and 3.60m: AllowedFloors={}, PermissibleFAR={}, ActualFloors={}, ProvidedFAR={}",
+						allowedFloors, permissibleFar, actualFloors, providedFar);
+			}
+
+			buildResult(pl, occupancyName, providedFar, typeOfArea, roadWidth,
+			        isAccepted ? "<=1.25" : message.trim(),
+			        isAccepted,   
+			        BigDecimal.ZERO,      
+			        BigDecimal.ZERO, 
+			        BigDecimal.valueOf(1.25),    
+			        BigDecimal.ZERO);
+
+			return true;
+		}
+
+		return false;
+	}
+
+  
     /**
      * Computes and validates the FAR for the given plan.
      */
@@ -666,7 +701,7 @@ public class Far_Assam extends Far {
                 mostRestrictiveOccupancyType, typeOfArea, roadWidth);
 
         // First check special condition for 2.40m road width
-        if (applySpecialFarForNarrowRoad(pl, roadWidth, providedFar, errorMsgs)) {
+        if (applySpecialFarForNarrowRoad(pl, roadWidth, providedFar, errorMsgs, mostRestrictiveOccupancyType, typeOfArea)) {
             return; // stop further processing if condition is applied
         }
 
@@ -1586,6 +1621,13 @@ public class Far_Assam extends Far {
 
         Optional<FarRequirement> matchedRule = findMatchedFarRule(pl, mostRestrictiveOccupancyType, plotArea,
                 roadWidth);
+        
+        if (roadWidth != null && roadWidth.compareTo(new BigDecimal("2.4")) < 0) {
+            permissibleFar = new BigDecimal("0.75");
+            LOG.info("Road width < 2.4m, permissible FAR restricted to 0.75 (G+1 buildings only)");
+        } 
+        else {
+
 
         if (matchedRule.isPresent()) {
             FarRequirement rule = matchedRule.get();
@@ -1631,7 +1673,7 @@ public class Far_Assam extends Far {
         else {
             LOG.warn("No FAR rule matched for given parameters: plotArea={}, roadWidth={}", plotArea, roadWidth);
         }
-
+        }
         try {
             LOG.info("Final permissible FAR to validate against: {}", permissibleFar);
         } catch (NullPointerException e) {

@@ -214,12 +214,22 @@ public class FrontYardService_Assam extends FrontYardService {
 		String occupancyCode = mostRestrictiveOccupancy.getType().getCode();
      	occupancyName = fetchEdcrRulesMdms.getOccupancyName(pl);
      	
-     	if (roadWidth != null && roadWidth.compareTo(BigDecimal.valueOf(2.40)) == 0) {
+     	if (roadWidth != null 
+		        && roadWidth.compareTo(BigDecimal.valueOf(2.40)) >= 0 
+		        && roadWidth.compareTo(BigDecimal.valueOf(3.60)) <= 0) {
      	    LOG.info("Checking special narrow road rule for Block: {}, Level: {}, RoadWidth: {}", 
      	              blockName, level, roadWidth);
 
-     	    BigDecimal allowedFloors = BigDecimal.valueOf(2); // G + 1
-     	    BigDecimal actualFloors = building.getTotalFloors(); 
+     	   BigDecimal allowedFloors = BigDecimal.valueOf(2); // G + 1 floors
+
+	        BigDecimal actualFloors = BigDecimal.ZERO;
+	        if (building != null) {
+	            if (building.getTotalFloors() != null) {
+	                actualFloors = building.getTotalFloors();
+	            } else if (building.getFloors() != null) {
+	                actualFloors = BigDecimal.valueOf(building.getFloors().size());
+	            }
+	        }
 
      	    if (actualFloors.compareTo(allowedFloors) > 0) {
      	    	errors.put(ERR_NARROW_ROAD_RULE,
@@ -228,20 +238,14 @@ public class FrontYardService_Assam extends FrontYardService {
      	        return false;
      	    }
 
-     	    Boolean specialValid = applySpecialRuleForNarrowRoad(
+     	   valid = applySpecialRuleForNarrowRoad(
      	            pl, building, blockName, level, plot,
      	            mostRestrictiveOccupancy, frontYardResult, 
-     	            buildingHeight, errors, roadWidth, plotArea);
+     	            buildingHeight, errors, roadWidth, plotArea, min, mean);
 
-     	    if (specialValid != null) {
-     	        LOG.info("Special narrow road rule applied. Result = {}", specialValid);
-     	        return specialValid; 
-     	    } else {
-     	        LOG.info("Special narrow road rule not applicable, continuing with normal checks.");
-     	    }
      	}
 
-		if (A.equalsIgnoreCase(occupancyCode) || F.equalsIgnoreCase(occupancyCode)) {
+     	else if (A.equalsIgnoreCase(occupancyCode) || F.equalsIgnoreCase(occupancyCode)) {
 			valid = processFrontYardService(blockName, level, min, mean, mostRestrictiveOccupancy, frontYardResult, valid,
 					subRule, rule, minVal, meanVal, depthOfPlot, errors, pl,  occupancyName, buildingHeight
 					);
@@ -382,7 +386,7 @@ public class FrontYardService_Assam extends FrontYardService {
 	 */
 	private Boolean applySpecialRuleForNarrowRoad(Plan pl, Building building, String blockName, Integer level, Plot plot,
 	        OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, BigDecimal buildingHeight,
-	        HashMap<String, String> errors, BigDecimal roadWidth, BigDecimal plotArea) {
+	        HashMap<String, String> errors, BigDecimal roadWidth, BigDecimal plotArea, BigDecimal min, BigDecimal mean) {
 
 	   
 	        LOG.info("Applying special narrow road rule (Road Width = 2.40m) for Block: {}, Level: {}, Plot Area: {}", 
@@ -394,39 +398,26 @@ public class FrontYardService_Assam extends FrontYardService {
 	        String rule = FRONT_YARD_DESC;
 
 	        if (plotArea.compareTo(BigDecimal.valueOf(53.56)) >= 0 
-	                && plotArea.compareTo(BigDecimal.valueOf(93.73)) <= 0) {
+	                && plotArea.compareTo(BigDecimal.valueOf(134)) <= 0) {
 
 	            minVal = BigDecimal.valueOf(1.80);  
 	            meanVal = BigDecimal.valueOf(1.80); 
 	            subRule = "Front";
-	            LOG.info("Matched Plot Area range 53.56 - 93.73 sqm → {}", subRule);
+	            LOG.info("Matched Plot Area range 53.56 - 134 sqm → {}", subRule);
 
-	        } else if (plotArea.compareTo(BigDecimal.valueOf(93.73)) > 0 
-	                && plotArea.compareTo(BigDecimal.valueOf(134)) <= 0) {
-
-	            minVal = BigDecimal.ZERO;  
-	            subRule = "Front setback";
-	            LOG.info("Matched Plot Area range 93.73 - 134 sqm → {}", subRule);
-	        }
-
+	        } 
 	       
-	        BigDecimal providedMin = frontYardResult.actualMinDistance;   
-	        BigDecimal providedMean = frontYardResult.actualMeanDistance;
 
 	        // validate
-	        Boolean valid = (providedMin != null && providedMin.compareTo(minVal) >= 0);
+	        Boolean valid = (min != null && min.compareTo(minVal) >= 0);
 
-	        compareFrontYardResult(blockName, providedMin, providedMean,
+	        compareFrontYardResult(blockName, min, mean,
 	                mostRestrictiveOccupancy, frontYardResult, valid,
 	                subRule, rule, minVal, meanVal, level);
 
-	        if (!valid) {
-	            errors.put(blockName + "_FrontYard", 
-	                "Front setback must be at least " + minVal + " m (provided " + providedMin + " m)");
-	        }
 
 	        LOG.info("Special rule applied → ProvidedMin: {}, RequiredMin: {}, Status: {}", 
-	                 providedMin, minVal, valid);
+	                 min, minVal, valid);
 
 	        return valid;
 	
