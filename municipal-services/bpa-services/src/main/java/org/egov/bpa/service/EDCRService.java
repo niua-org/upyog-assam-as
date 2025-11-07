@@ -88,7 +88,7 @@ public class EDCRService {
 		}
 		
 		uri.append(config.getGetPlanEndPoint());
-		uri.append("?").append("tenantId=").append(bpa.getTenantId());
+		uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
 		uri.append("&").append("edcrNumber=").append(edcrNo);
 		RequestInfo edcrRequestInfo = new RequestInfo();
 		BeanUtils.copyProperties(request.getRequestInfo(), edcrRequestInfo);
@@ -222,7 +222,7 @@ public class EDCRService {
 		BPA bpa = bpaRequest.getBPA();
 		StringBuilder uri = new StringBuilder(config.getEdcrHost());
 		uri.append(config.getGetPlanEndPoint());
-		uri.append("?").append("tenantId=").append(bpa.getTenantId());
+		uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
 		uri.append("&").append("edcrNumber=").append(bpaRequest.getBPA().getEdcrNumber());
 		RequestInfo edcrRequestInfo = new RequestInfo();
 		BeanUtils.copyProperties(bpaRequest.getRequestInfo(), edcrRequestInfo);
@@ -353,7 +353,7 @@ public class EDCRService {
 		StringBuilder uri = new StringBuilder(config.getEdcrHost());
 
 		uri.append(config.getGetPlanEndPoint());
-		uri.append("?").append("tenantId=").append(bpa.getTenantId());
+		uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
 		uri.append("&").append("edcrNumber=").append(edcrNo);
 		RequestInfo edcrRequestInfo = new RequestInfo();
 		BeanUtils.copyProperties(requestInfo, edcrRequestInfo);
@@ -384,7 +384,7 @@ public class EDCRService {
 
 		StringBuilder uri = new StringBuilder(config.getEdcrHost());
 		uri.append(config.getGetPlanEndPoint());
-		uri.append("?").append("tenantId=").append(searchCriteria.getTenantId());
+		uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
 		RequestInfo edcrRequestInfo = new RequestInfo();
 		BeanUtils.copyProperties(requestInfo, edcrRequestInfo);
 		LinkedHashMap responseMap = null;

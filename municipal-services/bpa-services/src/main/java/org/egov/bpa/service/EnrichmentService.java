@@ -232,7 +232,7 @@ public class EnrichmentService {
 				Map<String, List<String>> masterData = mdmsValidator.getAttributeValues(mdmsData);
 				StringBuilder uri = new StringBuilder(config.getEdcrHost());
 				uri.append(config.getGetPlanEndPoint());
-				uri.append("?").append("tenantId=").append(bpa.getTenantId().split("\\.")[0]);
+				uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
 				uri.append("&").append("edcrNumber=").append(bpa.getEdcrNumber());
 				org.egov.bpa.web.model.edcr.RequestInfo edcrRequestInfo = new org.egov.bpa.web.model.edcr.RequestInfo();
 				

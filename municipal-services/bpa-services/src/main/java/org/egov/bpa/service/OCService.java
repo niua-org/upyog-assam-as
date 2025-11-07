@@ -52,7 +52,7 @@ public class OCService {
 		edcrNos.forEach(edcrNo -> {
 			StringBuilder uri = new StringBuilder(config.getEdcrHost());
 			uri.append(config.getGetPlanEndPoint());
-			uri.append("?").append("tenantId=").append(criteria.getTenantId());
+			uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
 			uri.append("&").append("edcrNumber=").append(edcrNo);
 			try {
 				LinkedHashMap response = (LinkedHashMap) serviceRequestRepository.fetchResult(uri,
