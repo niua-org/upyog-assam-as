@@ -146,7 +146,7 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
         />
       </div>)}
       { <div className="col col-md-4  text-md-center p-0" style={{width:"40%", marginTop:"5px"}}>
-             <button className="digilocker-btn"type="submit" onClick={(e)=>setShowToast(true)   }><img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" class="mr-2" style={{"width":"12%"}}></img>Register/Login with DigiLocker</button>
+             <button className="digilocker-btn"type="submit" onClick={(e)=>setShowToast(true)   }><img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" class="mr-2" style={{"width":"12%"}}></img>Register/Login with ePramaan</button>
      { showToast &&   <Modal
       headerBarMain={<Heading label={t("Consent")} />}
       headerBarEnd={<CloseBtn onClick={closeModal} />}

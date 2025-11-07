@@ -41,16 +41,17 @@ export const UserService = {
         });
 
         if (formDataResponse) {
-          // Step 2: Call UPYOG logout first
-          await ServiceRequest({
+          // Step 2: Call UPYOG logout WITHOUT waiting or handling response
+          // Fire and forget - don't await
+          ServiceRequest({
             serviceName: "logoutUser",
             url: Urls.UserLogout,
             data: { access_token: user?.access_token },
             auth: true,
             params: { tenantId },
-          });
+          }).catch(err => console.error("Logout error:", err));
 
-          // Step 3: Create and submit form to ePramaan logout URL
+          // Step 3: Immediately submit form (don't wait for logout to complete)
           const form = document.createElement("form");
           form.method = "POST";
           form.action = Urls.ePramaan.logoutUrl;
@@ -64,7 +65,8 @@ export const UserService = {
 
           document.body.appendChild(form);
           ePramaanInitiated = true;
-          setTimeout(() => form.submit(), 100); // Form submission redirects to ePramaan
+          
+          form.submit();
           return { ePramaanInitiated };
         }
       } catch (error) {
