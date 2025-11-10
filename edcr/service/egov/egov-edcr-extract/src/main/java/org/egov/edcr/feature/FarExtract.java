@@ -1,21 +1,22 @@
 package org.egov.edcr.feature;
 
+import static org.egov.edcr.constants.DxfFileConstants.INDEX_COLOR_ONE;
 import static org.egov.edcr.constants.DxfFileConstants.OCCUPANCY_A2_PARKING_WITHATTACHBATH_COLOR_CODE;
 import static org.egov.edcr.constants.DxfFileConstants.OCCUPANCY_A2_PARKING_WITHDINE_COLOR_CODE;
 import static org.egov.edcr.constants.DxfFileConstants.OCCUPANCY_A2_PARKING_WOATTACHBATH_COLOR_CODE;
 import static org.egov.edcr.utility.DcrConstants.FLOOR_HEIGHT_DESC;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.PLOT_AREA;
-import static org.egov.edcr.utility.DcrConstants.UNIT;
-import static org.egov.edcr.utility.DcrConstants.UNIT_LAYER;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -97,11 +98,19 @@ public class FarExtract extends FeatureExtract {
     @Override
     public PlanDetail extract(PlanDetail pl) {
 
+        
         String farDeductByFloor = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_BUILT_UP_AREA_DEDUCT");
 
+      
         loadRequiredMasterData(pl);
+        
+        Map<String, Integer> roomOccupancyFeature = pl.getSubFeatureColorCodesMaster().get("HeightOfRoom");
+        Set<String> roomOccupancyTypes = new HashSet<>();
+        roomOccupancyTypes.addAll(roomOccupancyFeature.keySet());
+        
+        
         if (LOG.isDebugEnabled())
             LOG.debug("Starting of FAR Extract......");
         LOG.info(" Extract BUILT_UP_AREA");
@@ -187,13 +196,13 @@ public class FarExtract extends FeatureExtract {
                     occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
                     LOG.error(" occupancy type deduction " + occupancy.getType());
 
-					if (occupancy.getTypeHelper() == null
-							|| (occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() == null))
-						pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA,
-								getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()),
-										deductLayerName));
-					else
-						floor.addDeductionArea(occupancy);
+                    if (occupancy.getTypeHelper() == null
+                            || (occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() == null))
+                        pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA,
+                                getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()),
+                                        deductLayerName));
+                    else
+                        floor.addDeductionArea(occupancy);
                 }
             }
             if (!typicals.isEmpty()) {
@@ -224,8 +233,8 @@ public class FarExtract extends FeatureExtract {
                     List<String> layerNamesUnit = Util.getLayerNamesLike(pl.getDoc(), layerRegEx);
                     
 //                   if(layerNamesUnit.isEmpty() || layerNamesUnit == null) {
-//						pl.addError(UNIT_LAYER,
-//								 UNIT);
+//                      pl.addError(UNIT_LAYER,
+//                               UNIT);
 //                   }
                     
                     List<DXFLWPolyline> occupancyUnits = new ArrayList<>();
@@ -240,6 +249,18 @@ public class FarExtract extends FeatureExtract {
                             floor.getUnits().add(unit);
                         }
                         extractByLayer(pl, pl.getDoc(), block, floor, unit, occupancyUnits);
+                        
+                        List<BigDecimal> allHeights = new ArrayList<>();
+                       
+                            List<BigDecimal> regularRoomHeights = Util.getListOfDimensionByColourCode(pl, layerName, INDEX_COLOR_ONE );
+                            if (regularRoomHeights != null && !regularRoomHeights.isEmpty()) {
+                                allHeights.addAll(regularRoomHeights);
+                            }
+                        
+                        if (!allHeights.isEmpty()) {
+                            unit.setCommonHeight(allHeights);
+                        }
+
                     }
                    
                 }
@@ -330,9 +351,9 @@ public class FarExtract extends FeatureExtract {
             Building building = block.getBuilding();
             if (building != null && !building.getFloors().isEmpty())
                 for (Floor floor : building.getFloors()) {
-                	
-                	
-                	 for (FloorUnit unit : floor.getUnits()) {
+                    
+                    
+                     for (FloorUnit unit : floor.getUnits()) {
                     BigDecimal existingBltUpArea = BigDecimal.ZERO;
 
                     addCarpetArea(pl, block, floor, unit);

@@ -48,6 +48,7 @@
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -176,8 +177,12 @@ public class ToiletDetails_Assam extends FeatureProcess {
                                            ScrutinyDetail scrutinyDetail) {
         BigDecimal area = measurement.getArea().setScale(2, RoundingMode.HALF_UP);
         BigDecimal width = measurement.getWidth().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal height = unit.getCommonHeight()
+                .stream()
+                .min(Comparator.naturalOrder())
+                .get()
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
         
-
         ReportScrutinyDetail detail = new ReportScrutinyDetail();
         detail.setRuleNo(RULE_41_5_5);
         detail.setDescription(TOILET_DESCRIPTION);
@@ -190,10 +195,12 @@ public class ToiletDetails_Assam extends FeatureProcess {
         ToiletRequirement rule = toiletRule.get();
         BigDecimal minArea = rule.getMinToiletArea();
         BigDecimal minWidth = rule.getMinToiletWidth();
+    	BigDecimal minHeight = rule.getMinToiletHeight();
+
       
 
-        String required = TOTAL_AREA_STRING + GREATER_THAN_EQUAL + minArea + COMMA_WIDTH_STRING + GREATER_THAN_EQUAL + minWidth;
-        String provided = TOTAL_AREA_STRING + IS_EQUAL_TO + area + COMMA_WIDTH_STRING + IS_EQUAL_TO + width;
+        String required = TOTAL_AREA_STRING + GREATER_THAN_EQUAL + minArea + COMMA_WIDTH_STRING + GREATER_THAN_EQUAL + minWidth  + COMMA_HEIGHT_STRING + GREATER_THAN_EQUAL + minHeight;
+        String provided = TOTAL_AREA_STRING + IS_EQUAL_TO + area + COMMA_WIDTH_STRING + IS_EQUAL_TO + width + COMMA_HEIGHT_STRING + IS_EQUAL_TO + height;
 
         detail.setRequired(required);
         detail.setProvided(provided);
@@ -251,7 +258,8 @@ public class ToiletDetails_Assam extends FeatureProcess {
 		
 		// Window height
 		BigDecimal windowHeight = toilet.getToiletVentilation().setScale(2, RoundingMode.HALF_UP);
-		
+
+	
 		// Provided ventilation area = sum(width × height)
 		BigDecimal providedVentilationArea = toilet.getToiletWindowWidth().stream()
 			    .map(width -> width.multiply(windowHeight))

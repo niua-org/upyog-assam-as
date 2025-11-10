@@ -10,6 +10,8 @@ public class ToiletRequirement extends MdmsFeatureRule {
 	    private BigDecimal minToiletArea;
 	    @JsonProperty("minToiletWidth")
 	    private BigDecimal minToiletWidth;
+	    @JsonProperty("minToiletHeight")
+	    private BigDecimal minToiletHeight;
 	    @JsonProperty("minToiletVentilation")
 	    private BigDecimal minToiletVentilation;
 		public BigDecimal getMinToiletArea() {
@@ -17,6 +19,13 @@ public class ToiletRequirement extends MdmsFeatureRule {
 		}
 		public void setMinToiletArea(BigDecimal minToiletArea) {
 			this.minToiletArea = minToiletArea;
+		}
+		
+		public BigDecimal getMinToiletHeight() {
+			return minToiletHeight;
+		}
+		public void setMinToiletHeight(BigDecimal minToiletHeight) {
+			this.minToiletHeight = minToiletHeight;
 		}
 		public BigDecimal getMinToiletWidth() {
 			return minToiletWidth;
@@ -33,7 +42,7 @@ public class ToiletRequirement extends MdmsFeatureRule {
 		@Override
 		public String toString() {
 			return "ToiletRequirement [minToiletArea=" + minToiletArea + ", minToiletWidth=" + minToiletWidth
-					+ ", minToiletVentilation=" + minToiletVentilation + "]";
+					+ ", minToiletHeight=" + minToiletHeight + ", minToiletVentilation=" + minToiletVentilation + "]";
 		}
 
 }

@@ -225,8 +225,9 @@ public class Kitchen_Assam extends Kitchen {
 
 		// Extract rooms and heights
 		List<Measurement> rooms = floorUnit.getKitchen().getRooms();
-		List<RoomHeight> heights = floorUnit.getKitchen().getHeights();
-		List<BigDecimal> kitchenHeights = heights.stream().map(RoomHeight::getHeight).collect(Collectors.toList());
+		//List<RoomHeight> heights = floorUnit.getKitchen().getHeights();
+		List<BigDecimal> kitchenHeights = floorUnit.getCommonHeight();
+
 
 		LOG.info("Kitchen heights extracted: {}", kitchenHeights);
 
@@ -260,17 +261,22 @@ public class Kitchen_Assam extends Kitchen {
             		KITCHEN_DOOR_WIDTH, minDoorWidth, false,
                 ProcessHelper.getTypicalFloorValues(block, floor, false));
         }
-
-        // Validate door height
-        if (floorUnit.getKitchen().getKitchenDoorHeight() != null && !floorUnit.getKitchen().getKitchenDoorHeight().isEmpty()) {
-            BigDecimal minDoorHeight = floorUnit.getKitchen().getKitchenDoorHeight()
-                .stream().min(Comparator.naturalOrder()).get().setScale(2, BigDecimal.ROUND_HALF_UP);
+        
+        
+     //  Validate door height
+        if (floorUnit.getCommonHeight() != null && !floorUnit.getCommonHeight().isEmpty()) {
+            BigDecimal minDoorHeight = floorUnit.getCommonHeight()
+                    .stream()
+                    .min(Comparator.naturalOrder())
+                    .get()
+                    .setScale(2, BigDecimal.ROUND_HALF_UP);
 
             buildResult(pl, floor, floorUnit, rule.getKitchenDoorHeight(), SUBRULE_41_III,
-            		KITCHEN_DOOR_HEIGHT, minDoorHeight, false,
-                ProcessHelper.getTypicalFloorValues(block, floor, false));
+                    KITCHEN_DOOR_HEIGHT, minDoorHeight, false,
+                    ProcessHelper.getTypicalFloorValues(block, floor, false));
         }
 
+        
         // Process Room Types
 		LOG.info("Processing Kitchen room type with color: {}", kitchenColor);
 
@@ -402,7 +408,7 @@ public class Kitchen_Assam extends Kitchen {
         if (floorUnit.getKitchen() == null
                 || floorUnit.getKitchen().getKitchenWindowWidth() == null
                 || floorUnit.getKitchen().getKitchenWindowWidth().isEmpty()
-                || floorUnit.getKitchen().getKitchenWindowHeight() == null) {
+                || floorUnit.getCommonHeight() == null) {
             return;
         }
         
@@ -413,8 +419,14 @@ public class Kitchen_Assam extends Kitchen {
                 .setScale(2, RoundingMode.HALF_UP);
 
         // Get kitchen window height
-        BigDecimal windowHeight = floorUnit.getKitchen().getKitchenWindowHeight().setScale(2, RoundingMode.HALF_UP);
+        
+            BigDecimal windowHeight = floorUnit.getCommonHeight()
+                    .stream()
+                    .min(Comparator.naturalOrder())
+                    .get()
+                    .setScale(2, BigDecimal.ROUND_HALF_UP);
 
+        
         // Provided window area = sum of (each window width × window height)
         BigDecimal providedKitchenArea = floorUnit.getKitchen().getKitchenWindowWidth().stream()
                 .map(width -> width.multiply(windowHeight))

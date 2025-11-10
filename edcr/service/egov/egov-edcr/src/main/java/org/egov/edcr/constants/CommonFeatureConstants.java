@@ -291,6 +291,7 @@ public class CommonFeatureConstants {
     public static final String DEF_IN_THE_PLAN = "Defined in the Plan.";
     public static final String TOTAL_AREA_STRING = "Total Area ";
     public static final String COMMA_WIDTH_STRING = ", Width ";
+    public static final String COMMA_HEIGHT_STRING = ", Height ";
     public static final String WIDTH_STRING = " Width ";
     public static final String VENTILATION_STRING = ", Ventilation ";
     public static final String VENTILATION_HEIGHT_STRING = ", Ventilation Height = ";

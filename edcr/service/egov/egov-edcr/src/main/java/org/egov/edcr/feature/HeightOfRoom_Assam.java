@@ -1029,19 +1029,20 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	    List<RoomHeight> heights = new ArrayList<>();
 	    List<Measurement> rooms = new ArrayList<>();
 
-	    collectHeightsAndRoomsFromNonInhabitationalRooms(floor, unit, heights, rooms);
+	   // collectHeightsAndRoomsFromNonInhabitationalRooms(floor, unit, heights, rooms);
 	    populateRoomNumberForMeasurements(unit.getNonInhabitationalRooms());
 
 	    LOG.info("Collected Heights: {}, Rooms: {}", heights, rooms);
 
-	    for (RoomHeight roomHeight : heights) {
-	        if (heightOfRoomFeaturesColor.get(color) == roomHeight.getColorCode()) {
-	            residentialRoomHeights.add(roomHeight.getHeight());
-	        }
-	    }
+		/*
+		 * for (RoomHeight roomHeight : heights) { if
+		 * (heightOfRoomFeaturesColor.get(color) == roomHeight.getColorCode()) {
+		 * residentialRoomHeights.add(roomHeight.getHeight()); } }
+		 */
 
-	    LOG.info("Filtered Residential Non-Inhabitational Room Heights: {}", residentialRoomHeights);
-
+	    buildRoomHeightResult(pl, floor, unit, block, mostRestrictiveOccupancy, unit.getCommonHeight(),
+	    		   heightOfRoomFeaturesColor, color, errors);
+		   
 	    boolean roomArea2Satisfied = false;
 	    BigDecimal roomArea1 = BigDecimal.ZERO, roomArea2 = BigDecimal.ZERO;
 	    BigDecimal roomWidth1 = BigDecimal.ZERO, roomWidth2 = BigDecimal.ZERO;
@@ -1105,18 +1106,19 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	    List<RoomHeight> heights = new ArrayList<>();
 	    List<Measurement> rooms = new ArrayList<>();
 
-	    collectHeightsAndRoomsFromRegularRooms(floor, unit, heights, rooms);
+	   // collectHeightsAndRoomsFromRegularRooms(floor, unit, heights, rooms);
 	    populateRoomNumberForMeasurements(unit.getRegularRooms());
 
 	    LOG.info("Collected Heights: {}, Rooms: {}", heights, rooms);
 
-	    for (RoomHeight roomHeight : heights) {
-	        if (heightOfRoomFeaturesColor.get(color) == roomHeight.getColorCode()) {
-	            residentialRoomHeights.add(roomHeight.getHeight());
-	        }
-	    }
+		/*
+		 * for (RoomHeight roomHeight : heights) { if
+		 * (heightOfRoomFeaturesColor.get(color) == roomHeight.getColorCode()) {
+		 * residentialRoomHeights.add(roomHeight.getHeight()); } }
+		 */
+	    
 
-       buildRoomHeightResult(pl, floor, unit, block, mostRestrictiveOccupancy, residentialRoomHeights,
+       buildRoomHeightResult(pl, floor, unit, block, mostRestrictiveOccupancy, unit.getCommonHeight(),
     		   heightOfRoomFeaturesColor, color, errors);
 	    LOG.info("Filtered Residential Regular Room Heights: {}", residentialRoomHeights);
 
@@ -1176,15 +1178,15 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param heights output list to collect RoomHeight objects
 	 * @param rooms   output list to collect Measurement objects (room area/width)
 	 */
-	private void collectHeightsAndRoomsFromRegularRooms(Floor floor, FloorUnit unit, List<RoomHeight> heights,
-			List<Measurement> rooms) {
-		for (Room room : unit.getRegularRooms()) {
-			if (room.getHeights() != null)
-				heights.addAll(room.getHeights());
-			if (room.getRooms() != null)
-				rooms.addAll(room.getRooms());
-		}
-	}
+	/*
+	 * private void collectHeightsAndRoomsFromRegularRooms(Floor floor, FloorUnit
+	 * unit, List<RoomHeight> heights, List<Measurement> rooms) {
+	 * 
+	 * if (room.getHeights() != null) heights.addAll(room.getHeights()); if
+	 * (room.getRooms() != null) rooms.addAll(room.getRooms());
+	 * 
+	 * }
+	 */
 
 	/**
 	 * Populates room numbers for each Measurement object inside rooms.
@@ -1207,15 +1209,13 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	 * @param heights output list to collect RoomHeight objects
 	 * @param rooms   output list to collect Measurement objects (room area/width)
 	 */
-	private void collectHeightsAndRoomsFromNonInhabitationalRooms(Floor floor, FloorUnit unit, List<RoomHeight> heights,
-			List<Measurement> rooms) {
-		for (Room room : unit.getNonInhabitationalRooms()) {
-			if (room.getHeights() != null)
-				heights.addAll(room.getHeights());
-			if (room.getRooms() != null)
-				rooms.addAll(room.getRooms());
-		}
-	}
+	/*
+	 * private void collectHeightsAndRoomsFromNonInhabitationalRooms(Floor floor,
+	 * FloorUnit unit, List<RoomHeight> heights, List<Measurement> rooms) { for
+	 * (Room room : unit.getNonInhabitationalRooms()) { if (room.getHeights() !=
+	 * null) heights.addAll(room.getHeights()); if (room.getRooms() != null)
+	 * rooms.addAll(room.getRooms()); } }
+	 */
 	
 	/**
 	 * Validates a room against minimum area and width requirements and records result.
@@ -1363,12 +1363,13 @@ public class HeightOfRoom_Assam extends HeightOfRoom {
 	        Map<String, Object> typicalFloorValues = ProcessHelper.getTypicalFloorValues(block, floor, false);
 	        buildResult(pl, floor, unit, minimumHeight, RULEROOMHT, RULE_REGULAR_DESC, minHeight, false, typicalFloorValues);
 
-	    } else {
-	        String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(), floor.getNumber(), unit.getUnitNumber(), REGULAR_ROOM);
-	        LOG.warn("No Residential Room Heights defined for layer: {}", layerName);
-	        errors.put(layerName, ROOM_HEIGHT_NOTDEFINED + layerName);
-	        pl.addErrors(errors);
-	    }
+		} /*
+			 * else { String layerName = String.format(LAYER_ROOM_HEIGHT, block.getNumber(),
+			 * floor.getNumber(), unit.getUnitNumber(), REGULAR_ROOM);
+			 * LOG.warn("No Residential Room Heights defined for layer: {}", layerName);
+			 * errors.put(layerName, ROOM_HEIGHT_NOTDEFINED + layerName);
+			 * pl.addErrors(errors); }
+			 */
 	}
 
 
