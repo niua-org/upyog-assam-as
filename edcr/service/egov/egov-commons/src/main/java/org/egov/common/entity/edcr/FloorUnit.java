@@ -69,8 +69,18 @@ public class FloorUnit extends Measurement {
     private List<Window> windows = new ArrayList<>();
     private List<Toilet> toilet;
     private MeasurementWithHeight verandah = new MeasurementWithHeight();
+    private List<BigDecimal> commonHeight = new ArrayList<>();
     
-    public List<Window> getWindows() {
+   
+	public List<BigDecimal> getCommonHeight() {
+		return commonHeight;
+	}
+
+	public void setCommonHeight(List<BigDecimal> commonHeight) {
+		this.commonHeight = commonHeight;
+	}
+
+	public List<Window> getWindows() {
 		return windows;
 	}
 
@@ -349,4 +359,7 @@ public class FloorUnit extends Measurement {
     public void setWaterClosets(Room waterClosets) {
         this.waterClosets = waterClosets;
     }
+    
+
+   
 }
