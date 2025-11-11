@@ -70,6 +70,8 @@ public class HeightOfRoomExtract extends FeatureExtract {
                             
                             extractNonHabitationalDoorDetails(pl, block, floor, unit);
                             
+                            extractNonInhabitationalRoomWiseDoors(pl, block, floor, unit);
+                            
                             extractRoomWiseDoors(pl, block, floor, unit);
                             
                             extractWindows(pl, block, floor, unit, layerNames);
@@ -1095,6 +1097,92 @@ public class HeightOfRoomExtract extends FeatureExtract {
             }
         }
 
+    }
+    
+    /**
+	 * Extracts and assigns doors for each regular room inside a given floor unit. 
+	 * <p>
+	 * This method scans CAD layers for door definitions corresponding to each room 
+	 * in the given {@link FloorUnit}. It identifies door layers by matching their 
+	 * names using the configured naming convention. For each door layer:
+	 * <ul>
+	 *   <li>It retrieves the door height from the MText entity (if available).</li>
+	 *   <li>It retrieves the door width values from dimension entities in the layer.</li>
+	 *   <li>A {@link Door} object is created and populated with the extracted height and width.</li>
+	 *   <li>The door is then added to the respective {@link Room} in the unit.</li>
+	 * </ul>
+	 * If no valid dimensions are found, the door width defaults to {@code BigDecimal.ZERO}.
+	 * If no door height MText is found, the height defaults to {@code BigDecimal.ZERO}.
+	 *
+	 * @param pl    the {@link PlanDetail} object containing the drawing document and related metadata
+	 * @param block the {@link Block} in which the floor unit exists
+	 * @param floor the {@link Floor} that contains the unit
+	 * @param unit  the {@link FloorUnit} for which room-wise doors need to be extracted
+	 */
+    
+    private void extractNonInhabitationalRoomWiseDoors(PlanDetail pl, Block block, Floor floor, FloorUnit unit) {
+        LOG.debug("Starting extractRoomWiseDoors for Block [{}], Floor [{}], Unit [{}]",
+                block.getNumber(), floor.getNumber(), unit.getUnitNumber());
+
+        for (Room room : unit.getNonInhabitationalRooms()) {
+            LOG.debug("Processing doors for Room [{}] in Unit [{}]", room.getNumber(), unit.getUnitNumber());
+
+            String roomDoorLayerName = String.format(
+                    layerNames.getLayerName("LAYER_NAME_UNIT_NONINHABITATIONAL_ROOM_DOOR"),
+                    block.getNumber(), floor.getNumber(), unit.getUnitNumber(), room.getNumber(), "+\\d"
+            );
+
+            List<String> roomDoorLayers = Util.getLayerNamesLike(pl.getDoc(), roomDoorLayerName);
+            LOG.debug("Found [{}] matching door layers for room [{}]: {}", roomDoorLayers.size(), room.getNumber(), roomDoorLayers);
+
+            if (!roomDoorLayers.isEmpty()) {
+                for (String doorLayer : roomDoorLayers) {
+                    LOG.debug("Processing door layer [{}] for Room [{}]", doorLayer, room.getNumber());
+
+                    String doorHeight = Util.getMtextByLayerName(pl.getDoc(), doorLayer);
+                    LOG.debug("Extracted door height text [{}] from layer [{}]", doorHeight, doorLayer);
+
+                    List<DXFDimension> dimensionList = Util.getDimensionsByLayer(pl.getDoc(), doorLayer);
+                    LOG.debug("Found [{}] dimensions for door layer [{}]", 
+                            dimensionList != null ? dimensionList.size() : 0, doorLayer);
+
+                    if (dimensionList != null && !dimensionList.isEmpty()) {
+                        Door door = new Door();
+
+                        BigDecimal doorHeightValue = doorHeight != null
+                                ? BigDecimal.valueOf(Double.valueOf(doorHeight.replaceAll("DOOR_HT_M=", "")))
+                                : BigDecimal.ZERO;
+                        door.setDoorHeight(doorHeightValue);
+                        LOG.debug("Set door height to [{}] for Room [{}]", doorHeightValue, room.getNumber());
+
+                        for (Object dxfEntity : dimensionList) {
+                            DXFDimension dimension = (DXFDimension) dxfEntity;
+                            List<BigDecimal> values = new ArrayList<>();
+                            Util.extractDimensionValue(pl, values, dimension, doorLayer);
+
+                            if (!values.isEmpty()) {
+                                for (BigDecimal minDis : values) {
+                                    door.setDoorWidth(minDis);
+                                    LOG.debug("Set door width to [{}] for Room [{}]", minDis, room.getNumber());
+                                }
+                            } else {
+                                door.setDoorWidth(BigDecimal.ZERO);
+                                LOG.debug("No dimension values found, setting default door width = 0 for Room [{}]", room.getNumber());
+                            }
+                        }
+                        room.addDoors(door);
+                        LOG.debug("Added door to Room [{}] in Unit [{}]", room.getNumber(), unit.getUnitNumber());
+                    } else {
+                        LOG.debug("No dimension entities found for layer [{}]", doorLayer);
+                    }
+                }
+            } else {
+                LOG.debug("No door layers found for Room [{}] in Unit [{}]", room.getNumber(), unit.getUnitNumber());
+            }
+        }
+
+        LOG.debug("Completed extractRoomWiseDoors for Block [{}], Floor [{}], Unit [{}]",
+                block.getNumber(), floor.getNumber(), unit.getUnitNumber());
     }
 
 

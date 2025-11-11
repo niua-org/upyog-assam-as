@@ -261,15 +261,11 @@ public class Kitchen_Assam extends Kitchen {
             		KITCHEN_DOOR_WIDTH, minDoorWidth, false,
                 ProcessHelper.getTypicalFloorValues(block, floor, false));
         }
-        
-        
-     //  Validate door height
-        if (floorUnit.getCommonHeight() != null && !floorUnit.getCommonHeight().isEmpty()) {
-            BigDecimal minDoorHeight = floorUnit.getCommonHeight()
-                    .stream()
-                    .min(Comparator.naturalOrder())
-                    .get()
-                    .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+     // Validate door height
+        if (floorUnit.getKitchen().getKitchenDoorHeight() != null && !floorUnit.getKitchen().getKitchenDoorHeight().isEmpty()) {
+            BigDecimal minDoorHeight = floorUnit.getKitchen().getKitchenDoorHeight()
+                .stream().min(Comparator.naturalOrder()).get().setScale(2, BigDecimal.ROUND_HALF_UP);
 
             buildResult(pl, floor, floorUnit, rule.getKitchenDoorHeight(), SUBRULE_41_III,
                     KITCHEN_DOOR_HEIGHT, minDoorHeight, false,

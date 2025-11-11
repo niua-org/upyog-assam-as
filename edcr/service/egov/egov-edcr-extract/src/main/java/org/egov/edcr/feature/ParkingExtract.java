@@ -3,7 +3,7 @@ package org.egov.edcr.feature;
 import static org.egov.edcr.constants.DxfFileConstants.OCCUPANCY_A2_PARKING_WITHATTACHBATH_COLOR_CODE;
 import static org.egov.edcr.constants.DxfFileConstants.OCCUPANCY_A2_PARKING_WITHDINE_COLOR_CODE;
 import static org.egov.edcr.constants.DxfFileConstants.OCCUPANCY_A2_PARKING_WOATTACHBATH_COLOR_CODE;
-
+import static org.egov.edcr.constants.DxfFileConstants.INDEX_COLOR_TWO;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -124,7 +124,16 @@ public class ParkingExtract extends FeatureExtract {
         Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_TWO_WHEELER_PARKING"))
                 .forEach(twoWheelerPolyline -> pl.getParkingDetails().getTwoWheelers()
                         .add(new MeasurementDetail(twoWheelerPolyline, true)));
+        
+        Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_DRIVEWAY"))
+        .forEach(drivewayPolyline -> pl.getParkingDetails().getDriveway()
+                .add(new MeasurementDetail(drivewayPolyline, true)));
+        
+        List<BigDecimal> drivewayWidth = Util.getListOfDimensionByColourCode(pl, layerNames.getLayerName("LAYER_NAME_DRIVEWAY"), INDEX_COLOR_TWO);
 
+        if (drivewayWidth != null && !drivewayWidth.isEmpty()) {
+			pl.getParkingDetails().setDrivewayWidth(drivewayWidth);
+		}
         Util.getPolyLinesByLayer(pl.getDoc(), DA_PARKING).forEach(disablePersonParkPolyline -> pl.getParkingDetails()
                 .getDisabledPersons().add(new MeasurementDetail(disablePersonParkPolyline, true)));
 

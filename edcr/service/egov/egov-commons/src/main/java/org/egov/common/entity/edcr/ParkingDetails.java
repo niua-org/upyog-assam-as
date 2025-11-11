@@ -89,6 +89,26 @@ public class ParkingDetails implements Serializable {
 	private List<Measurement> stilts = new ArrayList<>();
 	private List<Measurement> mechanicalLifts = new ArrayList<>();
 
+	private List<Measurement> driveway = new ArrayList<>();
+	
+	private List<BigDecimal> drivewayWidth = new ArrayList<>();
+	
+	public List<BigDecimal> getDrivewayWidth() {
+		return drivewayWidth;
+	}
+
+	public void setDrivewayWidth(List<BigDecimal> drivewayWidth) {
+		this.drivewayWidth = drivewayWidth;
+	}
+
+	public List<Measurement> getDriveway() {
+		return driveway;
+	}
+
+	public void setDriveway(List<Measurement> driveway) {
+		this.driveway = driveway;
+	}
+
 	public List<Measurement> getCars() {
 		return cars;
 	}
