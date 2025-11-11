@@ -287,7 +287,15 @@ public class UserRepository {
         updateuserInputs.put("Signature", user.getSignature());
         updateuserInputs.put("Title", user.getTitle());
         updateuserInputs.put("DigilockerID",user.getDigilockerid());
-
+        String updateSsoId = user.getSsoId() != null ? user.getSsoId() : (oldUser != null ? oldUser.getSsoId() : null);
+        updateuserInputs.put("SsoId", updateSsoId);
+        String updateSsoType = null;
+        if (user.getSsoType() != null) {
+            updateSsoType = user.getSsoType().toString();
+        } else if (oldUser != null && oldUser.getSsoType() != null) {
+            updateSsoType = oldUser.getSsoType().toString();
+        }
+        updateuserInputs.put("SsoType", updateSsoType);
             List<Enum> userTypeEnumValues = Arrays.asList(UserType.values());
             if (user.getType() != null) {
                 if (userTypeEnumValues.contains(user.getType()))
@@ -484,6 +492,8 @@ public class UserRepository {
         userInputs.put("id", entityUser.getId());
         userInputs.put("uuid", entityUser.getUuid());
         userInputs.put("digilockerid", entityUser.getDigilockerid());
+        userInputs.put("sso_id", entityUser.getSsoId());
+        userInputs.put("sso_type", entityUser.getSsoType() != null ? entityUser.getSsoType().toString() : null);
         userInputs.put("tenantid", entityUser.getTenantId());
         userInputs.put("salutation", entityUser.getSalutation());
         userInputs.put("dob", entityUser.getDob());

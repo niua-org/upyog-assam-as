@@ -283,12 +283,13 @@ public class UserController {
             User user = new User().toUser(existingUser);
             user.setSsoId(createUserRequest.getUser().getSsoId());
             user.setSsoType(ssoTypeEnum);
-            
-            // Maintain backward compatibility with digilockerid field
+
             if (ssoTypeEnum == SSOType.DIGILOCKER) {
                 user.setDigilockerid(createUserRequest.getUser().getSsoId());
+                user.setSsoType(SSOType.DIGILOCKER);
             } else if (ssoTypeEnum == SSOType.EPRAMAAN) {
-                user.setDigilockerid(createUserRequest.getUser().getSsoId()); // Store in digilockerid for now
+                user.setSsoId(createUserRequest.getUser().getSsoId());
+                user.setSsoType(SSOType.EPRAMAAN);
             }
             
             user.setDigilockerRegistration(isDigiLockerRegistration);

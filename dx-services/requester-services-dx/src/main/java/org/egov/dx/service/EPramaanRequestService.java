@@ -551,15 +551,15 @@ public class EPramaanRequestService {
     public EPramaanLogoutFormData generateEPramaanLogoutFormData(String sessionId, String sub, String tenantId) throws Exception {
         String logoutRequestId = UUID.randomUUID().toString();
         String clientId = configurations.getEpClientId();
-        String aesKey = configurations.getEpAesKey();
         String iss = configurations.getEpIss();
         String redirectUrl = configurations.getEpServiceLogoutUri();
         String customParameter = "UPYOG-Logout";
         
-        // Generate HMAC: input = clientId + sessionId + iss + aesKey + sub + redirectUrl, key = logoutRequestId
-        String inputValue = clientId + sessionId + iss + aesKey + sub + redirectUrl;
+        log.info("ePramaan logout clientId: [{}], sessionId: [{}], iss: [{}], logoutRequestId: [{}], sub: [{}], redirectUrl: [{}]", clientId, sessionId, iss, logoutRequestId, sub, redirectUrl);
+        // Generate HMAC: input = clientId + sessionId + iss + logoutRequestId + sub + redirectUrl, key = logoutRequestId
+        String inputValue = clientId + sessionId + iss + logoutRequestId + sub + redirectUrl;
         String hmac = hashHMACHex(inputValue, logoutRequestId);
-        
+
         return EPramaanLogoutFormData.builder()
             .sub(sub)
             .clientId(clientId)

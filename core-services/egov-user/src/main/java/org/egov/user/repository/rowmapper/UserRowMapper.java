@@ -4,6 +4,7 @@ import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.enums.BloodGroup;
 import org.egov.user.domain.model.enums.Gender;
 import org.egov.user.domain.model.enums.GuardianRelation;
+import org.egov.user.domain.model.enums.SSOType;
 import org.egov.user.domain.model.enums.UserType;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -18,10 +19,16 @@ public class UserRowMapper implements RowMapper<User> {
                 .dob(rs.getDate("dob")).locale(rs.getString("locale")).username(rs.getString("username"))
                 .password(rs.getString("password")).passwordExpiryDate(rs.getTimestamp("pwdexpirydate"))
                 .mobileNumber(rs.getString("mobilenumber")).altContactNumber(rs.getString("altcontactnumber")).digilockerid(rs.getString("digilockerid"))
+                .ssoId(rs.getString("sso_id"))
                 .emailId(rs.getString("emailid")).active(rs.getBoolean("active")).name(rs.getString("name")).lastModifiedBy(rs.getLong("lastmodifiedby")).lastModifiedDate(rs.getTimestamp("lastmodifieddate"))
                 .pan(rs.getString("pan")).aadhaarNumber(rs.getString("aadhaarnumber")).createdBy(rs.getLong("createdby")).createdDate(rs.getTimestamp("createddate"))
                 .guardian(rs.getString("guardian")).signature(rs.getString("signature"))
                 .accountLocked(rs.getBoolean("accountlocked")).photo(rs.getString("photo")).identificationMark(rs.getString("identificationmark")).uuid(rs.getString("uuid")).alternateMobileNumber(rs.getString("alternatemobilenumber")).build();
+
+        String ssoType = rs.getString("sso_type");
+        if (ssoType != null) {
+            user.setSsoType(SSOType.fromValue(ssoType));
+        }
 
         for (UserType type : UserType.values()) {
             if (type.toString().equals(rs.getString("type"))) {
