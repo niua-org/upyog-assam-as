@@ -31,7 +31,7 @@ const Urls = {
 
   UserSearch: "/user/_search",
   UserLogout: "/user/_logout",
-  EPramaanLogoutData: "http://localhost:8280/requester-services-dx/epramaan/getlogoutdata",
+  EPramaanLogoutData: "/requester-services-dx/epramaan/getlogoutdata",
   UserCreate:"/user/users/_createnovalidate",
   UserUpdateAddressV2:"/user/_updateAddress",
   UserSearchNewV2: "/user/users/v2/_search", 
@@ -266,10 +266,10 @@ const Urls = {
     PGR_Search_AI: "/pgr-ai-services/v1/request/_search",
     PGR_Update_AI:"/pgr-ai-services/v1/request/_update"
   },
-//TODO: remove hardcoded url after testing
+
 digiLocker:{
   authorization:"/requester-services-dx/digilocker/authorization/url",
-  register :"http://localhost:8280/requester-services-dx/digilocker/authorization/url/citizen",
+  register :"/requester-services-dx/digilocker/authorization/url/citizen",
   token:"/requester-services-dx/digilocker/token/citizen",
   issueDoc:"/requester-services-dx/digilocker/issuedfiles",
   uri:"/requester-services-dx/digilocker/file",
@@ -277,8 +277,8 @@ digiLocker:{
 },
 ePramaan: {
   authorization:"/requester-services-dx/epramaan/authorization/url",
-  register :"http://localhost:8280/requester-services-dx/epramaan/authorization/url",
-  token:"http://localhost:8280/requester-services-dx/epramaan/token/citizen",
+  register :"/requester-services-dx/epramaan/authorization/url",
+  token:"/requester-services-dx/epramaan/token/citizen",
   oauth:"/user/epramaan/oauth/token",
   logoutUrl:"https://epstg.meripehchaan.gov.in/openid/jwt/processOIDCSLORequest.do"
 },
