@@ -877,15 +877,14 @@ public class InboxService {
 				for (Object businessId : businessIds) {
 					for (Map.Entry<String, List<String>> tenantAppln : tenantAndApplnNumbersMap.entrySet()) {
 						String tenantId = tenantAppln.getKey();
-						if (tenantAppln.getValue().contains(businessId)
-								&& tenantAndApplnNoForProcessInstance.containsKey(tenantId)) {
-							List<String> applnNos = tenantAndApplnNoForProcessInstance.get(tenantId);
-							applnNos.add(String.valueOf(businessId));
-							tenantAndApplnNoForProcessInstance.put(tenantId, applnNos);
-						} else {
-							List<String> businesIds = new ArrayList<>();
-							businesIds.add(String.valueOf(businessId));
-							tenantAndApplnNoForProcessInstance.put(tenantId, businesIds);
+						if (tenantAppln.getValue().contains(String.valueOf(businessId))) {
+							if (tenantAndApplnNoForProcessInstance.containsKey(tenantId)) {
+								tenantAndApplnNoForProcessInstance.get(tenantId).add(String.valueOf(businessId));
+							} else {
+								List<String> businessIdsList = new ArrayList<>();
+								businessIdsList.add(String.valueOf(businessId));
+								tenantAndApplnNoForProcessInstance.put(tenantId, businessIdsList);
+							}
 						}
 					}
 				}
