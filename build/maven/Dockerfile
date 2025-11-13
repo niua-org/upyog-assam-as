@@ -1,6 +1,5 @@
 # ===== Build Stage =====
-FROM eclipse-temurin:8u372-jdk-alpine AS build
-# Or use: adoptopenjdk/openjdk8:ubi-minimal-jdk8u372-b07
+FROM eclipse-temurin:8-jdk-alpine AS build
 
 ARG WORK_DIR
 WORKDIR /app
@@ -14,8 +13,7 @@ COPY ${WORK_DIR}/src ./src
 RUN apk add --no-cache maven && mvn -B -f /app/pom.xml clean package
 
 # ===== Runtime Stage =====
-FROM eclipse-temurin:8u372-jre-alpine
-# Or: adoptopenjdk/openjdk8:ubi-minimal-jre8u372-b07
+FROM eclipse-temurin:8-jre-alpine
 
 WORKDIR /opt/egov
 
