@@ -210,7 +210,7 @@ import {
     const updatedWorkflowDetails = await Digit.WorkflowService.getByBusinessId(tenantId, acknowledgementIds);
     setWorkflowDetails(updatedWorkflowDetails);
     //window.location.reload();
-    setTimeout(() => setToast(false), 10000);
+    setTimeout(() => setToast(false), 1000);
   } catch (err) {
     console.error("Error while assigning:", err);
     setToast(true);
@@ -930,6 +930,10 @@ import {
   
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_LAND_DETAILS")}</CardSubHeader>
             <StatusTable>
+             <Row
+                label={t("BPA_CONSTRUCTION_TYPE")}
+                text={t(additionalDetails?.constructionType) || t("CS_NA")}
+              />
               <Row
                 label={t("BPA_OLD_DAG_NUMBER")}
                 text={landInfo?.oldDagNumber || t("CS_NA")}

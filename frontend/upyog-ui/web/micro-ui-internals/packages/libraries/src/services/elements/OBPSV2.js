@@ -563,6 +563,10 @@ export const OBPSV2Services = {
       isInsert: true,
       isCommon: true,
       values: [
+        {
+          title: "BPA_CONSTRUCTION_TYPE",
+          value: additionalDetails?.constructionType || "NA",
+        },
         { title: "BPA_OLD_DAG_NUMBER", value: landInfo?.oldDagNumber || "NA" },
         { title: "BPA_NEW_DAG_NUMBER", value: landInfo?.newDagNumber || "NA" },
         {
