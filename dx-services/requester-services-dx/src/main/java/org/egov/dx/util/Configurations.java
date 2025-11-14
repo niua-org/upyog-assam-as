@@ -161,9 +161,6 @@ public class Configurations {
 	@Value("${epramaan.serviceLogoutUri}")
 	private String epServiceLogoutUri;
 
-	@Value("${epramaan.certificatePath}")
-	private String epCertificatePath;
-
 	@Value("${epramaan.scope}")
 	private String epScope;
 

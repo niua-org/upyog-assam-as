@@ -1,8 +1,0 @@
-Bag Attributes
-    friendlyName: epramaan
-    localKeyID: 5
-subject=/C=IN/ST=Maharashtra/L=Mumbai/O=CDAC/OU=CDAC/CN=*.epramaan.in
-issuer=/C=IN/ST=Maharashtra/L=Mumbai/O=CDAC/OU=CDAC/CN=*.epramaan.in
------BEGIN CERTIFICATE-----
-
------END CERTIFICATE-----

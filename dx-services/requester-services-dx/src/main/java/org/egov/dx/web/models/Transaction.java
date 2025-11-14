@@ -1,17 +1,10 @@
 package org.egov.dx.web.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.*;
-// import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.dx.validation.SanitizeHtml;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Transaction object representing a transaction
@@ -40,7 +33,7 @@ public class Transaction {
     /**
      * Backward compatibility
      */
-    // @SafeHtml
+    @SanitizeHtml
     @JsonProperty("consumerCode")
     private String consumerCode;
 
