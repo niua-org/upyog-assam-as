@@ -122,7 +122,7 @@ public class PlotArea extends FeatureProcess {
         Map<String, String> details = buildScrutinyDetailRow(occupancyType, plotArea, permissibleArea);
 
         scrutinyDetail.getDetail().add(details);
-        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+      //  pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 
         return pl;
     }

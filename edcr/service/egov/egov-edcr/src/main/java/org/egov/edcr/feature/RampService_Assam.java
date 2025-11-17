@@ -73,10 +73,12 @@ import static org.egov.edcr.service.FeatureUtil.addScrutinyDetailtoPlan;
 import static org.egov.edcr.service.FeatureUtil.mapReportDetails;
 import static org.egov.edcr.constants.EdcrReportConstants.RULE_RAMP_LENGTH;
 import static org.egov.edcr.constants.EdcrReportConstants.DESC_RAMP_WIDTH;
+import static org.egov.edcr.constants.EdcrReportConstants.DA_DESC_RAMP_WIDTH;
 import static org.egov.edcr.constants.EdcrReportConstants.RULE_RAMP_WIDTH;
 import static org.egov.edcr.constants.EdcrReportConstants.PERMISSIBLE_WIDTH;
 import static org.egov.edcr.constants.EdcrReportConstants.NOT_DEFINED;
 import static org.egov.edcr.constants.EdcrReportConstants.DESC_RAMP_LENGTH;
+import static org.egov.edcr.constants.EdcrReportConstants.DA_DESC_RAMP_LENGTH;
 import static org.egov.edcr.constants.EdcrReportConstants.PERMISSIBLE_LENGTH;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -148,7 +150,7 @@ public class RampService_Assam extends RampService {
                         for (Ramp ramp : ramps) {
                             List<Measurement> rampPolyLines = ramp.getRamps();
                             if (rampPolyLines != null && !rampPolyLines.isEmpty()) {
-                                validateDimensions(pl, block.getNumber(), floor.getNumber(), ramp.getNumber().toString(), rampPolyLines);
+                                validateRampDimensions(pl, block, floor, scrutinyDetail);
                             }
                         }
                     }
@@ -330,7 +332,7 @@ public class RampService_Assam extends RampService {
                 
                 validateDARampDimensions(pl, block, scrutinyDetail7);
                 
-                validateRampDimensions(pl, block, floor, scrutinyDetail5);
+                validateRampDimensions(pl, block, floor, scrutinyDetail8);
 
             }
         }
@@ -494,57 +496,67 @@ public class RampService_Assam extends RampService {
 	 * @param rampServiceSlope    The minimum slope value to consider
 	 * @param scrutinyDetail2     The scrutiny detail object to update
 	 */
-	private void validateDARampSlopes(Plan pl, Block block, BigDecimal expectedSlopeOne, BigDecimal divideExpectedSlope,
-			ScrutinyDetail scrutinyDetail) {
+    private void validateDARampSlopes(Plan pl, Block block, BigDecimal expectedSlopeOne,
+            BigDecimal divideExpectedSlope, ScrutinyDetail scrutinyDetail) {
 
 		boolean valid = false;
 		Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
 
-		BigDecimal expectedSlope = divideExpectedSlope.divide(expectedSlopeOne, 2, RoundingMode.HALF_UP); // gives 12
-		BigDecimal tolerance = new BigDecimal("0.01"); // allow slight variation
+// expectedSlope = divideExpectedSlope / expectedSlopeOne
+		BigDecimal expectedSlope = divideExpectedSlope.divide(expectedSlopeOne, 2, RoundingMode.HALF_UP);
+		BigDecimal tolerance = new BigDecimal("0.01"); 
 
 		BigDecimal lastSlope = BigDecimal.ZERO;
 		String lastRampNumber = "";
 
 		for (DARamp daRamp : block.getDARamps()) {
-			BigDecimal slope = daRamp.getSlope(); // already rise/run from extractSlope
+
+			BigDecimal slope = daRamp.getSlope(); // rise/run
 			if (slope != null && slope.compareTo(BigDecimal.ZERO) > 0) {
-				lastSlope = slope;
+
+				lastSlope = slope.setScale(2, RoundingMode.HALF_UP); 
 				lastRampNumber = String.valueOf(daRamp.getNumber());
 
-				// Check slope within tolerance
 				BigDecimal lowerBound = expectedSlope.subtract(tolerance);
 				BigDecimal upperBound = expectedSlope.add(tolerance);
 
-				if (slope.compareTo(lowerBound) >= 0 && slope.compareTo(upperBound) <= 0) {
+				if (lastSlope.compareTo(lowerBound) >= 0 && lastSlope.compareTo(upperBound) <= 0) {
 					valid = true;
+
 					mapOfRampNumberAndSlopeValues.put(DA_RAMP_NUMBER, lastRampNumber);
-					mapOfRampNumberAndSlopeValues.put(SLOPE_STRING, slope.toString());
+					mapOfRampNumberAndSlopeValues.put(SLOPE_STRING, lastSlope.toPlainString());
 					break;
 				}
 			}
 		}
 
-		String expectedSlopeFormatted = String.format("1:%s", divideExpectedSlope.toPlainString());
-		String providedSlopeFormatted = String.format("1:%.2f", lastSlope);
+// Expected value formatted as 1:XX.xx
+		String expectedSlopeFormatted = String.format("1:%s",
+				divideExpectedSlope.setScale(2, RoundingMode.HALF_UP).toPlainString());
 
+// For provided slope (lastSlope)
+		String providedSlopeFormatted;
 		String providedRampNumber = mapOfRampNumberAndSlopeValues.getOrDefault(DA_RAMP_NUMBER, lastRampNumber);
-		String providedSlope = mapOfRampNumberAndSlopeValues.getOrDefault(SLOPE_STRING, lastSlope.toString());
+		String providedSlope = mapOfRampNumberAndSlopeValues.getOrDefault(SLOPE_STRING, lastSlope.toPlainString());
 
-	
 		try {
-		    if (lastSlope.compareTo(BigDecimal.ZERO) > 0) {
-		        // If slope > 1, assume it's already in the format like 1:12 (not a fraction)
-		        if (lastSlope.compareTo(BigDecimal.ONE) > 0) {
-		            providedSlopeFormatted = String.format("1:%.0f", lastSlope);
-		        } else {
-		            // If slope is a fraction (e.g., 0.0833), then convert to 1:12 format
-		            BigDecimal inverse = BigDecimal.ONE.divide(lastSlope, 2, RoundingMode.HALF_UP);
-		            providedSlopeFormatted = String.format("1:%.2f", inverse);
-		        }
-		    }
+			if (lastSlope.compareTo(BigDecimal.ZERO) > 0) {
+
+// If slope > 1 (already a ratio like 1:12), show integer
+				if (lastSlope.compareTo(BigDecimal.ONE) > 0) {
+					providedSlopeFormatted = String.format("1:%.2f", lastSlope.setScale(2, RoundingMode.HALF_UP));
+				} else {
+// Convert fractional slope (e.g. 0.0833 → 1:12.00)
+					BigDecimal inverse = BigDecimal.ONE.divide(lastSlope, 2, RoundingMode.HALF_UP);
+					providedSlopeFormatted = String.format("1:%.2f", inverse);
+				}
+
+			} else {
+				providedSlopeFormatted = providedSlope;
+			}
+
 		} catch (ArithmeticException e) {
-		    providedSlopeFormatted = providedSlope;
+			providedSlopeFormatted = providedSlope; // fallback
 		}
 
 		setReportOutputDetails(pl, SUBRULE_50_C_4_B,
@@ -555,6 +567,7 @@ public class RampService_Assam extends RampService {
 		LOGGER.info("Ramp slope validation completed for Block {} -> Expected: {}, Provided: {}, Result: {}",
 				block.getNumber(), expectedSlopeFormatted, providedSlopeFormatted, valid ? "Accepted" : "Not Accepted");
 	}
+
 
 	/**
 	 * Validates ramp slopes against expected values and updates the scrutiny
@@ -567,29 +580,27 @@ public class RampService_Assam extends RampService {
 	 * @param rampServiceSlope    The minimum slope value to consider
 	 * @param scrutinyDetail2     The scrutiny detail object to update
 	 */
-	private void validateRampSlopes(Plan pl, Block block, Floor floor, BigDecimal expectedSlopeOne, BigDecimal divideExpectedSlope,
-			ScrutinyDetail scrutinyDetail) {
+	private void validateRampSlopes(Plan pl, Block block, Floor floor, BigDecimal expectedSlopeOne,
+			BigDecimal divideExpectedSlope, ScrutinyDetail scrutinyDetail) {
 
 		boolean valid = false;
 		Map<String, String> mapOfRampNumberAndSlopeValues = new HashMap<>();
 
-		BigDecimal expectedSlope = divideExpectedSlope.divide(expectedSlopeOne, 2, RoundingMode.HALF_UP); // gives 12
-		BigDecimal tolerance = new BigDecimal("0.01"); // allow slight variation
+		BigDecimal expectedSlope = divideExpectedSlope;
 
 		BigDecimal lastSlope = BigDecimal.ZERO;
 		String lastRampNumber = "";
 
 		for (Ramp ramp : floor.getRamps()) {
-			BigDecimal slope = ramp.getSlope(); // already rise/run from extractSlope
+
+			BigDecimal slope = ramp.getSlope(); 
 			if (slope != null && slope.compareTo(BigDecimal.ZERO) > 0) {
+
 				lastSlope = slope;
 				lastRampNumber = String.valueOf(ramp.getNumber());
 
-				// Check slope within tolerance
-				BigDecimal lowerBound = expectedSlope.subtract(tolerance);
-				BigDecimal upperBound = expectedSlope.add(tolerance);
 
-				if (slope.compareTo(lowerBound) >= 0 && slope.compareTo(upperBound) <= 0) {
+				if (slope.compareTo(expectedSlope) >= 0) {
 					valid = true;
 					mapOfRampNumberAndSlopeValues.put(DA_RAMP_NUMBER, lastRampNumber);
 					mapOfRampNumberAndSlopeValues.put(SLOPE_STRING, slope.toString());
@@ -598,36 +609,31 @@ public class RampService_Assam extends RampService {
 			}
 		}
 
-		String expectedSlopeFormatted = String.format("1:%s", divideExpectedSlope.toPlainString());
-		String providedSlopeFormatted = String.format("1:%.2f", lastSlope);
+     // ----------- FORMAT EXPECTED VALUE ------------
+		String expectedSlopeFormatted = "1:" + expectedSlope.toPlainString();
 
-		String providedRampNumber = mapOfRampNumberAndSlopeValues.getOrDefault(DA_RAMP_NUMBER, lastRampNumber);
-		String providedSlope = mapOfRampNumberAndSlopeValues.getOrDefault(SLOPE_STRING, lastSlope.toString());
+     // ----------- FORMAT PROVIDED VALUE ------------
+		String providedSlopeFormatted;
 
-	
-		try {
-		    if (lastSlope.compareTo(BigDecimal.ZERO) > 0) {
-		        // If slope > 1, assume it's already in the format like 1:12 (not a fraction)
-		        if (lastSlope.compareTo(BigDecimal.ONE) > 0) {
-		            providedSlopeFormatted = String.format("1:%.0f", lastSlope);
-		        } else {
-		            // If slope is a fraction (e.g., 0.0833), then convert to 1:12 format
-		            BigDecimal inverse = BigDecimal.ONE.divide(lastSlope, 2, RoundingMode.HALF_UP);
-		            providedSlopeFormatted = String.format("1:%.2f", inverse);
-		        }
-		    }
-		} catch (ArithmeticException e) {
-		    providedSlopeFormatted = providedSlope;
+		if (lastSlope.compareTo(BigDecimal.ZERO) > 0) {
+          // Provided slope already in X (not a fraction) like 10, 12, 14
+			providedSlopeFormatted = "1:" + lastSlope.setScale(0, RoundingMode.HALF_UP).toPlainString();
+		} else {
+			providedSlopeFormatted = "N/A";
 		}
 
+		String providedRampNumber = mapOfRampNumberAndSlopeValues.getOrDefault(DA_RAMP_NUMBER, lastRampNumber);
+
+     // ----------- REPORT OUTPUT ------------
 		setReportOutputDetails(pl, SUBRULE_50_C_4_B,
 				String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, providedRampNumber), expectedSlopeFormatted,
 				providedSlopeFormatted, valid ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal(),
 				scrutinyDetail);
 
-		LOGGER.info("Ramp slope validation completed for Block {} -> Expected: {}, Provided: {}, Result: {}",
-				block.getNumber(), expectedSlopeFormatted, providedSlopeFormatted, valid ? "Accepted" : "Not Accepted");
+		LOGGER.info("Ramp slope validation for Block {} -> Required: {}, Provided: {}, Accepted: {}", block.getNumber(),
+				expectedSlopeFormatted, providedSlopeFormatted, valid ? "YES" : "NO");
 	}
+
 
     private void validateMinHeightEntrance(Plan pl, Block block, BigDecimal requiredMinHeight, ScrutinyDetail scrutinyDetail) {
         for (Floor floor : block.getBuilding().getFloors()) {
@@ -713,7 +719,7 @@ public class RampService_Assam extends RampService {
                 LOGGER.info("Ramp Length validation passed. Provided: {} ≥ Required: {}", totalLength, requiredLengthFormatted);
                 setReportOutputDetails(pl,
                         RULE_RAMP_LENGTH,
-                        DESC_RAMP_LENGTH,
+                        DA_DESC_RAMP_LENGTH,
                         requiredLengthFormatted.toString(),
                         providedLength,
                         Result.Accepted.getResultVal(),
@@ -722,7 +728,7 @@ public class RampService_Assam extends RampService {
                 LOGGER.info("Ramp Length validation failed. Provided: {} < Required: {}", totalLength, requiredLengthFormatted);
                 setReportOutputDetails(pl,
                         RULE_RAMP_LENGTH,
-                        DESC_RAMP_LENGTH,
+                        DA_DESC_RAMP_LENGTH,
                         requiredLengthFormatted.toString(),
                         providedLength,
                         Result.Not_Accepted.getResultVal(),
@@ -766,7 +772,7 @@ public class RampService_Assam extends RampService {
         LOGGER.info("Validating DA Ramp dimensions for Block: {}", block.getNumber());
 
         for (Ramp ramp : floor.getRamps()) {
-            LOGGER.info("Processing  Ramp: {}", ramp);
+            LOGGER.info("Processing Ramp: {}", ramp);
 
             List<BigDecimal> widthList = ramp.getRampWidth();
             List<BigDecimal> lengthList = ramp.getRampLength();
@@ -790,8 +796,9 @@ public class RampService_Assam extends RampService {
 
             // Calculate required length based on height × slope
             BigDecimal requiredLength = (ramp.getHeight() != null && ramp.getSlope() != null)
-                    ? ramp.getHeight().multiply(ramp.getSlope())
-                    : BigDecimal.ZERO;
+                    ? ramp.getHeight().multiply(BigDecimal.valueOf(10)).setScale(2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+
 
             String requiredLengthFormatted = String.format("%.2f", requiredLength);
             // Fetch rules from cache (if available)

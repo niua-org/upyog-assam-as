@@ -108,8 +108,10 @@ import static org.egov.edcr.constants.EdcrReportConstants.MECH_PARKING_HEIGHT;
 import static org.egov.edcr.constants.EdcrReportConstants.MECH_PARKING_WIDTH;
 import static org.egov.edcr.constants.EdcrReportConstants.MINIMUM_AREA_OF_EACH_DA_PARKING;
 import static org.egov.edcr.constants.EdcrReportConstants.MIN_AREA_EACH_CAR_PARKING;
+import static org.egov.edcr.constants.EdcrReportConstants.MOST_RESTRICTIVE_OCCUPANCY_ERROR;
 import static org.egov.edcr.constants.EdcrReportConstants.NO_VIOLATION_OF_AREA;
 import static org.egov.edcr.constants.EdcrReportConstants.NUMBERS;
+import static org.egov.edcr.constants.EdcrReportConstants.OCCUPANCY_ERROR;
 import static org.egov.edcr.constants.EdcrReportConstants.OPEN_ECS;
 import static org.egov.edcr.constants.EdcrReportConstants.OPEN_PARKING_DIM_DESC;
 import static org.egov.edcr.constants.EdcrReportConstants.OPEN_PARKING_ERROR;
@@ -142,8 +144,6 @@ import static org.egov.edcr.constants.EdcrReportConstants.TWO_WHEELER_PARK_AREA;
 import static org.egov.edcr.constants.EdcrReportConstants.TWO_WHEEL_PARKING_AREA_HEIGHT;
 import static org.egov.edcr.constants.EdcrReportConstants.TWO_WHEEL_PARKING_AREA_WIDTH;
 import static org.egov.edcr.constants.EdcrReportConstants.T_RULE;
-import static org.egov.edcr.constants.EdcrReportConstants.OCCUPANCY_ERROR;
-import static org.egov.edcr.constants.EdcrReportConstants.MOST_RESTRICTIVE_OCCUPANCY_ERROR;
 import static org.egov.edcr.constants.RuleKeyConstants.FOUR_P_TWO_P_ONE;
 import static org.egov.edcr.utility.DcrConstants.SQMTRS;
 
@@ -154,7 +154,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1336,22 +1336,26 @@ public class Parking_Assam extends Parking {
 	                "-", pl.getPlot().getLandscapingArea() + AREA_UNIT_SQM, Result.Accepted.getResultVal());
 	    }
 	    
+	    List<BigDecimal> dWidths = pl.getParkingDetails().getDrivewayWidth();
+	    
+	    String drivewayWidth = dWidths.stream()
+                .map(BigDecimal::toString)
+                .collect(Collectors.joining(", "));
+
 	//  Landscaping report (60% of plot area)
 	    if (pl.getParkingDetails().getDrivewayWidth() != null && !pl.getParkingDetails().getDrivewayWidth().isEmpty() ) {
 	        setReportOutputDetails1(pl, SECTION_92, "Driveway Width",
-	                "-", pl.getParkingDetails().getDrivewayWidth() + AREA_UNIT_SQM, Result.Accepted.getResultVal());
+	                "-", drivewayWidth + AREA_UNIT_SQM, Result.Accepted.getResultVal());
 	    }
 		// Final Acceptance or Error
-		if (!overallOk) {
-			StringBuilder err = new StringBuilder("Parking not sufficient for: ");
-			if (providedCarParkingArea > 0 && !carOk)
-				err.append("Car; ");
-			if (providedTwoWheelerParkingArea > 0 && !twoWheelerOk)
-				err.append("Two-Wheeler; ");
-			if (providedVisitorsParkingArea > 0 && !visitorOk)
-				err.append("Visitor; ");
-			pl.addError("Parking", err.toString());
-		}
+		/*
+		 * if (!overallOk) { StringBuilder err = new
+		 * StringBuilder("Parking not sufficient for: "); if (providedCarParkingArea > 0
+		 * && !carOk) err.append("Car; "); if (providedTwoWheelerParkingArea > 0 &&
+		 * !twoWheelerOk) err.append("Two-Wheeler; "); if (providedVisitorsParkingArea >
+		 * 0 && !visitorOk) err.append("Visitor; "); pl.addError("Parking",
+		 * err.toString()); }
+		 */
 		addIndividualParkingReports1(pl, parkingAreas);
 	}
 

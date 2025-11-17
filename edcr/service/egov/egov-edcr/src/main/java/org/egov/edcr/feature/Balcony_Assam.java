@@ -161,7 +161,11 @@ public class Balcony_Assam extends FeatureProcess {
         	    LOG.warn("No Balcony rules found in MDMS, using default values (0)");
         	}
 
-        	validateBalconyProjection(plan, block, floor, scrutinyDetail, permissibleLength, permissibleWidth, permissibleSetback);
+        	 for(FloorUnit floorUnit : floor.getUnits()) {    
+        		 if (floorUnit.getBalconies() != null && !floorUnit.getBalconies().isEmpty()) {
+        	    validateBalconyProjection(plan, block, floor, scrutinyDetail,
+        	        permissibleLength, permissibleWidth, permissibleSetback);
+        	}}
 
             for(FloorUnit floorUnit : floor.getUnits()) {
                 LOG.info("Processing Floor Unit {} of Floor {} in Block {}", floorUnit.getRoomNumber(), floor.getNumber(), block.getNumber());

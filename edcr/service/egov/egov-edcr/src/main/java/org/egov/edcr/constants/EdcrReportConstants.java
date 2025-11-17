@@ -574,8 +574,12 @@ public class EdcrReportConstants {
     public static final String RULE_RAMP_LENGTH = "Appendix VII";
     public static final String RULE_RAMP_WIDTH  = "Appendix VII";
 
-    public static final String DESC_RAMP_LENGTH = "DA Ramp length shall not exceed 9.0 m between landings";
-    public static final String DESC_RAMP_WIDTH  = "DA Ramp width shall be minimum 1.5 m with handrails on either side";
+    public static final String DESC_RAMP_LENGTH = "Ramp length";
+    public static final String DESC_RAMP_WIDTH  = "Ramp width";
+
+    
+    public static final String DA_DESC_RAMP_LENGTH = "DA Ramp length";
+    public static final String DA_DESC_RAMP_WIDTH  = "DA Ramp width";
 
     public static final String PERMISSIBLE_LENGTH = "≤ 9.0 m";
     public static final String PERMISSIBLE_WIDTH  = "≥ 1.5 m";
