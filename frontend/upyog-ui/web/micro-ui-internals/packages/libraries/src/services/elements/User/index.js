@@ -96,6 +96,8 @@ export const UserService = {
   getUser: () => {
     return Digit.SessionStorage.get("User");
   },
+
+  //TODO: Remove old logout code after testing
   // logout: async () => {
   //   const userType = UserService.getType();
   //   let ePramaanInitiated = false;
