@@ -162,6 +162,7 @@ const Urls = {
     update: "/bpa-services/v1/bpa/_update",
     search: "/bpa-services/v1/bpa/_search",
     rtpcreate : "/bpa-services/v1/rtp/_create",
+    rtpsearch : "/bpa-services/v1/bpa/_rtpsearch",
     gisService: "/gis-service/find-zone"
   },
   edcr: {

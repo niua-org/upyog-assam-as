@@ -150,8 +150,8 @@ export const bpaPayload = async(data) => {
 
       rtpDetails: {
         rtpCategory: data?.land?.rtpCategory?.code,
-        rtpName: data?.land?.registeredTechnicalPerson?.name,
-        rtpUUID: data?.land?.registeredTechnicalPerson?.code,
+        rtpName: data?.land?.registeredTechnicalPerson?.code,
+        rtpUUID: data?.land?.registeredTechnicalPerson?.uuid,
       },
 
       landInfo: {
@@ -281,8 +281,8 @@ export const bpaEditPayload = async (formData) => {
     updated.rtpDetails = {
       ...updated.rtpDetails,
       rtpCategory: formData.land.rtpCategory?.code,
-      rtpName: formData.land.registeredTechnicalPerson?.name,
-      rtpUUID: formData.land.registeredTechnicalPerson?.code,
+      rtpName: formData.land.registeredTechnicalPerson?.code,
+      rtpUUID: formData.land.registeredTechnicalPerson?.uuid,
     };
   }
   if (formData?.additionalDetails) {

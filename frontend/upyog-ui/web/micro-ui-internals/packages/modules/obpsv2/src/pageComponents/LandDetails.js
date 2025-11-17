@@ -3,6 +3,7 @@ import { FormStep, TextInput, CardLabel, RadioButtons, Dropdown, CheckBox, CardH
 import Timeline from "../components/Timeline";
 
 const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
+  const tenantId = Digit.ULBService.getCurrentTenantId();
 
   // Future Provision Options
   const futureProvisionOptions = [
@@ -17,19 +18,9 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
     { code: "TRANSITION_ZONE", name: "Transition Zone", i18nKey: "BPA_TRANSITION_ZONE" }
   ];
 
-  // Registered Technical Person Options
-  const rtpOptions = [
-    { code: "RTP001", name: "Ranjit +91 9988888890, ranjit@gmail.com", i18nKey: "BPA_RTP001" },
-    { code: "RTP002", name: "Ajeet +91 7855552377, ajeet@gmail.com" , i18nKey: "BPA_RTP002"},
-    { code: "RTP003", name: "Ani +91 9845454245, ani@gmail.com", i18nKey: "BPA_RTP003" },
-    { code: "RTP004", name: "Khalid +91 9845858533, khalid@gmail.com", i18nKey: "BPA_RTP004" },
-    { code: "RTP005", name: "Kunal +91 8755258542, kunal@gmail.com", i18nKey: "BPA_RTP005" },
-    { code: "RTP006", name: "Anil +91 9907926555, anil@gmail.com", i18nKey: "BPA_RTP006" }
-  ];
-
    // Fetch data from MDMS
    const { data: mdmsData } = Digit.Hooks.useEnabledMDMS(
-    "as", 
+    tenantId, 
     "BPA", 
     [
       { name: "constructionTypes" }, 
@@ -47,6 +38,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   const [constructionTypeOptions, setConstructionTypeOptions] = useState([]);
   const [rtpCategoryOptions, setRtpCategoryOptions] = useState([]);
   const [occupancyTypeOptions, setOccupancyTypeOptions] = useState([]);
+  const [rtpOptions, setRtpOptions] = useState([]);
   
     // Initialize districts from MDMS data
     useEffect(() => {
@@ -112,7 +104,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
 
   // RTP and Occupancy
   const [rtpCategory, setRtpCategory] = useState(landData?.rtpCategory || (searchResult?.rtpDetails?.rtpCategory ? {"code": searchResult?.rtpDetails?.rtpCategory, "i18nKey": searchResult?.rtpDetails?.rtpCategory} : "") || "");
-  const [registeredTechnicalPerson, setRegisteredTechnicalPerson] = useState(landData?.registeredTechnicalPerson || rtpOptions.find(opt => opt.name === searchResult?.rtpDetails?.rtpName) ||"");
+  const [registeredTechnicalPerson, setRegisteredTechnicalPerson] = useState(landData?.registeredTechnicalPerson || (searchResult?.rtpDetails?.rtpName ? {code: searchResult?.rtpDetails?.rtpName, uuid: searchResult?.rtpDetails?.rtpUUID, name: searchResult?.rtpDetails?.rtpName, i18nKey:searchResult?.rtpDetails?.rtpName} : "") ||  "");
   const [occupancyType, setOccupancyType] = useState(landData?.occupancyType || (searchResult?.landInfo?.units?.[0]?.occupancyType ? {"code": searchResult?.landInfo?.units[0].occupancyType, "i18nKey": searchResult?.landInfo?.units[0].occupancyType} : "") || "");
 
   // TOD Benefits
@@ -241,6 +233,30 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   };
 
   const onSkip = () => onSelect();
+
+  // User search API call
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await Digit.OBPSV2Services.rtpsearch({
+          tenantId, roleCodes: ["BPA_ARCHITECT"] 
+        });
+        
+        if (response?.user?.length > 0) {
+          const formattedRtpOptions = response.user.map((user) => ({
+            code:`${user.name}, +91 ${user.mobileNumber}, ${user.emailId}`,
+            uuid: user.uuid,
+            name: `${user.name}, +91 ${user.mobileNumber}, ${user.emailId}`,
+            i18nKey:`${user.name}, +91 ${user.mobileNumber}, ${user.emailId}`,
+          }));
+          setRtpOptions(formattedRtpOptions);
+        }
+      } catch (error) {
+        throw error;
+      }
+    };
+    fetchUsers();
+  }, [tenantId]);
 
   // Toast timeout effect
   useEffect(() => {
@@ -468,6 +484,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             selected={registeredTechnicalPerson}
             optionKey="i18nKey"
             select={setRegisteredTechnicalPerson}
+            optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={t("BPA_SELECT_REGISTERED_TECHNICAL_PERSON")}
           />
 
