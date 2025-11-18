@@ -53,4 +53,10 @@ public class GISResponse {
 
     @JsonProperty("error")
     private String error;
+
+    @JsonProperty("latitude")
+    private double latitude;
+
+    @JsonProperty("longitude")
+    private double longitude;
 }

@@ -61,6 +61,8 @@ public class GisServiceImpl implements GisService {
     public GISResponse findZoneFromGeometry(MultipartFile file, GISRequestWrapper gisRequestWrapper) throws Exception {
         GISRequest gisRequest = gisRequestWrapper.getGisRequest();
         String fileStoreId = null;
+        double latitude = 0.0;
+        double longitude = 0.0;
 
         try {
             validatePolygonFile(file);
@@ -77,8 +79,8 @@ public class GisServiceImpl implements GisService {
 
             // Extract centroid coordinates from geometry
             Point centroid = geometry.getCentroid();
-            double latitude = centroid.getY();
-            double longitude = centroid.getX();
+             latitude = centroid.getY();
+             longitude = centroid.getX();
             log.info("Extracted centroid coordinates: latitude={}, longitude={}", latitude, longitude);
 
             // Query GISTCP API for district/zone/landuse information
@@ -110,7 +112,7 @@ public class GisServiceImpl implements GisService {
             GisLog successLog = createGisLog(gisRequest.getApplicationNo(), gisRequest.getRtpiId(), fileStoreId,
                     gisRequest.getTenantId(), STATUS_SUCCESS, "SUCCESS", "Successfully processed geometry and retrieved location data from GISTCP", detailsJson,
                     gisRequestWrapper.getRequestInfo() != null && gisRequestWrapper.getRequestInfo().getUserInfo() != null
-                        ? gisRequestWrapper.getRequestInfo().getUserInfo().getUuid() : "system");
+                        ? gisRequestWrapper.getRequestInfo().getUserInfo().getUuid() : "system", latitude, longitude);
             logRepository.save(successLog);
 
             // Convert GISTCP response to JSON for the GIS response
@@ -133,6 +135,8 @@ public class GisServiceImpl implements GisService {
                     .zone(ward) // Using ward as zone
                     .wfsResponse(gistcpJson) // GISTCP response replaces WFS response
                     .fileStoreId(fileStoreId)
+                    .latitude(latitude)
+                    .longitude(longitude)
                     .build();
 
         } catch (Exception e) {
@@ -149,7 +153,7 @@ public class GisServiceImpl implements GisService {
             GisLog failureLog = createGisLog(gisRequest.getApplicationNo(), gisRequest.getRtpiId(), fileStoreId,
                     gisRequest.getTenantId(), STATUS_FAILURE, "FAILURE", e.getMessage(), errorDetails,
                     gisRequestWrapper.getRequestInfo() != null && gisRequestWrapper.getRequestInfo().getUserInfo() != null
-                        ? gisRequestWrapper.getRequestInfo().getUserInfo().getUuid() : "system");
+                        ? gisRequestWrapper.getRequestInfo().getUserInfo().getUuid() : "system", latitude, longitude);
             logRepository.save(failureLog);
 
             throw new RuntimeException("Failed to process geometry file: " + e.getMessage(), e);
@@ -201,7 +205,7 @@ public class GisServiceImpl implements GisService {
      * @return GisLog object ready for Kafka publishing
      */
     private GisLog createGisLog(String applicationNo, String rtpiId, String fileStoreId, String tenantId, 
-                               String status, String responseStatus, String responseJson, JsonNode details, String createdBy) {
+                               String status, String responseStatus, String responseJson, JsonNode details, String createdBy, double latitude ,double longitude) {
         return GisLog.builder()
                 .id(UUID.randomUUID().toString()) // Generate unique ID for Kafka
                 .applicationNo(applicationNo)
@@ -214,6 +218,8 @@ public class GisServiceImpl implements GisService {
                 .createdby(createdBy)
                 .createdtime(Instant.now().toEpochMilli())
                 .details(details)
+                .latitude(latitude)
+                .longitude(longitude)
                 .build();
     }
 }

@@ -54,4 +54,8 @@ public class GisLog {
     private Long lastmodifiedtime;
 
     private JsonNode details;
+
+    private double latitude;
+
+    private double longitude;
 }

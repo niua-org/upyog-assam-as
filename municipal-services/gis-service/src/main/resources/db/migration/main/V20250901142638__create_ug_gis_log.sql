@@ -4,6 +4,8 @@ CREATE TABLE ug_gis_log (
     application_no VARCHAR(128),
     rtpi_id VARCHAR(128),
     file_store_id VARCHAR(512) NOT NULL,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
     tenant_id VARCHAR(128),
     status VARCHAR(50) NOT NULL,
     response_status VARCHAR(50),
