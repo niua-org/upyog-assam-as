@@ -1,5 +1,5 @@
 package org.egov.bpa.service.property;
-import org.egov.bpa.web.model.property.PropertyRequest;
+import org.egov.bpa.web.model.property.SumatoPropertyRequest;
 import org.egov.bpa.web.model.property.PropertyResponse;
 import org.egov.bpa.web.model.property.PropertyValidationResponse;
 import org.egov.bpa.web.model.property.PropertyDetails;
@@ -8,6 +8,9 @@ import org.egov.bpa.exception.PropertyServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +26,18 @@ public class PropertyValidationService {
         try {
             log.info("Validating property with number: {}", propertyNumber);
 
-            PropertyRequest request = PropertyRequest.builder()
+            Instant start = Instant.now();
+
+            SumatoPropertyRequest request = SumatoPropertyRequest.builder()
                     .property(propertyNumber)
                     .build();
 
             PropertyResponse response = propertyServiceClient.fetchPropertyDetails(request);
+
+            Duration duration = Duration.between(start, Instant.now());
+            double seconds = duration.toMillis() / 1000.0;
+
+            log.info("API call to sumato property service took {} seconds", seconds);
 
             log.info("Received response from property service for property: {}", propertyNumber);
             log.info("Response Status: {}, Property Data: {}",

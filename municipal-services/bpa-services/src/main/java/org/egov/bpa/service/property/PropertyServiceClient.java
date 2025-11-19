@@ -2,7 +2,7 @@ package org.egov.bpa.service.property;
 
 
 import org.egov.bpa.config.FeignConfig;
-import org.egov.bpa.web.model.property.PropertyRequest;
+import org.egov.bpa.web.model.property.SumatoPropertyRequest;
 import org.egov.bpa.web.model.property.PropertyResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface PropertyServiceClient {
 
     @PostMapping("/obps/holding/fetch")
-    PropertyResponse fetchPropertyDetails(@RequestBody PropertyRequest request);
+    PropertyResponse fetchPropertyDetails(@RequestBody SumatoPropertyRequest request);
 }
 
