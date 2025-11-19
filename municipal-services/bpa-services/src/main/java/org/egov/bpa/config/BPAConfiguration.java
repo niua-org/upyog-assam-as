@@ -223,6 +223,9 @@ public class BPAConfiguration {
 	@Value("${workflow.process.path}")
 	private String wfProcessPath;
 
+	@Value("${workflow.reassign.path}")
+	private String wfReassignPath;
+
 	@Value("${is.external.workflow.enabled}")
 	private Boolean isExternalWorkFlowEnabled;
 

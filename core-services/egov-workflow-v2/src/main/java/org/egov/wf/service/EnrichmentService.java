@@ -133,7 +133,8 @@ public class EnrichmentService {
 
             if(!CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromRequest().getAssignes()))
                 uuids.addAll(processStateAndAction.getProcessInstanceFromRequest().getAssignes().stream().map(User::getUuid).collect(Collectors.toSet()));
-            uuids.add(processStateAndAction.getProcessInstanceFromRequest().getAssigner().getUuid());
+            if(processStateAndAction.getProcessInstanceFromRequest().getAssigner() != null)
+                uuids.add(processStateAndAction.getProcessInstanceFromRequest().getAssigner().getUuid());
 
             if(processStateAndAction.getProcessInstanceFromDb() != null){
                 if(!CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromDb().getAssignes())){
@@ -179,7 +180,8 @@ public class EnrichmentService {
             if(!CollectionUtils.isEmpty(processInstance.getAssignes()))
                 uuids.addAll(processInstance.getAssignes().stream().map(User::getUuid).collect(Collectors.toList()));
 
-            uuids.add(processInstance.getAssigner().getUuid());
+            if(processInstance.getAssigner() != null)
+                uuids.add(processInstance.getAssigner().getUuid());
         });
         Map<String,User> idToUserMap = userService.searchUser(requestInfo,uuids);
         Map<String,String> errorMap = new HashMap<>();
@@ -482,5 +484,33 @@ public class EnrichmentService {
         mdmsCriteriaReq.setRequestInfo(requestInfo);
 
         return mdmsCriteriaReq;
+    }
+
+    /**
+     * Enriches reassignment request with assignee user details
+     * Validates and enriches the new assignees from the user service
+     * 
+     * @param requestInfo The RequestInfo of the request
+     * @param processStateAndActions List of ProcessStateAndAction containing ProcessInstance to be reassigned
+     */
+    public void enrichProcessRequestForReassign(RequestInfo requestInfo, List<ProcessStateAndAction> processStateAndActions) {
+        processStateAndActions.forEach(processStateAndAction -> {
+            ProcessInstance processInstanceFromRequest = processStateAndAction.getProcessInstanceFromRequest();
+            ProcessInstance processInstanceFromDb = processStateAndAction.getProcessInstanceFromDb();
+            
+            if(processInstanceFromDb == null) {
+                throw new CustomException("INVALID_BUSINESS_ID", 
+                    "Process instance not found for businessId: " + processInstanceFromRequest.getBusinessId());
+            }
+            
+            // Validate that assignees are provided
+            if(CollectionUtils.isEmpty(processInstanceFromRequest.getAssignes())) {
+                throw new CustomException("INVALID_ASSIGNEE", 
+                    "At least one assignee must be provided for reassignment");
+            }
+        });
+        
+        // Enrich assignees with user details
+        enrichUsers(requestInfo, processStateAndActions);
     }
 }

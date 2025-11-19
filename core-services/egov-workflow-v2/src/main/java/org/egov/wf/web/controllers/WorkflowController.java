@@ -121,4 +121,20 @@ public class WorkflowController {
         return new ResponseEntity<>(count,HttpStatus.OK);
     }
 
+    /**
+     * Reassigns an application to another employee without creating a new transition entry.
+     * This endpoint updates only the assignee row while maintaining the same state.
+     * 
+     * @param processInstanceRequest The request containing ProcessInstance with businessId and new assignees
+     * @return ProcessInstanceResponse with updated process instance
+     */
+    @RequestMapping(value="/process/_reassign", method = RequestMethod.POST)
+    public ResponseEntity<ProcessInstanceResponse> reassign(@Valid @RequestBody ProcessInstanceRequest processInstanceRequest) {
+        List<ProcessInstance> processInstances = workflowService.reassign(processInstanceRequest);
+        ProcessInstanceResponse response = ProcessInstanceResponse.builder().processInstances(processInstances)
+                .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(processInstanceRequest.getRequestInfo(), true))
+                .build();
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
 }

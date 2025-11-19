@@ -85,4 +85,6 @@ public class BPAErrorConstants {
 
 	public static final String WORKFLOW_NOT_CONFIGURED = "WORKFLOW NOT CONFIGURED";
 
+	public static final String INVALID_ASSIGNEE = "INVALID ASSIGNEE";
+
 }

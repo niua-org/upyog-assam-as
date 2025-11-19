@@ -129,4 +129,21 @@ public class BPAController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	/**
+	*
+	 * Reassign the application to another RTP
+	 * @param bpaRequest The BPA Request with reassignment details
+	 * @return The updated BPA after reassignment
+	* */
+	@PostMapping(value = { "/_reassignrtp" })
+	public ResponseEntity<BPAResponse> reassignRTP(@Valid @RequestBody BPARequest bpaRequest) {
+		BPA bpa = bpaService.reassignRTP(bpaRequest);
+		List<BPA> bpas = new ArrayList<BPA>();
+		bpas.add(bpa);
+		BPAResponse response = BPAResponse.builder().BPA(bpas)
+				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(bpaRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

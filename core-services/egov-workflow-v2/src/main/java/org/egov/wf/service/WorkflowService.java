@@ -280,4 +280,40 @@ public class WorkflowService {
         count = workflowRepository.getEscalatedApplicationsCount(requestInfo,criteria);
         return count;
     }
+
+    /**
+     * Reassigns an application to another employee without creating a new transition entry.
+     * Updates only the assignee field in the existing process instance while maintaining the same state.
+     * 
+     * @param request The incoming request for workflow reassignment
+     * @return The list of processInstance objects after reassignment
+     */
+    public List<ProcessInstance> reassign(ProcessInstanceRequest request){
+        RequestInfo requestInfo = request.getRequestInfo();
+        
+        // Fetch current process instances from DB
+        List<ProcessStateAndAction> processStateAndActions = transitionService.getProcessStateAndActions(request.getProcessInstances(),false);
+        
+        // Enrich assignees with user details
+        enrichmentService.enrichProcessRequestForReassign(requestInfo, processStateAndActions);
+        
+        // Validate reassignment request
+        workflowValidator.validateReassignRequest(requestInfo, processStateAndActions);
+        
+        // Update assignees in database
+        statusUpdateService.updateAssignee(requestInfo, processStateAndActions);
+        
+        // Fetch and return updated process instances
+        ProcessInstanceSearchCriteria criteria = new ProcessInstanceSearchCriteria();
+        List<String> businessIds = request.getProcessInstances().stream()
+                .map(ProcessInstance::getBusinessId)
+                .collect(java.util.stream.Collectors.toList());
+        criteria.setBusinessIds(businessIds);
+        criteria.setTenantId(request.getProcessInstances().get(0).getTenantId());
+        
+        List<ProcessInstance> updatedInstances = workflowRepository.getProcessInstances(criteria);
+        enrichmentService.enrichUsersFromSearch(requestInfo, updatedInstances);
+        
+        return updatedInstances;
+    }
 }

@@ -60,6 +60,8 @@ import com.itextpdf.layout.properties.VerticalAlignment;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
+import javax.validation.Valid;
+
 @Service
 @Slf4j
 public class BPAService {
@@ -147,7 +149,7 @@ public class BPAService {
         //bpaValidator.validateCreate(bpaRequest, mdmsData, values);
 
         //TODO : Need to remove after getting land info
-        landService.addLandInfoToBPA(bpaRequest);
+//        landService.addLandInfoToBPA(bpaRequest);
         enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, null);
 
         wfIntegrator.callWorkFlow(bpaRequest);
@@ -494,12 +496,13 @@ public class BPAService {
 
 		case "RTP_IS_CHANGED":
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
+            wfIntegrator.reassignRTP(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.RTP_UPDATE);
 			log.info("RTP details updated successfully without workflow for citizen application: {}",
 					bpa.getApplicationNo());
 			break;
 
-		case "EDIT":
+		case "EDITT":
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE_ALL_BUILDING_PLAN);
@@ -940,5 +943,12 @@ public class BPAService {
         userSearchRequest.setRoleCodes(userSearchRequest.getRoleCodes());
         StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
         return userService.userCall(userSearchRequest, uri);
+    }
+
+    public BPA reassignRTP(@Valid BPARequest bpaRequest) {
+        enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
+        wfIntegrator.reassignRTP(bpaRequest);
+        repository.update(bpaRequest, BPAConstants.RTP_UPDATE);
+        return bpaRequest.getBPA();
     }
 }

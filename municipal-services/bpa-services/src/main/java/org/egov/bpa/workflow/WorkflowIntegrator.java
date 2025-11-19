@@ -24,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
+import javax.validation.Valid;
+
 @Service
 @Slf4j
 public class WorkflowIntegrator {
@@ -148,5 +150,73 @@ public class WorkflowIntegrator {
 		bpa.setStatus(idStatusMap.get(bpa.getApplicationNo()));
 		log.info("Workflow integration completed for BPA: {} with status: {}", bpa.getApplicationNo(), bpa.getStatus());
 
+	}
+
+	/**
+	 * Reassigns RTP (Registered Technical Person) for a BPA application
+	 * Calls the workflow service reassign endpoint to update only the assignee field
+	 *
+	 * @param bpaRequest The BPARequest containing the BPA and RequestInfo
+	 */
+	public void reassignRTP(@Valid BPARequest bpaRequest) {
+		log.info("Reassigning RTP for BPA: {}", bpaRequest.getBPA().getApplicationNo());
+		String wfTenantId = bpaRequest.getBPA().getTenantId();
+		JSONArray array = new JSONArray();
+		BPA bpa = bpaRequest.getBPA();
+		JSONObject obj = new JSONObject();
+		obj.put(BUSINESSIDKEY, bpa.getApplicationNo());
+		obj.put(TENANTIDKEY, wfTenantId);
+		obj.put(BUSINESSSERVICEKEY, bpa.getBusinessService());
+		obj.put(MODULENAMEKEY, MODULENAMEVALUE);
+		obj.put(ACTIONKEY, bpa.getWorkflow().getAction());
+
+		// Set assignees from workflow
+		if (!CollectionUtils.isEmpty(bpa.getWorkflow().getAssignes())) {
+			List<Map<String, String>> uuidmaps = new LinkedList<>();
+			bpa.getWorkflow().getAssignes().forEach(assignee -> {
+				Map<String, String> uuidMap = new HashMap<>();
+				uuidMap.put(UUIDKEY, assignee);
+				uuidmaps.add(uuidMap);
+			});
+			obj.put(ASSIGNEEKEY, uuidmaps);
+		} else {
+			log.warn("No assignees provided for reassignment of BPA: {}", bpa.getApplicationNo());
+			throw new CustomException(BPAErrorConstants.INVALID_ASSIGNEE, "At least one assignee must be provided for reassignment");
+		}
+
+		array.add(obj);
+		JSONObject workFlowRequest = new JSONObject();
+		workFlowRequest.put(REQUESTINFOKEY, bpaRequest.getRequestInfo());
+		workFlowRequest.put(WORKFLOWREQUESTARRAYKEY, array);
+		
+		String response = null;
+		try {
+			response = rest.postForObject(
+					config.getWfHost().concat(config.getWfReassignPath()),
+					workFlowRequest,
+					String.class
+			);
+
+		} catch (HttpClientErrorException e) {
+			String responseBody = e.getResponseBodyAsString();
+			log.error("Workflow reassign API returned HttpClientErrorException: {}", responseBody, e);
+
+			try {
+				DocumentContext responseContext = JsonPath.parse(responseBody);
+				List<Object> errors = responseContext.read("$.Errors");
+				throw new CustomException(BPAErrorConstants.EG_WF_ERROR, errors.toString());
+			} catch (PathNotFoundException pnfe) {
+				String msg = "Unable to read the json path in error object: " + pnfe.getMessage();
+				log.error(BPAErrorConstants.EG_BPA_WF_ERROR_KEY_NOT_FOUND + " - {}", msg, pnfe);
+				throw new CustomException(BPAErrorConstants.EG_BPA_WF_ERROR_KEY_NOT_FOUND, msg);
+			}
+
+		} catch (Exception e) {
+			String msg = "Exception occurred while reassigning RTP through workflow: " + e.getMessage();
+			log.error(BPAErrorConstants.EG_WF_ERROR + " - {}", msg, e);
+			throw new CustomException(BPAErrorConstants.EG_WF_ERROR, msg);
+		}
+
+		log.info("RTP reassignment completed successfully for BPA: {}", bpa.getApplicationNo());
 	}
 }
