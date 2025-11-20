@@ -53,7 +53,7 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
 
   return (
     <React.Fragment>
-      <Timeline currentStep={flow==="editApplication" ? 1 : 1} flow={flow}/>
+      <Timeline currentStep={flow==="editApplication" ? 2 : 2} flow={flow}/>
       <FormStep
         config={config}
         onSelect={goNext}

@@ -19,6 +19,7 @@ import RTPAcknowledgement from "./pages/citizen/RTPCreate/RTPAcknowledgement";
 import Form22A from "./pageComponents/Form22A";
 import Form23A from "./pageComponents/Form23A";
 import Form23B from "./pageComponents/Form23B";
+import PropertyValidation from "./pageComponents/PropertyValidation";
 import OBPASCitizenHomeScreen from "./pages/citizen/home";
 import RTPForm from "./pageComponents/RTPForm";
 import EmployeeApp from "./pages/employee";
@@ -79,6 +80,7 @@ const componentsToRegister = {
   Form23A,
   Form23B,
   LandDetails,
+  PropertyValidation,
   BPACreate: Create,
   RTPCreate,
   RTPInbox: Inbox,

@@ -59,8 +59,9 @@ const CheckPage = ({ onSubmit, value = {} }) => {
   //   if (edcrNumber) {
   //     ({ form22, form23A, form23B, loading } = useScrutinyFormDetails("DCR102025WDMEL", "assam"));
   //   }
-  const { form22, form23A, form23B, loading } = useScrutinyFormDetails("DCR102025WDMEL", "assam");
-  const {areaMapping={}, applicant = {}, address = {}, land = {}, documents = {} } = value;
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { form22, form23A, form23B, loading } = useScrutinyFormDetails("DCR102025WDMEL", tenantId);
+  const {areaMapping={}, applicant = {}, address = {}, land = {}, documents = {}, propertyValidation ={} } = value;
   const flow = window.location.href.includes("editApplication") ? "editApplication" : "buildingPermit"
   const setDeclarationHandler = () => {
     setAgree(!agree);
@@ -224,7 +225,7 @@ const handleDownloadPdf = async (formType) => {
 
   return (
     <React.Fragment>
-       <Timeline currentStep={flow === "editApplication" ? 8 : 4} flow={flow}/>
+       <Timeline currentStep={flow === "editApplication" ? 9 : 5} flow={flow}/>
       <Card>
         <CardHeader>{t("BPA_SUMMARY_PAGE")}</CardHeader>
 
@@ -287,7 +288,33 @@ const handleDownloadPdf = async (formType) => {
             text={checkForNA(areaMapping?.mouza)}
           />
         </StatusTable>
-
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "24px" }}>
+            {t("BPA_PROPERTY_DETAILS")}
+          </CardSubHeader>
+          <ActionButton
+            jumpTo={`/upyog-ui/citizen/obpsv2/building-permit/property-validation`}
+          />
+        </div>
+        <StatusTable>
+          <Row
+            label={t("BPA_PROPERTY_ID")}
+            text={checkForNA(propertyValidation?.propertyID)}
+          />
+          {Object.entries(propertyValidation?.propertyDetails.details || {}).map(([key, value]) => (
+            <Row
+              key={key}
+              label={t(`BPA_${key.toUpperCase()}`)}
+              text={value || "NA"}
+            />
+          ))}
+          </StatusTable>
         <div
           style={{
             display: "flex",

@@ -58,7 +58,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
 
     return (
         <div>
-        <Timeline currentStep={flow==="editApplication" ? 4 : null} flow={flow}/>    
+        <Timeline currentStep={flow==="editApplication" ? 5 : null} flow={flow}/>    
             {!isLoading ?
                 <FormStep
                     t={t}

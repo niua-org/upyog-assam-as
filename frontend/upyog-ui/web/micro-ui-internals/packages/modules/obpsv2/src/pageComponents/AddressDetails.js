@@ -189,7 +189,7 @@ const AddressDetails = ({ t, config, onSelect, formData, searchResult}) => {
 
   return (
     <React.Fragment>
-      <Timeline currentStep={flow === "editApplication" ? 2 : 2} flow={flow }/>
+      <Timeline currentStep={flow === "editApplication" ? 3 : 3} flow={flow }/>
       <FormStep
         config={config}
         onSelect={goNext}

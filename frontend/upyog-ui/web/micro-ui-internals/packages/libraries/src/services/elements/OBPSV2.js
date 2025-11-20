@@ -31,7 +31,6 @@ import WFApplicationTimeline from "../../../../modules/obpsv2/src/pageComponents
 import DocumentsPreview from "../../../../modules/templates/ApplicationDetails/components/DocumentsPreview";
 import { UploadServices } from "../atoms/UploadServices";
 
-
 export const ScrutinyFormService = {
   async getDetails(edcrNumber, tenantId) {
     try {
@@ -313,6 +312,17 @@ export const OBPSV2Services = {
         params: {},
         auth: true,
       }),
+    propertyValidate: (data, params) => {
+        return Request({
+            url: Urls.obpsv2.propertyValidate,
+            data: data,
+            params: { ...params },
+            method: "POST",
+            userService: true,
+            useCache: false,
+            auth: true,
+        });
+    },
       
   BPAApplicationDetails: async (tenantId, filters) => {
     const response = await OBPSV2Services.search({
