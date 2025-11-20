@@ -877,7 +877,7 @@ async function onrtpChange(status, comments, type) {
             label={t("BPA_PROPERTY_ID")}
             text={bpa_details?.additionalDetails?.propertyID||"NA"}
           />
-          {Object.entries(propertyDetails.details || {}).map(([key, value]) => (
+          {propertyDetails && Object.entries(propertyDetails.details || {}).map(([key, value]) => (
             <Row
               key={key}
               label={t(`BPA_${key.toUpperCase()}`)}
