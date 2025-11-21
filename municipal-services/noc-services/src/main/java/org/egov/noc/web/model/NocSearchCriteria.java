@@ -67,6 +67,9 @@ public class NocSearchCriteria {
     
     @JsonProperty("status")
     private List<String> status;
+    
+    @JsonProperty("applicationStatus")
+    private String applicationStatus;
 
     public boolean isEmpty() {
         return (this.tenantId == null && this.ids == null && this.applicationNo == null

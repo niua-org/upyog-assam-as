@@ -37,22 +37,38 @@
  *
  *   In case of any queries, you can reach eGovernments Foundation at contact@egovernments.org.
  */
-package org.egov.noc;
+package org.egov.noc.endpoint;
 
-import org.egov.common.utils.MultiStateInstanceUtil;
-import org.egov.tracer.config.TracerConfiguration;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
-import org.springframework.ws.config.annotation.EnableWs;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-@SpringBootApplication
-@Import({ TracerConfiguration.class, MultiStateInstanceUtil.class })
-@EnableWs
-public class NOCApplication {
+import org.egov.noc.service.AAINOCService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ws.server.endpoint.annotation.Endpoint;
+import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
+import org.springframework.ws.server.endpoint.annotation.RequestPayload;
+import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-	public static void main(String[] args) {
-		SpringApplication.run(NOCApplication.class, args);
+@Endpoint
+public class NocasApplicationEndpoint {
+
+	private static final String NAMESPACE_URI = "http://egov.org/noc"; // ← namespace
+
+	@Autowired
+	private AAINOCService nocasApplicationService;
+
+	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "GetApplicationsRequest") // ← localPart
+	@ResponsePayload
+	public Element getApplications(@RequestPayload Element request) throws Exception {
+
+		String applicationsXml = nocasApplicationService.generateNocasXml();
+
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document doc = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(applicationsXml)));
+
+		return doc.getDocumentElement();
 	}
-
 }

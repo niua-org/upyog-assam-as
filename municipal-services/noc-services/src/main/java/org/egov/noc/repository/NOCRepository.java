@@ -1,11 +1,12 @@
 package org.egov.noc.repository;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.egov.common.exception.InvalidTenantIdException;
 import org.egov.common.utils.MultiStateInstanceUtil;
-import java.util.ArrayList;
-import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
 import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.producer.Producer;
 import org.egov.noc.repository.builder.NocQueryBuilder;
@@ -18,8 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @Slf4j
@@ -79,8 +79,34 @@ public class NOCRepository {
 			throw new CustomException("EG_NOC_TENANTID_ERROR",
 					"TenantId length is not sufficient to replace query schema in a multi state instance");
 		}
+		log.info("preparedStmtList.toArray(:"+preparedStmtList.toArray().toString());
 		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
 		return nocList;
+	}
+	
+	public List<Noc> getNewAAINocData(NocSearchCriteria criteria) {
+
+		StringBuilder query = new StringBuilder("SELECT NOC.APPLICATIONNO FROM EG_NOC NOC WHERE 1=1");
+
+		String nocType = criteria.getNocType();
+		if (nocType != null && !nocType.trim().isEmpty()) {
+			List<String> nocTypes = Arrays.stream(nocType.split(",")).map(s -> "'" + s.trim() + "'")
+					.collect(Collectors.toList());
+			query.append(" AND NOC.NOCTYPE IN (").append(String.join(",", nocTypes)).append(")");
+		}
+
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null && !applicationStatus.trim().isEmpty()) {
+			List<String> statuses = Arrays.stream(applicationStatus.split(",")).map(s -> "'" + s.trim() + "'")
+					.collect(Collectors.toList());
+			query.append(" AND NOC.APPLICATIONSTATUS IN (").append(String.join(",", statuses)).append(")");
+		}
+
+		return jdbcTemplate.query(query.toString(), (rs, rowNum) -> {
+			Noc noc = new Noc();
+			noc.setApplicationNo(rs.getString("applicationno"));
+			return noc;
+		});
 	}
 	
 	/**
