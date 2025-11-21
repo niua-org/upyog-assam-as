@@ -118,8 +118,7 @@ import {
     const stateId = Digit.ULBService.getStateId();
     const [rtpPopUp, setrtpPopUp] = useState(false);
     const [oldRTPName, setOldRTPName] = useState(bpaApplicationDetail?.[0]?.rtpDetails?.rtpName);
-    const [rtpOptions, setRtpOptions] = useState([]);
-    const [registeredTechnicalPerson, setRegisteredTechnicalPerson] = useState();
+    const [rtpOptions, setRtpOptions] = useState([])
     const { form22, form23A, form23B, loading } = useScrutinyFormDetails(edcrNumber, "assam", {
       enabled: !!edcrNumber,
     });
@@ -239,24 +238,27 @@ import {
     console.error("Error while assigning:", err);
     setToast(true);
   }
-}
-async function onrtpChange(status, comments, type) {
-
+  }
+  async function onrtpChange(comments) {
+  if ( !oldRTPName) setActionError(t("CS_OLD_RTP_NAME_MANDATORY"));
+  else if ( !newRTPName) setActionError(t("CS_NEW_RTP_NAME_MANDATORY"));
+  else if(!comments) setActionError(t("CS_REASON_FOR_CHANGING_RTP_MANDATORY"))
+  else {
   try {
-    const applicationDetails = {
-      ...data?.bpa?.[0],
-      rtpDetails: {
-        ...data?.bpa?.[0]?.rtpDetails,
-        rtpName: newRTPName,    
-      },
-    };
+        const applicationDetails = {
+          ...data?.bpa?.[0],
+          rtpDetails: {
+            ...data?.bpa?.[0]?.rtpDetails,
+            rtpName: newRTPName?.code,    
+          },
+        };
     const response = await mutation.mutateAsync({
       BPA: 
       {
         ...applicationDetails,
         workflow: {
           ...applicationDetails.workflow, 
-          action: status,
+          action: "RTP_IS_CHANGED",
           comments: comments,
             assignes: null,
             varificationDocuments: uploadedFile ? [
@@ -275,7 +277,11 @@ async function onrtpChange(status, comments, type) {
     setAssignResponse(response);
     setToast(true);
     setLoader(true);
-    
+    setrtpPopUp(false);
+    setNewRTPName("");
+    setComments("");
+    setUploadedFile(null);
+    setFile(null);
     // Refresh data to show updated state
     await refetch();
     const updatedWorkflowDetails = await Digit.WorkflowService.getByBusinessId(tenantId, acknowledgementIds);
@@ -285,6 +291,7 @@ async function onrtpChange(status, comments, type) {
   } catch (err) {
     console.error("Error while assigning:", err);
     setToast(true);
+  }
   }
 }
     
@@ -1110,10 +1117,18 @@ async function onrtpChange(status, comments, type) {
                 label={t("BPA_RTP_CATEGORY")}
                 text={t(bpa_details?.rtpDetails?.rtpCategory) || t("CS_NA")}
               />
-              <Row
-                label={t("BPA_REGISTERED_TECHNICAL_PERSON")}
-                text={t(bpa_details?.rtpDetails?.rtpName) || t("CS_NA")}
-              />
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+              <div style={{ flex: 1 }}>
+                <Row
+                  label={t("BPA_REGISTERED_TECHNICAL_PERSON")}
+                  text={t(bpa_details?.rtpDetails?.rtpName) || t("CS_NA")}
+                />
+              </div>
+
+              <div style={{ marginLeft: "20px" }}>
+              <LinkButton label={t("CHANGE_RTP")} onClick={rtpChange} />
+              </div>
+              </div>
               <Row
                 label={t("BPA_OCCUPANCY_TYPE")}
                 text={t(landInfo?.units?.[0]?.occupancyType) || t("CS_NA")}
@@ -1544,33 +1559,7 @@ async function onrtpChange(status, comments, type) {
                   </div>
                 )}
 
-    {selectedAction === "NEW_RTP" && (
-      <div>
-        <CardLabel></CardLabel>
-        <TextArea 
-          name="reason" 
-          onChange={addComment} 
-          value={comments} 
-          maxLength={500} 
-        />
-        <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>
-          {comments.length}/500
-        </div>
-        <CardLabel>{t("CS_ACTION_SUPPORTING_DOCUMENTS")}</CardLabel>
-        <CardLabelDesc>{t("CS_UPLOAD_RESTRICTIONS")}</CardLabelDesc>
-        <UploadFile
-          id="pgr-doc"
-          accept=".jpg"
-          onUpload={selectfile}
-          onDelete={() => setUploadedFile(null)}
-          message={
-            uploadedFile
-              ? `1 ${t("CS_ACTION_FILEUPLOADED")}`
-              : t("CS_ACTION_NO_FILEUPLOADED")
-          }
-        />
-      </div>
-    )}
+    
   </React.Fragment>
 </Card>
 
@@ -1596,12 +1585,10 @@ async function onrtpChange(status, comments, type) {
       actionSaveOnSubmit={async (e) => {
             try {
               
-                await onrtpChange(bpa_details?.status, comments);
+                await onrtpChange(comments);
               
 
-              if ( !oldRTPName) setActionError(t("CS_OLD_RTP_NAME_MANDATORY"));
-              if ( !newRTPName) setActionError(t("CS_NEW_RTP_NAME_MANDATORY"));
-              if(!comments) setActionError(t("CS_REASON_FOR_CHANGING_RTP_MANDATORY"))
+              
             } catch (err) {
               console.error(err);
             }
@@ -1662,9 +1649,9 @@ async function onrtpChange(status, comments, type) {
         <Dropdown
             t={t}
             option={rtpOptions}
-            selected={registeredTechnicalPerson}
+            selected={newRTPName}
             optionKey="i18nKey"
-            select={setRegisteredTechnicalPerson}
+            select={setNewRTPName}
             optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={t("BPA_SELECT_REGISTERED_TECHNICAL_PERSON")}
           />
@@ -1777,33 +1764,7 @@ async function onrtpChange(status, comments, type) {
                   </div>
                 )}
 
-    {selectedAction === "NEW_RTP" && (
-      <div>
-        <CardLabel></CardLabel>
-        <TextArea 
-          name="reason" 
-          onChange={addComment} 
-          value={comments} 
-          maxLength={500} 
-        />
-        <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>
-          {comments.length}/500
-        </div>
-        <CardLabel>{t("CS_ACTION_SUPPORTING_DOCUMENTS")}</CardLabel>
-        <CardLabelDesc>{t("CS_UPLOAD_RESTRICTIONS")}</CardLabelDesc>
-        <UploadFile
-          id="pgr-doc"
-          accept=".jpg"
-          onUpload={selectfile}
-          onDelete={() => setUploadedFile(null)}
-          message={
-            uploadedFile
-              ? `1 ${t("CS_ACTION_FILEUPLOADED")}`
-              : t("CS_ACTION_NO_FILEUPLOADED")
-          }
-        />
-      </div>
-    )}
+    
   </React.Fragment>
 </Card>
 
@@ -1821,7 +1782,7 @@ async function onrtpChange(status, comments, type) {
                 }}
               />
             )}
-            {toast && <Toast label={t(assignResponse ? `CS_ACTION_UPDATE_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED")} onClose={closeToast} />}
+            {toast && <Toast label={t(assignResponse ? `CS_ACTION_UPDATE_${selectedAction ? selectedAction : "RTP_CHANGED"}_TEXT` : "CS_ACTION_ASSIGN_FAILED")} onClose={closeToast} />}
              {hasAccess && <ActionBar>
               {displayMenu && workflowDetails?.ProcessInstances?.[0]?.nextActions ? (
                   <Menu options={workflowDetails?.ProcessInstances?.[0]?.nextActions.map((action) => action.action)} t={t} onSelect={onActionSelect} />
