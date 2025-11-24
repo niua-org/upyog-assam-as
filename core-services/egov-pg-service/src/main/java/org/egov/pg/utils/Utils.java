@@ -1,5 +1,7 @@
 package org.egov.pg.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
@@ -21,6 +23,10 @@ public class Utils {
 
     public static String convertPaiseToRupee(String paise){
         return new BigDecimal(paise).movePointLeft(2).toPlainString();
+    }
+
+    public static String convertObjectToString(ObjectMapper mapper, Object options) throws Exception {
+        return mapper.writeValueAsString(options);
     }
 
 }
