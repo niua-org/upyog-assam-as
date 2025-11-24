@@ -65,7 +65,9 @@ class RazorpayPaymentResponse {
     private String email;
     private String contact;
 
-    private Map<String, String> notes;
+//    private Map<String, String> notes;
+    private Object notes;
+
 
     private Integer fee;
     private Integer tax;
