@@ -21,7 +21,7 @@ const PropertyValidation = ({ t, config, onSelect, formData, searchResult }) => 
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   // Regex to match the TIN pattern: TIN followed by exactly 10 digits
   const isValidPropertyID = (propertyID) => {
-    const regex = /^TIN\d{10}$/;
+    const regex = /^([A-Z]{3}\d{10}|\d{16}|\d+\/\d+)$/;
     return regex.test(propertyID);
   };
 
