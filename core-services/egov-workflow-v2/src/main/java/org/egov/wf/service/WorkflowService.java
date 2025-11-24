@@ -284,26 +284,26 @@ public class WorkflowService {
     /**
      * Reassigns an application to another employee without creating a new transition entry.
      * Updates only the assignee field in the existing process instance while maintaining the same state.
-     * 
+     * The sequence of steps are important and should not be altered.
      * @param request The incoming request for workflow reassignment
      * @return The list of processInstance objects after reassignment
      */
     public List<ProcessInstance> reassign(ProcessInstanceRequest request){
         RequestInfo requestInfo = request.getRequestInfo();
         
-        // Fetch current process instances from DB (using reassign method)
+        // 1. Fetch current process instances from DB (using reassign method)
         List<ProcessStateAndAction> processStateAndActions = transitionService.getProcessStateAndActionsForReassign(request.getProcessInstances());
         
-        // Validate reassignment request (includes module name validation)
+        // 2. Enrich assignees with user details which will be used for role validation in next step
+        enrichmentService.enrichProcessRequestForReassign(requestInfo, processStateAndActions);
+
+        // 3. Validate reassignment request (includes module name validation)
         workflowValidator.validateReassignRequest(requestInfo, processStateAndActions);
         
-        // Enrich assignees with user details
-        enrichmentService.enrichProcessRequestForReassign(requestInfo, processStateAndActions);
-        
-        // Update assignees in database
+        // 4. Update assignees in database
         statusUpdateService.updateAssignee(requestInfo, processStateAndActions);
         
-        // Fetch and return updated process instances
+        // 5. Fetch and return updated process instances
         ProcessInstanceSearchCriteria criteria = new ProcessInstanceSearchCriteria();
         List<String> businessIds = request.getProcessInstances().stream()
                 .map(ProcessInstance::getBusinessId)
