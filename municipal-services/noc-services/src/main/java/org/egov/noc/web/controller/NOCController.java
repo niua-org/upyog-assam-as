@@ -44,9 +44,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.egov.noc.config.ResponseInfoFactory;
-import org.egov.noc.service.AAINOCService;
 import org.egov.noc.service.NOCService;
-import org.egov.noc.web.model.BpaApplication;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.NocRequest;
 import org.egov.noc.web.model.NocResponse;
@@ -70,9 +68,6 @@ public class NOCController {
 	
 	@Autowired
 	private NOCService nocService;
-	
-	@Autowired
-	private AAINOCService aainocService;
 
 	@PostMapping(value = "/_create")
 	public ResponseEntity<NocResponse> create(@Valid @RequestBody NocRequest nocRequest) {
@@ -102,12 +97,5 @@ public class NOCController {
 				responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true)).count(count)
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-	
-	@PostMapping(value = "/_aainoc")
-	public ResponseEntity<Object> search() {
-
-		List<BpaApplication> xml = aainocService.getCreatedApplications();
-		return new ResponseEntity<>(xml, HttpStatus.OK);
 	}
 }
