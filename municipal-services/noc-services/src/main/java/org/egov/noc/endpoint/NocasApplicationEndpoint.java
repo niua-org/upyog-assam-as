@@ -54,12 +54,22 @@ import org.w3c.dom.Element;
 @Endpoint
 public class NocasApplicationEndpoint {
 
-	private static final String NAMESPACE_URI = "http://egov.org/noc"; // ← namespace
+	private static final String NAMESPACE_URI = "http://egov.org/noc";
 
 	@Autowired
 	private AAINOCService nocasApplicationService;
 
-	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "GetApplicationsRequest") // ← localPart
+	/**
+	 * Handles the SOAP request for fetching NOCAS applications.
+	 *
+	 * This method receives a GetApplicationsRequest payload and returns all newly
+	 * created applications as the SOAP response payload.
+	 *
+	 * @param request the incoming SOAP request element
+	 * @return the XML element containing NOCAS application details
+	 * @throws Exception if XML parsing or document creation fails
+	 */
+	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "GetApplicationsRequest")
 	@ResponsePayload
 	public Element getApplications(@RequestPayload Element request) throws Exception {
 

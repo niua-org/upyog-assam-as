@@ -46,6 +46,12 @@ public class AAINOCService {
 	@Autowired
 	private TestDataService testDataService;
 
+	/**
+	 * Generates the complete NOCAS XML by fetching all newly created applications
+	 * and converting them into the required XML structure.
+	 *
+	 * @return XML string containing NOCAS application details
+	 */
 	public String generateNocasXml() {
 
 		try {
@@ -134,12 +140,26 @@ public class AAINOCService {
 		}
 	}
 
+	/**
+	 * Adds a new XML element with the given tag and value to a parent element.
+	 *
+	 * @param doc     XML document reference
+	 * @param parent  parent XML element
+	 * @param tagName name of the element to create
+	 * @param value   value to insert inside the element
+	 */
 	private void addElement(Document doc, Element parent, String tagName, String value) {
 		Element element = doc.createElement(tagName);
 		element.appendChild(doc.createTextNode(value != null ? value : ""));
 		parent.appendChild(element);
 	}
 
+	/**
+	 * Fetches all NOC applications in CREATED status and maps BPA details into
+	 * internal BpaApplication objects.
+	 *
+	 * @return list of newly created Application details
+	 */
 	public List<BpaApplication> getCreatedApplications() {
 
 		List<BpaApplication> result = new ArrayList<>();

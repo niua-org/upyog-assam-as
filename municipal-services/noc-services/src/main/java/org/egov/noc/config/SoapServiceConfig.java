@@ -20,44 +20,44 @@ import org.springframework.xml.xsd.XsdSchema;
 @ComponentScan(basePackages = "org.egov.noc")
 public class SoapServiceConfig extends WsConfigurerAdapter {
 
+	/**
+	 * Registers the MessageDispatcherServlet to handle SOAP requests.
+	 *
+	 * @param context the application context
+	 * @return servlet registration bean for SOAP endpoint
+	 */
 	@Bean
-    public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(
-            ApplicationContext context) {
-        MessageDispatcherServlet servlet = new MessageDispatcherServlet();
-        servlet.setApplicationContext(context);
-        servlet.setTransformWsdlLocations(true);
-        return new ServletRegistrationBean<>(servlet, "/createdNoc/*");
-    }
+	public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(ApplicationContext context) {
+		MessageDispatcherServlet servlet = new MessageDispatcherServlet();
+		servlet.setApplicationContext(context);
+		servlet.setTransformWsdlLocations(true);
+		return new ServletRegistrationBean<>(servlet, "/createdNoc/*");
+	}
 
-    @Bean(name = "nocas")  // ← WSDL name: /soap/nocas.wsdl
-    public DefaultWsdl11Definition defaultWsdl11Definition(XsdSchema nocasSchema) {
-        DefaultWsdl11Definition wsdl = new DefaultWsdl11Definition();
-        wsdl.setPortTypeName("NocasPort");
-        wsdl.setLocationUri("/createdNoc");
-        wsdl.setTargetNamespace("http://egov.org/noc");  // ← Updated namespace
-        wsdl.setSchema(nocasSchema);
-        return wsdl;
-    }
+	/**
+	 * Creates the WSDL definition for the NOCAS SOAP service.
+	 *
+	 * @param nocasSchema the XSD schema used for WSDL generation
+	 * @return WSDL 1.1 definition bean
+	 */
+	@Bean(name = "nocas")
+	public DefaultWsdl11Definition defaultWsdl11Definition(XsdSchema nocasSchema) {
+		DefaultWsdl11Definition wsdl = new DefaultWsdl11Definition();
+		wsdl.setPortTypeName("NocasPort");
+		wsdl.setLocationUri("/createdNoc");
+		wsdl.setTargetNamespace("http://egov.org/noc");
+		wsdl.setSchema(nocasSchema);
+		return wsdl;
+	}
 
-    @Bean
-    public XsdSchema nocasSchema() {
-        return new SimpleXsdSchema(new ClassPathResource("nocas.xsd"));
-    }
+	/**
+	 * Loads the XSD schema for the NOCAS SOAP service.
+	 *
+	 * @return XSD schema bean
+	 */
+	@Bean
+	public XsdSchema nocasSchema() {
+		return new SimpleXsdSchema(new ClassPathResource("nocas.xsd"));
+	}
 
-    // Token-based authentication
-//    @Bean
-//    public Wss4jSecurityInterceptor securityInterceptor() {
-//        Wss4jSecurityInterceptor interceptor = new Wss4jSecurityInterceptor();
-//        interceptor.setSecurementActions("UsernameToken");
-//        interceptor.setSecurementUsername("AAI");
-//        interceptor.setSecurementPassword("AAI_PROVIDED_TOKEN");
-//        interceptor.setValidationActions("UsernameToken");
-//        interceptor.setValidationCallbackHandler(new SimpleAuthenticationHandler());
-//        return interceptor;
-//    }
-//
-//    @Override
-//    public void addInterceptors(List<EndpointInterceptor> interceptors) {
-//        interceptors.add(securityInterceptor());
-//    }
 }

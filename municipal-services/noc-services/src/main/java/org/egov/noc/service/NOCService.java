@@ -305,7 +305,12 @@ public class NOCService {
                 criteria.setAccountId(uuids);*/
                 return nocRepository.getNocCount(criteria);
         }
-
+        
+		/**
+		 * Fetches newly created AAI NOC applications based on predefined criteria.
+		 *
+		 * @return list of NOC records in CREATED status for AAI types
+		 */
 		public List<Noc> fetchNewAAINOCs() {
 			NocSearchCriteria criteria = new NocSearchCriteria();
 			criteria.setApplicationStatus("CREATED");
@@ -313,6 +318,13 @@ public class NOCService {
 			return nocRepository.getNewAAINocData(criteria);
 		}
 
+		/**
+		 * Retrieves BPA details for each NOC by calling the BPA service.
+		 *
+		 * @param nocList            list of NOC applications
+		 * @param requestInfoWrapper request info for service call
+		 * @return list of BPA objects mapped from service responses
+		 */
 		public List<BPA> getBPADetails(List<Noc> nocList, RequestInfoWrapper requestInfoWrapper) {
 
 			List<BPA> bpaList = new ArrayList<>();
