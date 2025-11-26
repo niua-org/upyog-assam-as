@@ -125,15 +125,9 @@ public class MDMSValidator {
 
 		Map<String, String> errorMap = new HashMap<>();
 		BPA bpa = bpaRequest.getBPA();
-		Map<String, Object> additionalDetails = bpa.getAdditionalDetails() instanceof Map
-				? (Map<String, Object>) bpa.getAdditionalDetails()
-				: Collections.emptyMap();
 
-		validateFieldAgainstMaster(bpa.getApplicationType(), BPAConstants.APPLICATION_TYPE, "Application type", masterLookup,
+		validateFieldAgainstMaster(bpa.getApplicationType(), BPAConstants.CONSTRUCTION_TYPE, "Application type", masterLookup,
 				errorMap);
-
-		validateFieldAgainstMaster(getStringValue(additionalDetails.get("constructionType")),
-				BPAConstants.CONSTRUCTION_TYPE, "Construction type", masterLookup, errorMap);
 
 		validateAreaMapping(bpa.getAreaMapping(), masterLookup, errorMap);
 		validateRtpDetails(bpa.getRtpDetails(), masterLookup, errorMap);
@@ -166,11 +160,12 @@ public class MDMSValidator {
 					"Planning permit authority", masterLookup, errorMap);
 		}
 		if (areaMapping.getBuildingPermitAuthority() != null) {
-			validateFieldAgainstMaster(areaMapping.getBuildingPermitAuthority().getValue(), BPAConstants.BP_AUTHORITY,
+//  In mdms concerned authority and bp authority are interchanged
+			validateFieldAgainstMaster(areaMapping.getBuildingPermitAuthority().getValue(), BPAConstants.CONCERNED_AUTHORITIES,
 					"Building permit authority", masterLookup, errorMap);
 		}
-
-		validateFieldAgainstMaster(areaMapping.getConcernedAuthority(), BPAConstants.CONCERNED_AUTHORITIES,
+//  In mdms concerned authority and bp authority are interchanged
+		validateFieldAgainstMaster(areaMapping.getConcernedAuthority(), BPAConstants.BP_AUTHORITY,
 				"Concerned authority", masterLookup, errorMap);
 		validateFieldAgainstMaster(areaMapping.getWard(), BPAConstants.ULB_WARD_DETAILS, "Ward", masterLookup, errorMap);
 		validateFieldAgainstMaster(areaMapping.getRevenueVillage(), BPAConstants.REVENUE_VILLAGE, "Revenue village",
