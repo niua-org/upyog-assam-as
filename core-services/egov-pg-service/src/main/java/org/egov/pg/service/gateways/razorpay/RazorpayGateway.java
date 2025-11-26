@@ -2,6 +2,7 @@ package org.egov.pg.service.gateways.razorpay;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.egov.pg.constants.PgConstants;
 import org.egov.pg.models.Transaction;
 import org.egov.pg.service.Gateway;
 import org.egov.pg.utils.Utils;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -40,6 +42,10 @@ public class RazorpayGateway implements Gateway {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    private final String REDIRECT_URL;
+    private final String ORIGINAL_RETURN_URL_KEY;
+
+
     @Autowired
     public RazorpayGateway(RestTemplate restTemplate, Environment environment, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
@@ -50,14 +56,16 @@ public class RazorpayGateway implements Gateway {
         ORDER_URL = environment.getRequiredProperty("razorpay.url.order");
         PAYMENT_URL = environment.getRequiredProperty("razorpay.url.payment");
         CHECKOUT_URL = environment.getRequiredProperty("razorpay.url.checkout");
+        REDIRECT_URL = environment.getRequiredProperty("razorpay.redirect.url");
+        ORIGINAL_RETURN_URL_KEY = environment.getRequiredProperty("razorpay.original.return.url.key");
         this.objectMapper = objectMapper;
     }
 
     @Override
     public URI generateRedirectURI(Transaction transaction) {
         try {
-            // Step 1: Create Razorpay Order
-            String orderId = createRazorpayOrder(transaction);
+            // Step 1: Generate form data
+            String formData = generateRedirectFormData(transaction);
 
             // Step 2: Return checkout URL with order details
             // The actual checkout will be handled by frontend using Razorpay Checkout.js
@@ -93,8 +101,28 @@ public class RazorpayGateway implements Gateway {
             notes.put("transaction_id", transaction.getTxnId());
             options.put("notes", notes);
 
-            options.put("callback_url", transaction.getCallbackUrl());
+//            options.put("callback_url", transaction.getCallbackUrl());
 
+            /*
+            Build backend callback URL that Razorpay will post to after payment.
+             It wraps the original citizen success URL so RedirectController can
+             process the response and then safely redirect the user to the frontend.
+
+             Example output:
+             https://assamuat.niua.in/pg-service/transaction/v1/_redirect
+                 ?originalreturnurl=https://assamuat.niua.in/citizen/payment/success/BPA.PLANNING_PERMIT_FEE/PG-BP-2025-11-26-000640/as.ghoungoorgp
+                 &eg_pg_txnid=PG_PG_2025_11_26_000640_21
+                 */
+            String originalReturnUrl = transaction.getCallbackUrl();
+            String callbackUrl = UriComponentsBuilder.fromHttpUrl(REDIRECT_URL)
+                    .queryParam(ORIGINAL_RETURN_URL_KEY, originalReturnUrl)
+                    .queryParam(PgConstants.PG_TXN_IN_LABEL, transaction.getTxnId())
+                    .build()
+                    .encode()
+                    .toUriString();
+
+            options.put("callback_url", callbackUrl);
+            transaction.setAdditionalDetails(options);
             String data = Utils.convertObjectToString(objectMapper, options);
             log.info("Razorpay checkout data: {}", data);
 

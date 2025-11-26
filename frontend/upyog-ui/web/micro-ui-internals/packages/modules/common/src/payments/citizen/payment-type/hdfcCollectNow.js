@@ -17,7 +17,6 @@
 
 export function startHdfcPayment(createOrderResponse) {
   console.log("Starting HDFC CollectNow Payment with response:", createOrderResponse);
-  debugger
   // Defensive checks
   if (!createOrderResponse || !createOrderResponse.Transaction) {
     console.error("Invalid create order response for HDFC", createOrderResponse);
@@ -27,16 +26,20 @@ export function startHdfcPayment(createOrderResponse) {
   const txn = createOrderResponse.Transaction;
   console.log("HDFC Transaction Data:", txn);
   // Option A: backend returned a `razorpay` object with explicit fields
-  const razorpay = txn.razorpay || txn.razorPay || txn.razorPayData;
+  const razorpay = txn.additionalDetails;
   console.log("Razorpay Data:", razorpay);
   
-  if (razorpay && (razorpay.orderId || razorpay.order_id)) {
-    const orderId = razorpay.orderId || razorpay.order_id;
-    const keyId = razorpay.keyId || razorpay.key_id || razorpay.key;
-    const amount = String(razorpay.amount || razorpay.txnAmount || '');
-    const currency = razorpay.currency || 'INR';
-    const callbackUrl = razorpay.callbackUrl || razorpay.callback_url || txn.callbackUrl || txn.redirectUrl;
-    const prefill = razorpay.prefill || {};
+  if (razorpay && razorpay.order_id) {
+    const orderId = razorpay.order_id;
+    const keyId = razorpay.key;
+    const amount = razorpay.amount;
+    const currency = razorpay?.currency || 'INR';
+    const callbackUrl = razorpay.callback_url;
+    const prefill = razorpay.prefill || {
+      name: 'Shivank',
+      email: 'shivank@niua.org',
+      contact: '9000090000'
+    };
 
     // Build form to post to Razorpay embedded endpoint
     const form = document.createElement('form');
@@ -75,13 +78,4 @@ export function startHdfcPayment(createOrderResponse) {
     return;
   }
 
-  // Option B: backend returned a redirectUrl (older/alternate flow)
-  const redirectUrl = txn.redirectUrl || txn.redirecturl || txn.redirect;
-  if (redirectUrl) {
-    // If backend already created a ready-to-redirect URL, just navigate
-    window.location = redirectUrl;
-    return;
-  }
-
-  throw new Error("Unsupported response format from backend for HDFC/Razorpay payment.");
 }
