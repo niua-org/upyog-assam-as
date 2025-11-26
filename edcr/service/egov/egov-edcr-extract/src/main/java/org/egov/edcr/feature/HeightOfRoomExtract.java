@@ -1084,16 +1084,15 @@ public class HeightOfRoomExtract extends FeatureExtract {
                         dimensionList != null ? dimensionList.size() : 0, windowLayer);
 
                 if (dimensionList != null && !dimensionList.isEmpty()) {
-                    Window window = new Window();
-
                     BigDecimal windowHeight1 = windowHeight != null
                             ? BigDecimal.valueOf(Double.valueOf(windowHeight.replaceAll("WINDOW_HT_M=", "")))
                             : BigDecimal.ZERO;
-                    window.setWindowHeight(windowHeight1);
-                    LOG.debug("Set window height to [{}]", windowHeight1);
 
                     for (Object dxfEntity : dimensionList) {
                         DXFDimension dimension = (DXFDimension) dxfEntity;
+                        Window window = new Window();
+                        window.setWindowHeight(windowHeight1);
+
                         List<BigDecimal> values = new ArrayList<>();
                         Util.extractDimensionValue(pl, values, dimension, windowLayer);
                         LOG.debug("Extracted dimension values: {}", values);

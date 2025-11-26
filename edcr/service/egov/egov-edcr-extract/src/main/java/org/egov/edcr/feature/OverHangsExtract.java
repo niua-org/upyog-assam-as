@@ -43,7 +43,21 @@ public class OverHangsExtract extends FeatureExtract {
             block.setProtectedBalconies(protectedBalconyMeasurements);
 
             if (block.getBuilding() != null && !block.getBuilding().getFloors().isEmpty()) {
-                for (Floor floor : block.getBuilding().getFloors()) {
+                outside: for (Floor floor : block.getBuilding().getFloors()) {
+                    if (!block.getTypicalFloor().isEmpty())
+                        for (TypicalFloor tp : block.getTypicalFloor())
+                            if (tp.getRepetitiveFloorNos().contains(floor.getNumber()))
+                                for (Floor allFloors : block.getBuilding().getFloors())
+                                    if (allFloors.getNumber().equals(tp.getModelFloorNo())) {
+                                        if (allFloors.getFloorProjectedBalconies() != null) {
+                                            floor.setFloorProjectedBalconies(allFloors.getFloorProjectedBalconies());
+                                        }
+                                        if (allFloors.getBalconyDistanceFromPlotBoundary() != null) {
+                                            floor.setBalconyDistanceFromPlotBoundary(allFloors.getBalconyDistanceFromPlotBoundary());
+                                        }
+                                        continue outside;
+                                    }
+
                     String overhang = String.format(layerNames.getLayerName("LAYER_NAME_SHADE_OVERHANG"), block.getNumber(),
                             floor.getNumber());
                     List<DXFLWPolyline> overHangs = Util.getPolyLinesByLayer(planDetail.getDoc(), overhang);
