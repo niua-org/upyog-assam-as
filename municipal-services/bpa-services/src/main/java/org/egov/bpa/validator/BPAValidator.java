@@ -54,6 +54,16 @@ public class BPAValidator {
 	private NocService nocService;
 
 	/**
+	 * Validates the MDMS data for the given BPA request.
+	 *
+	 * @param bpaRequest The BPA request object.
+	 * @param mdmsData The MDMS data for validation.
+	 */
+	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
+	}
+
+	/**
 	 * Validates the BPA request during creation.
 	 * Ensures that MDMS data, application documents, and risk type are valid.
 	 *
