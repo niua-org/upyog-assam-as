@@ -192,8 +192,10 @@ public class ToiletDetails_Assam extends FeatureProcess {
 		BigDecimal area = measurement.getArea() != null ? measurement.getArea().setScale(2, RoundingMode.HALF_UP)
 				: BigDecimal.ZERO;
 
-		BigDecimal width = measurement.getWidth() != null ? measurement.getWidth().setScale(2, RoundingMode.HALF_UP)
-				: BigDecimal.ZERO;
+//		BigDecimal width = measurement.getWidth() != null ? measurement.getWidth().setScale(2, RoundingMode.HALF_UP)
+//				: BigDecimal.ZERO;
+
+        BigDecimal width = toilet.getToiletWidth() != null ? toilet.getToiletWidth().stream().reduce(BigDecimal::min).get(): BigDecimal.ZERO;
 
 		// height extraction
 		BigDecimal height = BigDecimal.ZERO;

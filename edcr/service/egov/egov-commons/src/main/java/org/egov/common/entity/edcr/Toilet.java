@@ -19,6 +19,8 @@ public class Toilet implements Serializable  {
 	
 	private List<BigDecimal> toiletHeight;
 
+    private List<BigDecimal> toiletWidth;
+
 	
 	public List<BigDecimal> getToiletHeight() {
 		return toiletHeight;
@@ -44,8 +46,12 @@ public class Toilet implements Serializable  {
 	public void setToiletVentilation(BigDecimal toiletVentilation) {
 		this.toiletVentilation = toiletVentilation;
 	}
-	
-	  
-	
 
+    public List<BigDecimal> getToiletWidth() {
+        return toiletWidth;
+    }
+
+    public void setToiletWidth(List<BigDecimal> toiletWidth) {
+        this.toiletWidth = toiletWidth;
+    }
 }

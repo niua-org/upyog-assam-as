@@ -124,8 +124,7 @@ public class ToiletDetailsExtract extends FeatureExtract {
             List<DXFLWPolyline> toiletMeasurements = Util.getPolyLinesByLayer(planDetail.getDoc(), toiletLayer);
             LOG.debug("Found [{}] measurements in layer [{}]", toiletMeasurements.size(), toiletLayer);
             
-            List<BigDecimal> toiletHeight = Util.getListOfDimensionByColourCode(planDetail, toiletLayer, DxfFileConstants.INDEX_COLOR_ONE);
-
+            List<BigDecimal> toiletWidth = Util.getListOfDimensionByColourCode(planDetail, toiletLayer, DxfFileConstants.INDEX_COLOR_TWO);
 
             if (!toiletMeasurements.isEmpty()) {
                 Toilet toiletObj = new Toilet();
@@ -135,8 +134,8 @@ public class ToiletDetailsExtract extends FeatureExtract {
                     toiletMeasurementList.add(measurementToilet);
                 });
                 
-                if (toiletHeight != null && !toiletHeight.isEmpty()) {
-                	toiletObj.setToiletHeight(toiletHeight);
+                if (toiletWidth != null && !toiletWidth.isEmpty()) {
+                	toiletObj.setToiletWidth(toiletWidth);
 				}
 
                 toiletObj.setToilets(toiletMeasurementList);
