@@ -16,7 +16,7 @@ import {
   CardLabel
 } from "@upyog/digit-ui-react-components";
 import { values } from "lodash";
-import React, { Fragment,useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import BPADocuments from "./BPADocuments";
@@ -43,6 +43,7 @@ import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bil
 import useScrutinyFormDetails from "../../../../libraries/src/hooks/obpsv2/useScrutinyFormDetails";
 import FormAcknowledgement from "../../../obpsv2/src/pages/citizen/Create/FormAcknowledgement";
 import Accordion from "../../../../react-components/src/atoms/Accordion";
+import GisDetails from "../../../obpsv2/src/components/GisDetails";
 function ApplicationDetailsContent({
   applicationDetails,
   workflowDetails,
@@ -73,9 +74,34 @@ function ApplicationDetailsContent({
     form23B: false,
     submitReport: false
   });
+  const [gisData, setGisData] = useState(null);
   const toggleExpanded = (key) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  // Fetch GIS Data
+  useEffect(() => {
+    const fetchGisData = async () => {
+      try {
+        const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+        const response = await Digit.OBPSV2Services.gisSearch({
+          GisSearchCriteria: {
+            applicationNo: applicationData?.applicationNo,
+            tenantId: tenantId,
+            status: "SUCCESS"
+          }
+        });
+        if (response?.Gis) {
+          setGisData(response.Gis);
+        }
+      } catch (error) {
+        console.error('GIS Search Error:', error);
+      }
+    };
+    if (applicationData?.applicationNo) {
+      fetchGisData();
+    }
+  }, [applicationData?.applicationNo]);
   const [fetchBillData, updatefetchBillData] = useState({});
 
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
@@ -718,6 +744,15 @@ function ApplicationDetailsContent({
                 onDownload={() => handleDownloadPdf("FORM_23B", detail?.additionalDetails?.form23BDetails?.[0]?.value)}
               >
                 {getDetailsRow(detail?.additionalDetails?.form23BDetails?.[0]?.value)}
+              </Accordion>
+            </StatusTable>
+            <StatusTable>
+              <Accordion
+                title={t("GIS_DETAILS")}
+                t={t}
+                isFlag={false}
+              >
+                <GisDetails acknowledgementIds={applicationData?.applicationNo} tenantId={applicationData?.tenantId} t={t} />
               </Accordion>
             </StatusTable>
             </div>

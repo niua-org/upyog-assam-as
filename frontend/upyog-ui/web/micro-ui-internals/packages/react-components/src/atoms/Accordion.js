@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { CardLabel, LinkButton } from "@upyog/digit-ui-react-components";
 
-const Accordion = ({ title, children, onDownload, t }) => {
+const Accordion = ({ title, children, onDownload, t, isFlag=true }) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,7 +32,7 @@ const Accordion = ({ title, children, onDownload, t }) => {
             ▼
           </span>
         </div>
-
+        {isFlag && ( // conditionally render the download button
         <LinkButton
           label={
             <div className="response-download-button">
@@ -50,6 +50,7 @@ const Accordion = ({ title, children, onDownload, t }) => {
             onDownload();
           }}
         />
+        )}
       </div>
 
       {open && (

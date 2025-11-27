@@ -121,7 +121,9 @@ module.exports = function (app) {
     "/bpa-services/v1/rtp/_create",
     "/bpa-calculator/_estimate",
     "/gis-service/find-zone",
-    "/bpa-services/v1/bpa/_rtpsearch"
+    "/bpa-services/v1/bpa/_rtpsearch",
+    "/gis-service/zone/_search"
+
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

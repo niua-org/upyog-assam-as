@@ -818,4 +818,18 @@ export const OBPSV2Services = {
     auth: true,
     multipartFormData: true,
   }),
+  gisSearch: (data) => {
+    const isFormData = data instanceof FormData;
+    return Request({
+      url: Urls.obpsv2.gisSearch,
+      ...(isFormData ? { multipartData: data } : { data: data }),
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: {},
+      auth: true,
+      ...(isFormData && { multipartFormData: true }),
+    });
+  },
 };

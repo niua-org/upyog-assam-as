@@ -31,7 +31,8 @@ import {
   import DocumentsPreview from "../../../../templates/ApplicationDetails/components/DocumentsPreview";
   import useScrutinyFormDetails from "../../../../../libraries/src/hooks/obpsv2/useScrutinyFormDetails";
   import FormAcknowledgement from "./Create/FormAcknowledgement";
-  import Accordion from "../../../../../react-components/src/atoms/Accordion"
+  import Accordion from "../../../../../react-components/src/atoms/Accordion";
+  import GisDetails from "../../components/GisDetails";
   // import getBPAAcknowledgementData from "../../utils/getBPAAcknowledgementData";
   
   /**
@@ -72,6 +73,7 @@ import {
     const [gisResponse, setGisResponse] = useState(null);
     const [showGisResponse, setShowGisResponse] = useState(false);
     const [gisValidationSuccess, setGisValidationSuccess] = useState(false);
+    const [gisData, setGisData] = useState(null);
     const { data: mdmsData } = Digit.Hooks.useEnabledMDMS("as", "BPA", [{ name: "PermissibleZone" }], {
     select: (data) => {
       return data?.BPA?.PermissibleZone || {};
@@ -96,7 +98,8 @@ import {
       form22: false,
       form23A: false,
       form23B: false,
-      submitReport : false
+      submitReport : false,
+      Gis: false
     });
     const toggleExpanded = (key) => {
       setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -145,6 +148,7 @@ import {
       };
       fetchUsers();
     }, [tenantId]);
+
     useEffect(() => {
       if (bpaApplicationDetail?.[0]?.rtpDetails?.rtpName) {
         setOldRTPName(bpaApplicationDetail[0].rtpDetails.rtpName);
@@ -311,7 +315,7 @@ import {
          // Create multipart form data
          const formData = new FormData();
          formData.append("file", file);
-   
+         const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
          // Construct GIS request wrapper
          const gisRequestWrapper = {
            RequestInfo: {
@@ -321,7 +325,7 @@ import {
              },
            },
            gisRequest: {
-             tenantId: "Tinsukia",
+             tenantId: tenantId,
              applicationNo: data?.bpa?.[0]?.applicationNo,
              rtpiId: data?.bpa?.[0]?.rtpDetails?.rtpUUID,
            },
@@ -1225,6 +1229,15 @@ import {
                 onDownload={() => handleDownloadPdf("FORM_23B")}
               >
                 {getDetailsRow(form23B)}
+              </Accordion>
+            </StatusTable>
+            <StatusTable>
+              <Accordion
+                title={t("GIS_DETAILS")}
+                t={t}
+                isFlag={false}
+              >
+                <GisDetails acknowledgementIds={acknowledgementIds} tenantId={tenantId} t={t} />
               </Accordion>
             </StatusTable>
           </div>
