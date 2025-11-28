@@ -75,6 +75,10 @@ public class BPA {
   private String ocFileStoreId;
 
   private String propertyNo;
+  /**
+   * Stores the complete validation response received from Property service
+   * along with property details like owner name, address, phone, etc.
+   */
   private PropertyValidationResponse propertyDetails;
   private String propertyVendor;
 

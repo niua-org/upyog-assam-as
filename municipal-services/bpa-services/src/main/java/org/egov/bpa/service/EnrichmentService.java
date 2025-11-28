@@ -136,11 +136,11 @@ public class EnrichmentService {
 	 */
 	private void setIdgenIds(BPARequest request) {
 		RequestInfo requestInfo = request.getRequestInfo();
-		String tenantId = request.getBPA().getTenantId();
+		String tenantId = util.extractState(request.getBPA().getTenantId());
 		BPA bpa = request.getBPA();
 
 		List<String> applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNoIdgenName(),
-				config.getApplicationNoIdgenFormat(), 1);
+				null, 1);
 		ListIterator<String> itr = applicationNumbers.listIterator();
 
 		Map<String, String> errorMap = new HashMap<>();
@@ -222,7 +222,7 @@ public class EnrichmentService {
 		String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
 
 		if (state.equalsIgnoreCase(BPAConstants.DOCVERIFICATION_STATE)) {
-			bpa.setApplicationDate(Calendar.getInstance().getTimeInMillis());
+			bpa.setApplicationDate(util.getCurrentTimestampMillis());
 		}
 
 		if (StringUtils.isEmpty(bpa.getRiskType())) {
@@ -304,7 +304,7 @@ public class EnrichmentService {
 				.toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE))))) {
 			int vailidityInMonths = config.getValidityInMonths();
 			Calendar calendar = Calendar.getInstance();
-			bpa.setApprovalDate(Calendar.getInstance().getTimeInMillis());
+			bpa.setApprovalDate(util.getCurrentTimestampMillis());
 
 			// Adding 3years (36 months) to Current Date
 			calendar.add(Calendar.MONTH, vailidityInMonths);
@@ -317,8 +317,10 @@ public class EnrichmentService {
 			}
 
 			additionalDetail.put("validityDate", calendar.getTimeInMillis());
-			List<IdResponse> idResponses = idGenRepository.getId(bpaRequest.getRequestInfo(), bpa.getTenantId(),
-					config.getPermitNoIdgenName(), config.getPermitNoIdgenFormat(), 1).getIdResponses();
+
+			String tenantId = util.extractState(bpa.getTenantId());
+			List<IdResponse> idResponses = idGenRepository.getId(bpaRequest.getRequestInfo(), tenantId,
+					config.getPermitNoIdgenName(), null, 1).getIdResponses();
 			bpa.setApprovalNo(idResponses.get(0).getId());
 			if (state.equalsIgnoreCase(BPAConstants.DOCVERIFICATION_STATE)
 					&& bpa.getRiskType().toString().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)) {

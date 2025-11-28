@@ -142,7 +142,7 @@ public class BPAService {
         if (!StringUtils.isEmpty(bpaRequest.getBPA().getApprovalNo())) {
             bpaRequest.getBPA().setApprovalNo(null);
         }
-		bpaRequest.getBPA().setApplicationDate(Calendar.getInstance().getTimeInMillis());
+		bpaRequest.getBPA().setApplicationDate(util.getCurrentTimestampMillis());
 
       //  values = edcrService.validateEdcrPlan(bpaRequest, mdmsData);
 
@@ -518,7 +518,9 @@ public class BPAService {
 		case "SUBMIT_REPORT":
 //			Object mdmsData = util.mDMSCall(requestInfo, tenantId);
 			bpaRequest.getBPA().setPlanningPermitNo(getPlanningPermitNo(bpaRequest));
-			bpaRequest.getBPA().setPlanningPermitDate(Calendar.getInstance().getTimeInMillis());
+			bpaRequest.getBPA().setPlanningPermitDate(util.getCurrentTimestampMillis());
+			log.info("Planning Permit No. generated : " + bpaRequest.getBPA().getPlanningPermitNo());
+
 			nocService.createNocRequest(bpaRequest, mdmsData);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
 			wfIntegrator.callWorkFlow(bpaRequest);
@@ -527,10 +529,13 @@ public class BPAService {
 
 		case "PAY":// CITIZEN_FINAL_PAYMENT
 			bpaRequest.getBPA().setBuildingPermitNo(getBuildingPermitNo(bpaRequest));
-			bpaRequest.getBPA().setBuildingPermitDate(Calendar.getInstance().getTimeInMillis());
+			bpaRequest.getBPA().setBuildingPermitDate(util.getCurrentTimestampMillis());
+			log.info("Building Permit No. generated : " + bpaRequest.getBPA().getBuildingPermitNo());
 			// TO_BE_CHANGED
 			bpaRequest.getBPA().setOccupancyCertificateNo(getOccupancyCertificateNo(bpaRequest));
-			bpaRequest.getBPA().setOccupancyCertificateDate(Calendar.getInstance().getTimeInMillis());
+			bpaRequest.getBPA().setOccupancyCertificateDate(util.getCurrentTimestampMillis());
+			log.info("Occupancy Certificate No. generated : " + bpaRequest.getBPA().getOccupancyCertificateNo());
+
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE);
@@ -611,40 +616,47 @@ public class BPAService {
 
 	private String getOccupancyCertificateNo(BPARequest bpaRequest) {
 
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
 		List<IdResponse> idResponses = idGenRepository
-				.getId(bpaRequest.getRequestInfo(), bpaRequest.getBPA().getTenantId(),
-						config.getOccupancyCertificateIdgenName(), config.getOccupancyCertificateIdgenFormat(), 1)
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getOccupancyCertificateIdgenName(), null, 1)
 				.getIdResponses();
 
-		if (idResponses != null && !idResponses.isEmpty()) {
-			return idResponses.get(0).getId();
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Occupancy Certificate Number could not be generated.");
 		}
-		return "";
+
+		return idResponses.get(0).getId();
 	}
+
 	private String getPlanningPermitNo(BPARequest bpaRequest) {
 
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
 		List<IdResponse> idResponses = idGenRepository
-				.getId(bpaRequest.getRequestInfo(), bpaRequest.getBPA().getTenantId(),
-						config.getPlanningPermitIdgenName(), config.getPlanningPermitIdgenFormat(), 1)
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getPlanningPermitIdgenName(), null, 1)
 				.getIdResponses();
 
-		if (idResponses!=null && !idResponses.isEmpty())
-			return idResponses.get(0).getId();
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Planning Permit Number could not be generated.");
+		}
 
-		return "";
+		return idResponses.get(0).getId();
 	}
 
 	private String getBuildingPermitNo(BPARequest bpaRequest) {
 
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
 		List<IdResponse> idResponses = idGenRepository
-				.getId(bpaRequest.getRequestInfo(), bpaRequest.getBPA().getTenantId(),
-						config.getBuildingPermitIdgenName(), config.getBuildingPermitIdgenFormat(), 1)
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getBuildingPermitIdgenName(), null, 1)
 				.getIdResponses();
 
-		if (!idResponses.isEmpty())
-			return idResponses.get(0).getId();
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Building Permit Number could not be generated.");
+		}
 
-		return "";
+		return idResponses.get(0).getId();
 	}
 
     /**
