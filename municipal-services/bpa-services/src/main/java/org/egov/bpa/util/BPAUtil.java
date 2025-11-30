@@ -3,6 +3,7 @@ package org.egov.bpa.util;
 import static org.egov.bpa.util.BPAConstants.BILL_AMOUNT;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -12,11 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.gson.Gson;
-import lombok.extern.slf4j.Slf4j;
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.ServiceRequestRepository;
-import org.egov.bpa.web.model.*;
+import org.egov.bpa.web.model.AuditDetails;
+import org.egov.bpa.web.model.BPA;
+import org.egov.bpa.web.model.BPARequest;
+import org.egov.bpa.web.model.RequestInfoWrapper;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
@@ -30,12 +32,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import com.google.gson.Gson;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;
 import com.jayway.jsonpath.spi.json.JacksonJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -316,6 +321,26 @@ public class BPAUtil {
 			throw new CustomException("JSON_PARSING_ERROR",
 					"Failed to convert JSON string to LandInfo: " + e.getMessage());
 		}
+	}
+
+	public long getCurrentTimestampMillis() {
+		return Instant.now().toEpochMilli();
+	}
+
+	/**
+	 * Extracts the state part from a tenantId. If the input does not contain a dot
+	 * or is blank, the method returns the input as-is.
+	 * 
+	 * @param tenantId
+	 * @return the extracted state
+	 **/
+	public String extractState(String tenantId) {
+
+		if (tenantId == null || tenantId.trim().isEmpty()) {
+			return tenantId;
+		}
+		int dotIndex = tenantId.indexOf('.');
+		return dotIndex > 0 ? tenantId.substring(0, dotIndex) : tenantId;
 	}
 
 }

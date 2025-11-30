@@ -8,6 +8,7 @@ import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
+import org.egov.bpa.repository.IdGenRepository;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.util.BPAUtil;
@@ -30,6 +32,7 @@ import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
 import org.egov.bpa.web.model.Floor;
 import org.egov.bpa.web.model.Workflow;
+import org.egov.bpa.web.model.idgen.IdResponse;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
 import org.egov.bpa.web.model.user.UserDetailResponse;
@@ -94,6 +97,9 @@ public class BPAService {
     @Autowired
     private WorkflowService workflowService;
 
+	@Autowired
+	private IdGenRepository idGenRepository;
+
     @Autowired
     private NotificationUtil notificationUtil;
 
@@ -136,7 +142,7 @@ public class BPAService {
         if (!StringUtils.isEmpty(bpaRequest.getBPA().getApprovalNo())) {
             bpaRequest.getBPA().setApprovalNo(null);
         }
-
+		bpaRequest.getBPA().setApplicationDate(util.getCurrentTimestampMillis());
 
       //  values = edcrService.validateEdcrPlan(bpaRequest, mdmsData);
 
@@ -511,10 +517,28 @@ public class BPAService {
 
 		case "SUBMIT_REPORT":
 //			Object mdmsData = util.mDMSCall(requestInfo, tenantId);
-	        nocService.createNocRequest(bpaRequest, mdmsData);
-            enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
-            wfIntegrator.callWorkFlow(bpaRequest);
-            repository.update(bpaRequest, BPAConstants.UPDATE);
+			bpaRequest.getBPA().setPlanningPermitNo(getPlanningPermitNo(bpaRequest));
+			bpaRequest.getBPA().setPlanningPermitDate(util.getCurrentTimestampMillis());
+			log.info("Planning Permit No. generated : " + bpaRequest.getBPA().getPlanningPermitNo());
+
+			nocService.createNocRequest(bpaRequest, mdmsData);
+			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
+			wfIntegrator.callWorkFlow(bpaRequest);
+			repository.update(bpaRequest, BPAConstants.UPDATE);
+			break;
+
+		case "PAY":// CITIZEN_FINAL_PAYMENT
+			bpaRequest.getBPA().setBuildingPermitNo(getBuildingPermitNo(bpaRequest));
+			bpaRequest.getBPA().setBuildingPermitDate(util.getCurrentTimestampMillis());
+			log.info("Building Permit No. generated : " + bpaRequest.getBPA().getBuildingPermitNo());
+			// TO_BE_CHANGED
+			bpaRequest.getBPA().setOccupancyCertificateNo(getOccupancyCertificateNo(bpaRequest));
+			bpaRequest.getBPA().setOccupancyCertificateDate(util.getCurrentTimestampMillis());
+			log.info("Occupancy Certificate No. generated : " + bpaRequest.getBPA().getOccupancyCertificateNo());
+
+			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
+			wfIntegrator.callWorkFlow(bpaRequest);
+			repository.update(bpaRequest, BPAConstants.UPDATE);
 			break;
 
 		default:
@@ -589,6 +613,51 @@ public class BPAService {
          */
 
     }
+
+	private String getOccupancyCertificateNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getOccupancyCertificateIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Occupancy Certificate Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
+	}
+
+	private String getPlanningPermitNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getPlanningPermitIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Planning Permit Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
+	}
+
+	private String getBuildingPermitNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getBuildingPermitIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Building Permit Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
+	}
 
     /**
      * handle the reject and Send Back action of the update

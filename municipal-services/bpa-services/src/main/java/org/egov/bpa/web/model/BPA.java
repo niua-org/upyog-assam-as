@@ -3,14 +3,17 @@ package org.egov.bpa.web.model;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.egov.bpa.web.model.landInfo.LandInfo;
+import org.egov.bpa.web.model.property.PropertyValidationResponse;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
@@ -58,6 +61,26 @@ public class BPA {
 
   /** Application submission date. */
   private Long applicationDate;
+  
+  private String planningPermitNo;
+  private Long planningPermitDate;
+  private String ppFileStoreId;
+
+  private String buildingPermitNo;
+  private Long buildingPermitDate;
+  private String bpFileStoreId;
+
+  private String occupancyCertificateNo;
+  private Long occupancyCertificateDate;
+  private String ocFileStoreId;
+
+  private String propertyNo;
+  /**
+   * Stores the complete validation response received from Property service
+   * along with property details like owner name, address, phone, etc.
+   */
+  private PropertyValidationResponse propertyDetails;
+  private String propertyVendor;
 
   /** Approval number based on workflow status. */
   @SafeHtml

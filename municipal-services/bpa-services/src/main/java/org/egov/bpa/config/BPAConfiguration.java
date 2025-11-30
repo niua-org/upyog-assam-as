@@ -55,14 +55,28 @@ public class BPAConfiguration {
 	@Value("${egov.idgen.bpa.applicationNum.name}")
 	private String applicationNoIdgenName;
 
-	@Value("${egov.idgen.bpa.applicationNum.format}")
-	private String applicationNoIdgenFormat;
-
 	@Value("${egov.idgen.bpa.permitNum.name}")
 	private String permitNoIdgenName;
+	
+	@Value("${egov.idgen.bpa.planningPermitNum.name}")
+	private String planningPermitIdgenName;
 
-	@Value("${egov.idgen.bpa.permitNum.format}")
-	private String permitNoIdgenFormat;
+	@Value("${egov.idgen.bpa.buildingPermitNum.name}")
+	private String buildingPermitIdgenName;
+
+	@Value("${egov.idgen.bpa.occupancyCertificateNum.name}")
+	private String occupancyCertificateIdgenName;
+
+	@Value("${egov.idgen.bpa.ppReceiptNum.name}")
+	private String ppReceiptIdgenName;
+
+	@Value("${egov.idgen.bpa.bpReceiptNum.name}")
+	private String bpReceiptIdgenName;
+	
+	@Value("${egov.idgen.bpa.ocReceiptNum.name}")
+	private String ocReceiptIdgenName;
+
+
 
 	// Persister Config
 	@Value("${persister.save.buildingplan.topic}")

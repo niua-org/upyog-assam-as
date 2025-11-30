@@ -36,7 +36,19 @@ public class BPAQueryBuilder {
                     "       bpa.created_time AS bpa_created_time, " +
                     "       bpa.additional_details AS bpa_additional_details, " +
                     "       bpa.land_id AS bpa_land_id, " +
-
+                    "       bpa.planning_permit_no, " +
+                    "       bpa.planning_permit_date, " +
+                    "       bpa.pp_filestore_id, " +
+                    "       bpa.building_permit_no, " +
+                    "       bpa.building_permit_date, " +
+                    "       bpa.bp_filestore_id, " +
+                    "       bpa.occupancy_certificate_no, " +
+                    "       bpa.occupancy_certificate_date, " +
+                    "       bpa.oc_filestore_id, " +
+                    "       bpa.property_no, " +
+                    "       bpa.property_details, " +
+                    "       bpa.property_vendor," +
+                    
                     "       bpadoc.id AS bpa_doc_id, " +
                     "       bpadoc.additional_details AS doc_details, " +
                     "       bpadoc.document_type AS bpa_doc_document_type, " +

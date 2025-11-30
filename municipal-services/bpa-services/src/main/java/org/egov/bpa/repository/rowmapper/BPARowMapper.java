@@ -1,22 +1,35 @@
 package org.egov.bpa.repository.rowmapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import lombok.extern.slf4j.Slf4j;
-import org.egov.bpa.web.model.*;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.egov.bpa.web.model.AreaMappingDetail;
+import org.egov.bpa.web.model.AuditDetails;
+import org.egov.bpa.web.model.BPA;
+import org.egov.bpa.web.model.BuildingPermitAuthorityEnum;
+import org.egov.bpa.web.model.Document;
+import org.egov.bpa.web.model.PlanningPermitAuthorityEnum;
+import org.egov.bpa.web.model.RTPAllocationDetails;
+import org.egov.bpa.web.model.property.PropertyValidationResponse;
+import org.egov.tracer.model.CustomException;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -80,6 +93,17 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 			}
 		}
 
+		PropertyValidationResponse propertyDetails = null;
+		String propertyDetailsStr = rs.getString("property_details");
+		if (propertyDetailsStr != null && !propertyDetailsStr.isEmpty()) {
+			try {
+				propertyDetails = mapper.readValue(propertyDetailsStr, PropertyValidationResponse.class);
+			} catch (JsonProcessingException e) {
+				log.error("Failed to parse propertyDetails JSON: {}", propertyDetailsStr, e);
+				throw new CustomException("PROPERTY_DETAILS_PARSE_ERROR", "Invalid Property Details JSON");
+			}
+		}
+
 		return BPA.builder()
 				.id(rs.getString("bpa_id"))
 				.applicationNo(rs.getString("application_no"))
@@ -95,6 +119,18 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 				.additionalDetails(additionalDetails)
 				.businessService(rs.getString("business_service"))
 				.riskType(riskType)
+		        .planningPermitNo(rs.getString("planning_permit_no"))
+		        .planningPermitDate(rs.getLong("planning_permit_date"))
+		        .ppFileStoreId(rs.getString("pp_filestore_id"))
+		        .buildingPermitNo(rs.getString("building_permit_no"))
+		        .buildingPermitDate(rs.getLong("building_permit_date"))
+		        .bpFileStoreId(rs.getString("bp_filestore_id"))
+		        .occupancyCertificateNo(rs.getString("occupancy_certificate_no"))
+		        .occupancyCertificateDate(rs.getLong("occupancy_certificate_date"))
+		        .ocFileStoreId(rs.getString("oc_filestore_id"))
+		        .propertyNo(rs.getString("property_no"))
+		        .propertyDetails(propertyDetails)
+		        .propertyVendor(rs.getString("property_vendor"))
 				.build();
 	}
 
