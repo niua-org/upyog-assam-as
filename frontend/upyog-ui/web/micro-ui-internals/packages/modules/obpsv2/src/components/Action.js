@@ -285,6 +285,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
       // Create multipart form data
       const formData = new FormData();
       formData.append("file", file);
+      const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
 
       // Construct GIS request wrapper
       const gisRequestWrapper = {
@@ -295,7 +296,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           },
         },
         gisRequest: {
-          tenantId: "Tinsukia",
+          tenantId: tenantId,
           applicationNo,
           rtpiId: bpaDetails?.bpa?.[0]?.rtpDetails?.rtpUUID,
         },

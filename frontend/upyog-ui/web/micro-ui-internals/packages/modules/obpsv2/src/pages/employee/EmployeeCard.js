@@ -95,7 +95,7 @@ const OBPSEmployeeHomeCard = () => {
   },[location.pathname])
     const propsForModuleCard = useMemo(()=>({
       Icon: <OBPSIconSolidBg />,
-      moduleName: t("MODULE_OBPS"),
+      moduleName:<div style={{ width: "200px", wordWrap: "break-word" }}>{t("MODULE_OBPS")}</div>,
       kpis:[
         // {
         //     count: !isInboxLoading && !isInboxLoadingOfStakeholder ? totalCount : "",
