@@ -58,6 +58,10 @@ public class GisServiceImpl implements GisService {
     @Override
     public GISResponse findZoneFromGeometry(MultipartFile file, GISRequestWrapper gisRequestWrapper) throws Exception {
         GISRequest gisRequest = gisRequestWrapper.getGisRequest();
+
+        String transformedTenantId = extractUlbName(gisRequest.getTenantId());
+        gisRequest.setTenantId(transformedTenantId);
+
         String fileStoreId = null;
         double latitude = 0.0;
         double longitude = 0.0;
@@ -156,6 +160,18 @@ public class GisServiceImpl implements GisService {
 
             throw new RuntimeException("Failed to process geometry file: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Extracts ULB name from tenantId by removing state prefix.
+     * Example: "as.tinsukia" -> "tinsukia", "as.ghoungoorgp" -> "ghoungoorgp"
+     */
+    private String extractUlbName(String tenantId) {
+        if (tenantId != null && tenantId.contains(".")) {
+            String[] parts = tenantId.split("\\.");
+            return parts[parts.length - 1];
+        }
+        return tenantId;
     }
 
     /**
