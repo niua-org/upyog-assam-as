@@ -654,21 +654,9 @@ public class RearYardService_Assam extends RearYardService {
 
 	    if (matchedRule.isPresent()) {
 	        RearSetBackRequirement mdmsRule = matchedRule.get();
-
-	        String subtypeCode = mostRestrictiveOccupancy.getSubtype() != null
-	                ? mostRestrictiveOccupancy.getSubtype().getCode()
-	                : null;
-
-	        if (E_NS.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissibleNursery();
-	        } else if (E_PS.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissiblePrimary();
-	        } else if (B2.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissibleHighSchool();
-	        }  else if (E_CLG.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissibleCollege();
-	        }
-
+ 
+	        meanVal = mdmsRule.getPermissible();
+	        
 	        minVal = meanVal;
 	    } else {
 	        meanVal = BigDecimal.ZERO;
@@ -1313,13 +1301,13 @@ public class RearYardService_Assam extends RearYardService {
 	        valid = processRearYardMultiplex(
 	                pl, block, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
 	                subRule, rule, minVal, meanVal, buildingHeight, valid, occupancyName);
-	    }else if (E.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) <= 0) {
+	    }else if (B.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) <= 0) {
 	        // For school buildings up to 15.6m height
 	        valid = processRearYardSchool(
 	            pl, block, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
 	            subRule, rule, minVal, meanVal, buildingHeight, valid, occupancyName);
 
-	    } else if (E.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) > 0) {
+	    } else if (B.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) > 0) {
 	        // For school buildings above 15.6m height
 	        valid = processRearYardResidential(
 	            pl, block, level, min, mean, mostRestrictiveOccupancy, rearYardResult,

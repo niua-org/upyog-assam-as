@@ -33,6 +33,7 @@ public class DxfFileConstants {
     public static final String B2 = "B2";// Educational HighSchool
     public static final String B_HEI = "B-HEI";// Higher Educational Institute
     public static final String B_PS = "B-PS";// Primary school
+    public static final String B_NS = "B-NS";// Pre Primary/Nursery school
 
     public static final String C_MA = "C-MA";// Medical Admin
     public static final String C_MIP = "C-MIP";// Medical IP

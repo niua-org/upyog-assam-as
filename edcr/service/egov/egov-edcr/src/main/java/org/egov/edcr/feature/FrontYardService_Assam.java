@@ -50,9 +50,7 @@ package org.egov.edcr.feature;
 
 import static org.egov.edcr.constants.CommonFeatureConstants.EMPTY_STRING;
 import static org.egov.edcr.constants.CommonFeatureConstants.FOR_BLOCK;
-import static org.egov.edcr.constants.EdcrReportConstants.OCCUPANCY_ERROR;
 import static org.egov.edcr.constants.CommonFeatureConstants.MIN_AND_MEAN_VALUE;
-import static org.egov.edcr.constants.EdcrReportConstants.MOST_RESTRICTIVE_OCCUPANCY_ERROR;
 import static org.egov.edcr.constants.CommonFeatureConstants.MIN_LESS_REQ_MIN;
 import static org.egov.edcr.constants.CommonFeatureConstants.NOT_PERMITTED_DEPTH_LESS_10_HEIGHT_12;
 import static org.egov.edcr.constants.CommonFeatureConstants.NOT_PERMITTED_DEPTH_LESS_10_HEIGHT_16;
@@ -68,11 +66,13 @@ import static org.egov.edcr.constants.DxfFileConstants.A_AF;
 import static org.egov.edcr.constants.DxfFileConstants.A_PO;
 import static org.egov.edcr.constants.DxfFileConstants.A_R;
 import static org.egov.edcr.constants.DxfFileConstants.B;
+import static org.egov.edcr.constants.DxfFileConstants.B_HEI;
+import static org.egov.edcr.constants.DxfFileConstants.B_NS;
+import static org.egov.edcr.constants.DxfFileConstants.B_PS;
 import static org.egov.edcr.constants.DxfFileConstants.C;
 import static org.egov.edcr.constants.DxfFileConstants.D;
 import static org.egov.edcr.constants.DxfFileConstants.D_AW;
 import static org.egov.edcr.constants.DxfFileConstants.D_M;
-import static org.egov.edcr.constants.DxfFileConstants.E;
 import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.G_LI;
@@ -108,6 +108,8 @@ import static org.egov.edcr.constants.EdcrReportConstants.MIN_VAL_100_SQM;
 import static org.egov.edcr.constants.EdcrReportConstants.MIN_VAL_150_SQM;
 import static org.egov.edcr.constants.EdcrReportConstants.MIN_VAL_200_SQM;
 import static org.egov.edcr.constants.EdcrReportConstants.MIN_VAL_300_PlUS_SQM;
+import static org.egov.edcr.constants.EdcrReportConstants.MOST_RESTRICTIVE_OCCUPANCY_ERROR;
+import static org.egov.edcr.constants.EdcrReportConstants.OCCUPANCY_ERROR;
 import static org.egov.edcr.constants.EdcrReportConstants.PLOTAREA_300;
 import static org.egov.edcr.constants.EdcrReportConstants.PLOT_AREA_1000_SQM;
 import static org.egov.edcr.constants.EdcrReportConstants.PLOT_AREA_100_SQM;
@@ -265,7 +267,7 @@ public class FrontYardService_Assam extends FrontYardService {
 		 }else if(D.equalsIgnoreCase(occupancyCode) &&  D_M.equalsIgnoreCase(occupancyCode)){
 			 processFrontYardServiceMultiplex(blockName, level, min, mean, mostRestrictiveOccupancy, frontYardResult, valid, subRule, rule, minVal, meanVal, depthOfPlot, errors, pl, occupancyCode);
 		 }
-		 else if (E.equalsIgnoreCase(occupancyCode)) {
+		 else if (B.equalsIgnoreCase(occupancyCode)) {
 			 processFrontYardServiceSchools(blockName, level, min, mean, mostRestrictiveOccupancy, frontYardResult, valid, subRule, rule, minVal, meanVal, depthOfPlot, errors, pl, occupancyCode);
 		 }else if(D.equalsIgnoreCase(occupancyCode) &&  D_AW.equalsIgnoreCase(occupancyCode)){
 			 processFrontYardServicePlaceOfWorship(blockName, level, min, mean, mostRestrictiveOccupancy, frontYardResult, valid, subRule, rule, minVal, meanVal, depthOfPlot, errors, pl, occupancyCode);
@@ -937,9 +939,27 @@ public class FrontYardService_Assam extends FrontYardService {
 	            .filter(ruleObj -> Boolean.TRUE.equals(ruleObj.getActive()))
 	            .findFirst();
 
+	    String subtypeCode = mostRestrictiveOccupancy.getSubtype() != null
+                ? mostRestrictiveOccupancy.getSubtype().getCode()
+                : null;
+
 	    if (matchedRule.isPresent()) {
 	        FrontSetBackRequirement mdmsRule = matchedRule.get();
-	        meanVal = mdmsRule.getPermissible();
+	       
+
+	        if (B_NS.equalsIgnoreCase(subtypeCode)) {
+	            meanVal = mdmsRule.getPermissibleNursery();
+	            LOG.info("Occupancy subtype: NURSERY | Permissible Side Yard: {}", meanVal);
+	        } else if (B_PS.equalsIgnoreCase(subtypeCode)) {
+	            meanVal = mdmsRule.getPermissiblePrimary();
+	            LOG.info("Occupancy subtype: PRIMARY SCHOOL | Permissible Side Yard: {}", meanVal);
+	        } else if (B_HEI.equalsIgnoreCase(subtypeCode)) {
+	            meanVal = mdmsRule.getPermissibleHighSchool();
+	            LOG.info("Occupancy subtype: HIGH SCHOOL | Permissible Side Yard: {}", meanVal);
+	        }  else {
+	            LOG.warn("No matching occupancy subtype found for school category. Defaulting permissible values to 0.");
+	            meanVal = BigDecimal.ZERO;
+	        }
 	        minVal = meanVal;
 	        LOG.info("Matched rule found. Permissible: {}, MinVal set to: {}", meanVal, minVal);
 	    } else {

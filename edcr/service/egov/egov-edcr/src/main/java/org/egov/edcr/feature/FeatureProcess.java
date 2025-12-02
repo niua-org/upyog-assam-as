@@ -73,6 +73,7 @@ public abstract class FeatureProcess {
 	public static final String DESCRIPTION = "Description";
 	public static final String NUMBER = "	Toilet Number";
 	public static final String RULE_NO = "Section";
+	public static final String RULE_NO_TERRACE = "Terrace section";
 	public static final String FLOOR_NO = "Floor";
 	public static final String Room = "Room";
 	public static final String DISTANCE = "Distance";
@@ -100,6 +101,7 @@ public abstract class FeatureProcess {
 	public static final String Common_Basement = "Common_Basement";
 	public static final String Common_Distance_Between_Blocks = "Common_Distance Between Blocks";
 	public static final String Common_Chimney = "Common_Chimney";
+	public static final String Common_Terrace = "Common_Terrace";
 	public static final String Common_Bathroom = "Common_Bathroom";
 	public static final String Common_Bathroom_Water_Closets = "Common_Bathroom Water Closets";
 	public static final String Common_Segregated_Toilet = "Common_Segregated Toilet";
@@ -109,7 +111,7 @@ public abstract class FeatureProcess {
 	public static final String Common_Verandah = "Common_Verandah";
 	public static final String COMMON_ROOF_SLOPE = "Roof Slope";
     public static final String UNIT = "Unit";
-	
+		
 	
 
 	public abstract Map<String, Date> getAmendments();

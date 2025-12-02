@@ -102,6 +102,7 @@ import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
 import static org.egov.edcr.constants.DxfFileConstants.E_EARC;
 import static org.egov.edcr.constants.DxfFileConstants.E_NS;
 import static org.egov.edcr.constants.DxfFileConstants.E_PS;
+import static org.egov.edcr.constants.DxfFileConstants.B_PS;
 import static org.egov.edcr.constants.DxfFileConstants.E_SACA;
 import static org.egov.edcr.constants.DxfFileConstants.E_SFDAP;
 import static org.egov.edcr.constants.DxfFileConstants.E_SFMC;
@@ -1527,9 +1528,8 @@ public class Far_Assam extends Far {
         Boolean isHighRise = false;
         for (Block b : pl.getBlocks()) {
             if ((b.getBuilding() != null && b.getBuilding().getBuildingHeight() != null
-                    && b.getBuilding().getBuildingHeight().compareTo(new BigDecimal(5)) > 0)
-                    || (b.getBuilding() != null && b.getBuilding().getCoverageArea() != null
-                    && b.getBuilding().getCoverageArea().compareTo(new BigDecimal(500)) > 0)) {
+                    && b.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
+                    ) {
                 isHighRise = true;
 
             }
@@ -1640,6 +1640,8 @@ public class Far_Assam extends Far {
             return codesMap.get(M_DFPAB);
         else if (codes.contains(E_PS))
             return codesMap.get(E_PS);
+        else if (codes.contains(B_PS))
+            return codesMap.get(B_PS);
         else if (codes.contains(E_SFMC))
             return codesMap.get(E_SFMC);
         else if (codes.contains(E_SFDAP))
@@ -1678,6 +1680,12 @@ public class Far_Assam extends Far {
             return codesMap.get(G);
         else if (codes.contains(F))
             return codesMap.get(F);
+        else if (codes.contains(B))
+            return codesMap.get(B);
+              else if (codes.contains(D))
+            return codesMap.get(D);
+              else if (codes.contains(H))
+            return codesMap.get(H);
         else if (codes.contains(A))
             return codesMap.get(A);
         else

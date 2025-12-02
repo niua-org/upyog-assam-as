@@ -9,6 +9,51 @@ public class FrontSetBackRequirement extends MdmsFeatureRule {
     public BigDecimal getPermissibleLight() {
 		return permissibleLight;
 	}
+    
+    @JsonProperty("permissibleNursery")
+    private BigDecimal permissibleNursery;
+    
+    @JsonProperty("permissiblePrimary")
+    private BigDecimal permissiblePrimary;
+    
+    @JsonProperty("permissibleHighSchool")
+    private BigDecimal permissibleHighSchool;
+    
+    @JsonProperty("permissibleCollege")
+    private BigDecimal permissibleCollege;
+
+	public BigDecimal getPermissibleNursery() {
+		return permissibleNursery;
+	}
+
+	public void setPermissibleNursery(BigDecimal permissibleNursery) {
+		this.permissibleNursery = permissibleNursery;
+	}
+
+
+	public BigDecimal getPermissiblePrimary() {
+		return permissiblePrimary;
+	}
+
+	public void setPermissiblePrimary(BigDecimal permissiblePrimary) {
+		this.permissiblePrimary = permissiblePrimary;
+	}
+
+	public BigDecimal getPermissibleHighSchool() {
+		return permissibleHighSchool;
+	}
+
+	public void setPermissibleHighSchool(BigDecimal permissibleHighSchool) {
+		this.permissibleHighSchool = permissibleHighSchool;
+	}
+
+	public BigDecimal getPermissibleCollege() {
+		return permissibleCollege;
+	}
+
+	public void setPermissibleCollege(BigDecimal permissibleCollege) {
+		this.permissibleCollege = permissibleCollege;
+	}
 
 	public void setPermissibleLight(BigDecimal permissibleLight) {
 		this.permissibleLight = permissibleLight;
@@ -40,17 +85,12 @@ public class FrontSetBackRequirement extends MdmsFeatureRule {
 	    private BigDecimal permissibleFlattered;
 
 	    @Override
-	    public String toString() {
-	        return "FrontSetBackRequirement [fromRoadWidth=" + getFromRoadWidth() +
-	               ", toRoadWidth=" + getToRoadWidth() +
-	               ", fromBuildingHeight=" + getFromBuildingHeight() +
-	               ", toBuildingHeight=" + getToBuildingHeight() +
-	               ", permissible=" + getPermissible() +
-	               ", active=" + getActive() +
-	               ", permissibleLight=" + permissibleLight +
-	               ", permissibleMedium=" + permissibleMedium +
-	               ", permissibleFlattered=" + permissibleFlattered + "]";
-	    }
+		public String toString() {
+			return "FrontSetBackRequirement [permissibleNursery=" + permissibleNursery + ", permissiblePrimary="
+					+ permissiblePrimary + ", permissibleHighSchool=" + permissibleHighSchool + ", permissibleCollege="
+					+ permissibleCollege + ", permissibleLight=" + permissibleLight + ", permissibleMedium="
+					+ permissibleMedium + ", permissibleFlattered=" + permissibleFlattered + "]";
+		}
 
 
 		

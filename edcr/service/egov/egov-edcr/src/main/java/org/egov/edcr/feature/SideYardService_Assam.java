@@ -76,6 +76,7 @@ import static org.egov.edcr.constants.DxfFileConstants.B2;
 import static org.egov.edcr.constants.DxfFileConstants.C;
 import static org.egov.edcr.constants.DxfFileConstants.D;
 import static org.egov.edcr.constants.DxfFileConstants.D_AW;
+import static org.egov.edcr.constants.DxfFileConstants.B_PS;
 import static org.egov.edcr.constants.DxfFileConstants.D_M;
 import static org.egov.edcr.constants.DxfFileConstants.E;
 import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
@@ -511,12 +512,12 @@ public class SideYardService_Assam extends SideYardService {
 					plotArea, sideYard1Result, sideYard2Result, max);
 		
 		}
-		else if (E.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) <= 0) {
+		else if (B.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) <= 0) {
 			processSideYardSchool(pl, blockName, level, min, mostRestrictiveOccupancy, rule, subRule, buildingHeight,
 					plotArea, sideYard1Result, sideYard2Result, max);
 		
 		}
-		 else if (E.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) > 0) {
+		 else if (B.equalsIgnoreCase(occupancyCode) && buildingHeight.compareTo(BUILDING_HEIGHT_SCHOOL) > 0) {
 			 processSideYardResidential(pl, blockName, level, min, mostRestrictiveOccupancy, rule, subRule,
 						buildingHeight, plotArea, sideYard1Result, sideYard2Result, max);
 		 }
@@ -874,28 +875,9 @@ public class SideYardService_Assam extends SideYardService {
 	        SideYardServiceRequirement mdmsRule = matchedRule.get();
 	        LOG.info("Matched active SIDE_YARD_SERVICE rule from MDMS for block: {}", blockName);
 
-	        // Determine permissible value based on school subtype
-	        String subtypeCode = mostRestrictiveOccupancy.getSubtype() != null
-	                ? mostRestrictiveOccupancy.getSubtype().getCode()
-	                : null;
-
-	        if (E_NS.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissibleNursery();
-	            LOG.info("Occupancy subtype: NURSERY | Permissible Side Yard: {}", meanVal);
-	        } else if (E_PS.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissiblePrimary();
-	            LOG.info("Occupancy subtype: PRIMARY SCHOOL | Permissible Side Yard: {}", meanVal);
-	        } else if (B2.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissibleHighSchool();
-	            LOG.info("Occupancy subtype: HIGH SCHOOL | Permissible Side Yard: {}", meanVal);
-	        } else if (E_CLG.equalsIgnoreCase(subtypeCode)) {
-	            meanVal = mdmsRule.getPermissibleCollege();
+	            meanVal = mdmsRule.getPermissible();
 	            LOG.info("Occupancy subtype: COLLEGE | Permissible Side Yard: {}", meanVal);
-	        } else {
-	            LOG.warn("No matching occupancy subtype found for school category. Defaulting permissible values to 0.");
-	            meanVal = BigDecimal.ZERO;
-	        }
-
+	       
 	        minVal = meanVal;
 	    } else {
 	        LOG.warn("No active MDMS rule found for SIDE_YARD_SERVICE. Setting permissible values to 0.");

@@ -319,6 +319,9 @@ public class PlanFeatureRepository {
         pf = new PlanFeature(DrySump.class);
         features.add(pf);
         
+        pf = new PlanFeature(Terrace.class);
+        features.add(pf);
+        
         pf = new PlanFeature(DxfToPdfConverter.class);
         features.add(pf);
 

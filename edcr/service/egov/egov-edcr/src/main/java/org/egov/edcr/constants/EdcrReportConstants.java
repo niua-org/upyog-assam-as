@@ -116,6 +116,7 @@ public class EdcrReportConstants {
     // Rule identifier and description for chimney scrutiny
     public static final String RULE_44_D = "44-d";
     public static final String CHIMNEY_DESCRIPTION = "Chimney";
+    public static final String TERRACE = "Terrace Area";
     public static final String CHIMNEY_VERIFY_DESCRIPTION = "Verified whether chimney height is <= ";
     public static final String METERS = " meters";
 

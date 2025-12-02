@@ -87,7 +87,15 @@ public class Block extends Measurement {
     private List<BigDecimal> roofTanks;
     private List<BigDecimal> stairCovers;
     private List<BigDecimal> chimneys;
-    private List<BigDecimal> parapets;
+    private Terrace terrace;
+    public Terrace getTerrace() {
+		return terrace;
+	}
+
+	public void setTerrace(Terrace terrace) {
+		this.terrace = terrace;
+	}
+	private List<BigDecimal> parapets;
     private List<TerraceUtility> terraceUtilities;
     private FireTenderMovement fireTenderMovement;
     private List<Measurement> parapetWithColor = new ArrayList<>();
@@ -192,7 +200,7 @@ public class Block extends Measurement {
     public void addDARamps(DARamp daRamps) {
         this.daRamps.add(daRamps);
     }
-
+    
     public List<BlockDistances> getDistanceBetweenBlocks() {
         return disBetweenBlocks;
     }
