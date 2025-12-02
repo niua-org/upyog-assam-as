@@ -296,7 +296,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           },
         },
         gisRequest: {
-          tenantId: "Tinsukia",
+          tenantId: tenantId,
           applicationNo,
           rtpiId: bpaDetails?.bpa?.[0]?.rtpDetails?.rtpUUID,
         },

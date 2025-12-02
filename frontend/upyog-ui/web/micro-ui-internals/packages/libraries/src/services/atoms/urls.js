@@ -283,7 +283,7 @@ ePramaan: {
   register :"/requester-services-dx/epramaan/authorization/url",
   token:"/requester-services-dx/epramaan/token/citizen",
   oauth:"/user/epramaan/oauth/token",
-  logoutUrl:"https://epstg.meripehchaan.gov.in/openid/jwt/processOIDCSLORequest.do"
+  logoutUrl:"https://epramaan.meripehchaan.gov.in/openid/jwt/processOIDCSLORequest.do"
 },
 eSign:{
   pdfUrl:"/requester-services-dx/eSign/process",
