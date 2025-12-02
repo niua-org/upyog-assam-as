@@ -830,15 +830,22 @@ import {
         <div>
           <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
             <Header styles={{ fontSize: "32px" }}>{t("BPA_APPLICATION_DETAILS")}</Header>
-            {dowloadOptions && dowloadOptions.length > 0 && (
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            )}
-            {<LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>}
+            <div style={{zIndex: "10",display:"flex",flexDirection:"row-reverse",alignItems:"center",marginTop:"-25px"}}>      
+               <div style={{zIndex: "10",  position: "relative"}}>
+                {dowloadOptions.length > 0 && (
+                  <MultiLink
+                    className="multilinkWrapper"
+                    onHeadClick={() => setShowOptions(!showOptions)}
+                    displayOptions={showOptions}
+                    options={dowloadOptions}
+                    downloadBtnClassName={"employee-download-btn-className"}
+                    //optionsClassName={"employee-options-btn-className"}
+                  />
+                )}
+                </div>        
+      <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
+        </div>
+            
           </div>
           <Card>
           {/* {window.location.href.includes("/employee/") && bpa_details?.status==="PENDING_GMDA_ENGINEER" && (
