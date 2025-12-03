@@ -430,7 +430,7 @@ import {
         let edcrData = edcrResponse?.edcrDetail?.[0];
     
       let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
-      let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [reqData] }, "planningPermit");
+      let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [reqData] }, "bpaPlanningPermit");
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response?.filestoreIds?.[0] ||response });
       window.open(fileStore[response?.filestoreIds?.[0]] || fileStore[response], "_blank");
 
@@ -529,7 +529,7 @@ import {
         dowloadOptions.push({
           order: 3,
           label: t("BPA_PLANNING_PERMIT_ORDER"),
-          onClick: () => getPermitOccupancyOrderSearch({tenantId: data?.applicationData?.tenantId},"planningPermit"),
+          onClick: () => getPermitOccupancyOrderSearch({tenantId: data?.applicationData?.tenantId},"bpaPlanningPermit"),
         });
       
     }

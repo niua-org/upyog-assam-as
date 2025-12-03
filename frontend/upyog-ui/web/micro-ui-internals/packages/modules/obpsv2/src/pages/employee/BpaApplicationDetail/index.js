@@ -100,7 +100,7 @@ const BPAEmployeeDetails = () => {
     downloadOptions.push({
       order: 3,
       label: t("BPA_PERMIT_ORDER"),
-      onClick: () => getPermitOccupancyOrderSearch("planningPermit"),
+      onClick: () => getPermitOccupancyOrderSearch("bpaPlanningPermit"),
     });
   }
   if(data?.collectionBillDetails?.length > 1){

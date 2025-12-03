@@ -246,7 +246,7 @@ export const convertEpochToDate = (dateEpoch) => {
         </div>}
       
       {business_service=== "BPA.PLANNING_PERMIT_FEE" ? (
-        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={r => getPermitOccupancyOrderSearch("planningPermit")}>
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={r => getPermitOccupancyOrderSearch("bpaPlanningPermit")}>
           <DownloadPrefixIcon />
             {t("BPA_PLANNING_PERMIT_ORDER")}
           </div>

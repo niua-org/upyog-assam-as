@@ -699,7 +699,7 @@ export const SuccessfulPayment = (props) => {
               <div
                 className="primary-label-btn d-grid"
                 style={{ marginLeft: "unset" }}
-                onClick={(r) => getPermitOccupancyOrderSearch("planningPermit")}
+                onClick={(r) => getPermitOccupancyOrderSearch("bpaPlanningPermit")}
               >
                 <DownloadPrefixIcon />
                 {t("BPA_PLANNING_PERMIT_ORDER")}
