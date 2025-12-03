@@ -48,6 +48,8 @@ public class BPAQueryBuilder {
                     "       bpa.property_no, " +
                     "       bpa.property_details, " +
                     "       bpa.property_vendor," +
+                    "       bpa.pp_fee_receipt_filestore_id, " +
+                    "       bpa.bp_fee_receipt_filestore_id, " +
                     
                     "       bpadoc.id AS bpa_doc_id, " +
                     "       bpadoc.additional_details AS doc_details, " +

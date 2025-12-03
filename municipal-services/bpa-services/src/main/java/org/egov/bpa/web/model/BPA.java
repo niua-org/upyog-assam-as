@@ -74,6 +74,9 @@ public class BPA {
   private Long occupancyCertificateDate;
   private String ocFileStoreId;
 
+  private String ppFeeReceiptFileStoreId;
+  private String bpFeeReceiptFileStoreId;
+
   private String propertyNo;
   /**
    * Stores the complete validation response received from Property service

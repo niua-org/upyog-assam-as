@@ -129,6 +129,8 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 		        .occupancyCertificateDate(rs.getLong("occupancy_certificate_date"))
 		        .ocFileStoreId(rs.getString("oc_filestore_id"))
 		        .propertyNo(rs.getString("property_no"))
+				.ppFeeReceiptFileStoreId(rs.getString("pp_fee_receipt_filestore_id"))
+				.bpFeeReceiptFileStoreId(rs.getString("bp_fee_receipt_filestore_id"))
 		        .propertyDetails(propertyDetails)
 		        .propertyVendor(rs.getString("property_vendor"))
 				.build();
