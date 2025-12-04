@@ -32,7 +32,7 @@
   },
   "BusinessServices": [
     {
-      "tenantId": "pg",
+      "tenantId": "as",
       "businessService": "BPA_DA_MB",
       "business": "bpa-services",
       "businessServiceSla": "",
@@ -132,29 +132,10 @@
               ],
               "action": "APPLY_FOR_SCRUTINY",
               "active": true,
-              "nextState": "SEND_TO_CITIZEN"
-            }
-          ],
-          "applicationStatus": "PENDING_FOR_SCRUTINY",
-          "isStartState": false,
-          "isStateUpdatable": true,
-          "isTerminateState": false,
-          "docUploadRequired": false
-        },
-        {
-          "state": "SEND_TO_CITIZEN",
-          "actions": [
-            {
-              "roles": [
-                "BPA_RTP",
-                "BPA_ARCHITECT"
-              ],
-              "action": "SEND",
-              "active": true,
               "nextState": "CITIZEN_APPROVAL"
             }
           ],
-          "applicationStatus": "SEND_TO_CITIZEN",
+          "applicationStatus": "PENDING_FOR_SCRUTINY",
           "isStartState": false,
           "isStateUpdatable": true,
           "isTerminateState": false,
