@@ -2,6 +2,7 @@ package org.egov.noc.repository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -87,35 +88,56 @@ public class NOCRepository {
 	/**
 	 * Retrieves Source reference ID and Tenant ID of NOC records from the database
 	 * based on the given search criteria. Builds a dynamic SQL query using NOC type
-	 * and application status filters.
+	 * and application status filters. This method handles multi-tenant scenarios by
+	 * using state-level tenant for schema replacement.
 	 *
 	 * @param criteria search filters for NOC type and status
 	 * @return list of matching NOC records
 	 */
 	public List<Noc> getNewAAINocData(NocSearchCriteria criteria) {
-
+		List<Object> preparedStmtList = new ArrayList<>();
 		StringBuilder query = new StringBuilder("SELECT NOC.SOURCEREFID, NOC.TENANTID FROM EG_NOC NOC WHERE 1=1");
 
 		String nocType = criteria.getNocType();
 		if (nocType != null && !nocType.trim().isEmpty()) {
-			List<String> nocTypes = Arrays.stream(nocType.split(",")).map(s -> "'" + s.trim() + "'")
+			List<String> nocTypes = Arrays.stream(nocType.split(","))
+					.map(String::trim)
 					.collect(Collectors.toList());
-			query.append(" AND NOC.NOCTYPE IN (").append(String.join(",", nocTypes)).append(")");
+			query.append(" AND NOC.NOCTYPE IN (")
+					.append(String.join(",", Collections.nCopies(nocTypes.size(), "?")))
+					.append(")");
+			preparedStmtList.addAll(nocTypes);
 		}
 
 		String applicationStatus = criteria.getApplicationStatus();
 		if (applicationStatus != null && !applicationStatus.trim().isEmpty()) {
-			List<String> statuses = Arrays.stream(applicationStatus.split(",")).map(s -> "'" + s.trim() + "'")
+			List<String> statuses = Arrays.stream(applicationStatus.split(","))
+					.map(String::trim)
 					.collect(Collectors.toList());
-			query.append(" AND NOC.APPLICATIONSTATUS IN (").append(String.join(",", statuses)).append(")");
+			query.append(" AND NOC.APPLICATIONSTATUS IN (")
+					.append(String.join(",", Collections.nCopies(statuses.size(), "?")))
+					.append(")");
+			preparedStmtList.addAll(statuses);
 		}
 
-		return jdbcTemplate.query(query.toString(), (rs, rowNum) -> {
-			Noc noc = new Noc();
-			noc.setSourceRefId(rs.getString("SOURCEREFID"));
-			noc.setTenantId(rs.getString("TENANTID"));
-			return noc;
-		});
+		try {
+//			String stateLevelTenant = centralInstanceUtil.getStateLevelTenant(tenantId);
+			String finalQuery = centralInstanceUtil.replaceSchemaPlaceholder(query.toString(), criteria.getTenantId());
+			
+			return jdbcTemplate.query(finalQuery, preparedStmtList.toArray(), (rs, rowNum) -> {
+				Noc noc = new Noc();
+				noc.setSourceRefId(rs.getString("SOURCEREFID"));
+				noc.setTenantId(rs.getString("TENANTID"));
+				return noc;
+			});
+		} catch (InvalidTenantIdException e) {
+			throw new CustomException("EG_NOC_TENANTID_ERROR",
+					"TenantId length is not sufficient to replace query schema in a multi state instance");
+		} catch (Exception e) {
+			log.error("Error fetching new AAI NOC data", e);
+			throw new CustomException("EG_NOC_QUERY_ERROR",
+					"Error executing query to fetch new AAI NOC applications: " + e.getMessage());
+		}
 	}
 	
 	/**

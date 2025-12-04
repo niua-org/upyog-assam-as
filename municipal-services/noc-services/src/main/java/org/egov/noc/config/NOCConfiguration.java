@@ -117,4 +117,33 @@ public class NOCConfiguration {
     @Value("${egov.bpa.search.endpoint}")
     private String bpaSearchEndpoint;
 
+    // AAI NOCAS Integration Configuration
+    @Value("${aai.nocas.api.url}")
+    private String aaiNocasApiUrl;
+
+    @Value("${aai.nocas.token.key}")
+    private String aaiNocasTokenKey;
+
+    @Value("${aai.nocas.timeout}")
+    private Integer aaiNocasTimeout;
+
+    @Value("${aai.nocas.enabled}")
+    private Boolean aaiNocasEnabled;
+
+    // Scheduler Configuration
+    @Value("${scheduler.aai.noc.status.sync.enabled}")
+    private Boolean schedulerEnabled;
+
+    @Value("${scheduler.aai.noc.status.sync.cron}")
+    private String schedulerCron;
+
+	@Value("${assam.state.code}")
+	private String assamStateCode;
+
+	@Value("${nocas.authority.name}")
+	private String authorityName;
+
+	@Value("${nocas.authority.placeholder.fileurl}")
+	private String authorityPlaceholderFileUrl;
+
 }

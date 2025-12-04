@@ -21,10 +21,10 @@ import org.springframework.xml.xsd.XsdSchema;
 public class SoapServiceConfig extends WsConfigurerAdapter {
 
 	/**
-	 * Registers the MessageDispatcherServlet to handle SOAP requests.
-	 *
-	 * @param context the application context
-	 * @return servlet registration bean for SOAP endpoint
+	 * Registers MessageDispatcherServlet to handle SOAP requests at /createdNoc endpoint
+	 * 
+	 * @param context Application context
+	 * @return Servlet registration bean
 	 */
 	@Bean
 	public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(ApplicationContext context) {
@@ -35,24 +35,24 @@ public class SoapServiceConfig extends WsConfigurerAdapter {
 	}
 
 	/**
-	 * Creates the WSDL definition for the NOCAS SOAP service.
-	 *
-	 * @param nocasSchema the XSD schema used for WSDL generation
-	 * @return WSDL 1.1 definition bean
+	 * Creates WSDL definition for NOCAS SOAP service
+	 * 
+	 * @param nocasSchema XSD schema for WSDL generation
+	 * @return WSDL definition bean
 	 */
 	@Bean(name = "nocas")
 	public DefaultWsdl11Definition defaultWsdl11Definition(XsdSchema nocasSchema) {
 		DefaultWsdl11Definition wsdl = new DefaultWsdl11Definition();
 		wsdl.setPortTypeName("NocasPort");
 		wsdl.setLocationUri("/createdNoc");
-		wsdl.setTargetNamespace("http://egov.org/noc");
+		wsdl.setTargetNamespace("http://upyog.org/noc");
 		wsdl.setSchema(nocasSchema);
 		return wsdl;
 	}
 
 	/**
-	 * Loads the XSD schema for the NOCAS SOAP service.
-	 *
+	 * Loads XSD schema from classpath
+	 * 
 	 * @return XSD schema bean
 	 */
 	@Bean

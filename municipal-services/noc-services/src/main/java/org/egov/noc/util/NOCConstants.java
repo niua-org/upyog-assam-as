@@ -1,5 +1,6 @@
 package org.egov.noc.util;
 
+import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -81,4 +82,14 @@ public class NOCConstants {
 	
 	public static final String TENANTID_MDC_STRING = "TENANTID";
 
+	// AAI Integration Constants
+	public static final String AAI_INTEGRATION_ERROR = "AAI_INTEGRATION_ERROR";
+	
+	public static final String APPLICATION_STATUS_INPROGRESS = "INPROGRESS";
+	
+	public static final String APPLICATION_STATUS_APPROVED = "APPROVED";
+	
+	public static final String APPLICATION_STATUS_REJECTED = "REJECTED";
+
+	public static final String CIVIL_AVIATION_NOC_TYPE = "CIVIL_AVIATION";
 }

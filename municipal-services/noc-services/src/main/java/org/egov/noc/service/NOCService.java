@@ -16,7 +16,6 @@ import org.egov.noc.repository.ServiceRequestRepository;
 import org.egov.noc.util.NOCConstants;
 import org.egov.noc.util.NOCUtil;
 import org.egov.noc.validator.NOCValidator;
-import org.egov.noc.web.model.BpaApplication;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.NocRequest;
 import org.egov.noc.web.model.NocSearchCriteria;
@@ -307,14 +306,17 @@ public class NOCService {
         }
         
 		/**
-		 * Fetches newly created AAI NOC applications based on predefined criteria.
+		 * Fetches newly created AAI NOC applications for given tenant
+		 * If tenantId is null, fetches from default tenant 'as'
 		 *
-		 * @return list of NOC records in CREATED status for AAI types
+		 * @param tenantId Tenant ID or null for default
+		 * @return List of NOC records in CREATED status
 		 */
-		public List<Noc> fetchNewAAINOCs() {
+		public List<Noc> fetchNewAAINOCs(String tenantId) {
 			NocSearchCriteria criteria = new NocSearchCriteria();
-			criteria.setApplicationStatus("CREATED");
-			criteria.setNocType("CIVIL_AVIATION,CIVIL_AVIATION_AZARA");
+			criteria.setApplicationStatus(NOCConstants.CREATED_STATUS);
+			criteria.setNocType(NOCConstants.CIVIL_AVIATION_NOC_TYPE);
+			criteria.setTenantId(tenantId != null ? tenantId : config.getAssamStateCode());
 			return nocRepository.getNewAAINocData(criteria);
 		}
 
