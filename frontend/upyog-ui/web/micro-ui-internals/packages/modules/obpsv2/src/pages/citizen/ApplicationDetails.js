@@ -495,7 +495,7 @@ import {
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
           { Bpa: [application] },
-          "planningPermit"
+          "bpaPlanningPermit"
         );
   
         fileStoreId = response?.filestoreIds?.[0];
