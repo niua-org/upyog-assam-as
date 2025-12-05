@@ -47,7 +47,7 @@ const Home = () => {
   if (!tenantId) {
     Digit.SessionStorage.get("locale") === null
       ? history.push(`/upyog-ui/citizen/select-language`)
-      : history.push(`/upyog-ui/citizen/select-location`);
+      : history.push(`/upyog-ui/citizen/area-mapping`);
   }
 
   const appBannerWebObj = uiHomePage?.appBannerDesktop;
@@ -118,7 +118,7 @@ useEffect(() => {
   setCitizenDetail(user?.info, user?.access_token, "pg");
   const redirectPath = location.state?.from || DEFAULT_REDIRECT_URL;
   if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
-    history.replace("/upyog-ui/citizen/select-location", {
+    history.replace("/upyog-ui/citizen/area-mapping", {
       redirectBackTo: redirectPath,
     });
   } else {

@@ -8,7 +8,7 @@ import TopBarSideBar from "../../components/TopBarSideBar";
 import StaticCitizenSideBar from "../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import CitizenHome from "./Home";
 import LanguageSelection from "./Home/LanguageSelection";
-import LocationSelection from "./Home/LocationSelection";
+import AreaMapping from "./Home/AreaMapping";
 import Login from "./Login";
 import UserProfile from "./Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
@@ -28,7 +28,7 @@ import EDCRAcknowledgement from "./Home/EDCR/EDCRAcknowledgement";
 const sidebarHiddenFor = [
   "upyog-ui/citizen/register/name",
   "/upyog-ui/citizen/select-language",
-  "/upyog-ui/citizen/select-location",
+  "/upyog-ui/citizen/area-mapping",
   "/upyog-ui/citizen/login",
   "/upyog-ui/citizen/register/otp",
   "/upyog-ui/citizen/verificationsearch-home" // route for verificationsearch component
@@ -217,8 +217,8 @@ const Home = ({
             <LanguageSelection />
           </Route>
 
-          <Route exact path={`${path}/select-location`}>
-            <LocationSelection />
+          <Route exact path={`${path}/area-mapping`}>
+            <AreaMapping />
           </Route>
           <Route path={`${path}/error`}>
             <ErrorComponent

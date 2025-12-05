@@ -82,7 +82,7 @@ const TopBar = ({
   const urlsToDisableNotificationIcon = (pathname) =>
     !!Digit.UserService?.getUser()?.access_token
       ? false
-      : ["/upyog-ui/citizen/select-language", "/upyog-ui/citizen/select-location"].includes(pathname);
+      : ["/upyog-ui/citizen/select-language", "/upyog-ui/citizen/area-mapping"].includes(pathname);
 
   if (CITIZEN) {
     return (

@@ -72,7 +72,7 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     setCitizenDetail(user?.info, user?.access_token, stateCode);
     const redirectPath = location.state?.from || DEFAULT_REDIRECT_URL;
     if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
-      history.replace("/upyog-ui/citizen/select-location", {
+      history.replace("/upyog-ui/citizen/area-mapping", {
         redirectBackTo: redirectPath,
       });
     } else {

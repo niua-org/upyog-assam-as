@@ -30,7 +30,7 @@ console.log("languageslanguages",languages)
   );
 
   function onSubmit() {
-    history.push(`/upyog-ui/citizen/select-location`);
+    history.push(`/upyog-ui/citizen/area-mapping`);
   }
 
   return isLoading ? (
