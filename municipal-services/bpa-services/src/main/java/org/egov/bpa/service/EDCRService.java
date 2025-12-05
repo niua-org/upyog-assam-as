@@ -333,18 +333,21 @@ public class EDCRService {
 
 		// GET FLOOR DETAILS
 		List<Floor> floors = new ArrayList<>();
-		List<Object> edcrFloors = context.read("edcrDetail.*.planDetail.blocks[0].building.floors");
-		Integer totalFloors = floors.size();
+		List<Object> edcrFloors = context.read("edcrDetail.*.planDetail.blocks[*].building.floors[*]");
+		Integer totalFloors = edcrFloors.size();
+		log.info("Total No. of Floors: "+totalFloors);
 
 		for (int i = 0; i < totalFloors; i++) {
-			BigDecimal builtUpArea = context
-					.read("edcrDetail.*.planDetail.blocks[0].building.floors[i].occupancies[0].builtUpArea");
-			BigDecimal floorArea = context
-					.read("edcrDetail.*.planDetail.blocks[0].building.floors[i].occupancies[0].floorArea");
+		    String builtUpPath = "$.edcrDetail[0].planDetail.blocks[0].building.floors[" + i + "].occupancies[0].builtUpArea";
+		    String floorAreaPath = "$.edcrDetail[0].planDetail.blocks[0].building.floors[" + i + "].occupancies[0].floorArea";
 
-			Floor floor = new Floor(i, builtUpArea, floorArea);
-			floors.add(floor);
+		    BigDecimal builtUpArea = context.read(builtUpPath, BigDecimal.class);
+		    BigDecimal floorArea = context.read(floorAreaPath, BigDecimal.class);
+
+		    Floor floor = new Floor(i, builtUpArea, floorArea);
+		    floors.add(floor);
 		}
+
 		return floors;
 	}
 

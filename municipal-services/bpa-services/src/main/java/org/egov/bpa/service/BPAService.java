@@ -8,16 +8,16 @@ import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
@@ -30,6 +30,8 @@ import org.egov.bpa.validator.BPAValidator;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPASearchCriteria;
+import org.egov.bpa.web.model.CalculationReq;
+import org.egov.bpa.web.model.CalulationCriteria;
 import org.egov.bpa.web.model.Floor;
 import org.egov.bpa.web.model.Workflow;
 import org.egov.bpa.web.model.idgen.IdResponse;
@@ -62,8 +64,6 @@ import com.itextpdf.layout.properties.VerticalAlignment;
 
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
-
-import javax.validation.Valid;
 
 @Service
 @Slf4j
@@ -1024,16 +1024,26 @@ public class BPAService {
     }
 
 
-    /**
-     * call BPA-calculator and fetch the fee estimate
-     *
-     * @param bpaRequest
-     * @return
-     */
-    public Object getFeeEstimateFromBpaCalculator(Object bpaRequest) {
-        return calculationService.callBpaCalculatorEstimate(bpaRequest);
-    }
-    
+	/**
+	 * call BPA-calculator and fetch the fee estimate
+	 *
+	 * @param bpaRequest
+	 * @return
+	 */
+	public Object getFeeEstimateFromBpaCalculator(CalculationReq calcRequest) {
+
+		RequestInfo requestInfo = calcRequest.getRequestInfo();
+		List<CalulationCriteria> input = calcRequest.getCalulationCriteria();
+
+		for (CalulationCriteria obj : input) {
+			List<Floor> floors = edcrService.getFloorsFromEDCRDetails(requestInfo, obj.getBpa());
+			obj.getBpa().setFloors(floors);
+			System.out.println(floors);
+		}
+
+		return calculationService.callBpaCalculatorEstimate(calcRequest);
+	}
+
     /**
      * Search for RTP (Registered Technical Person) using user search API
      *

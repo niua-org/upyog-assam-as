@@ -16,6 +16,7 @@ import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
 import org.egov.bpa.web.model.BPAResponse;
 import org.egov.bpa.web.model.BPASearchCriteria;
+import org.egov.bpa.web.model.CalculationReq;
 import org.egov.bpa.web.model.RequestInfoWrapper;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.bpa.web.model.user.UserSearchRequest;
@@ -117,7 +118,7 @@ public class BPAController {
 	 * @return Calculation Response
 	 */
 	@PostMapping(value = { "/_estimate" })
-	public ResponseEntity<Object> getFeeEstimate(@RequestBody Object bpaRequest) {
+	public ResponseEntity<Object> getFeeEstimate(@RequestBody CalculationReq bpaRequest) {
 		Object response = bpaService.getFeeEstimateFromBpaCalculator(bpaRequest);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

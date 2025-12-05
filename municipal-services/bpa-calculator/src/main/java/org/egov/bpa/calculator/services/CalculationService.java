@@ -279,21 +279,25 @@ public class CalculationService {
 			Object mdmsData) {
 
 		BPA bpa = calulationCriteria.getBpa();
+		BigDecimal constructionCost = bpa.getConstructionCost();
 		EstimatesAndSlabs estimatesAndSlabs = new EstimatesAndSlabs();
 		ArrayList<TaxHeadEstimate> estimates = new ArrayList<>();
 
 		List<Map<String, Object>> calculationTypeMap = mdmsService.getCalculationType(requestInfo, bpa, mdmsData, calulationCriteria);
 		log.info("Calculation Type: "+calculationTypeMap);
+		Map<String, Object> calcTypeGround = calculationTypeMap.get(0);
+		Map<String, Object> calcTypeUpper = calculationTypeMap.get(1);
 		
 //		Calculating fee for each floor
 		for (Floor floor : bpa.getFloors()) {
 
 			BigDecimal totalTax = BigDecimal.ZERO;
+			BigDecimal totalBuiltupArea = floor.getBuiltUpArea();
 
 			if (floor.getLevel() == 0) {
-				totalTax = totalTax.add(calculateEstimate(bpa, calculationTypeMap.get(0)));
+				totalTax = totalTax.add(calculateEstimate(totalBuiltupArea, constructionCost, calcTypeGround));
 			} else {
-				totalTax = totalTax.add(calculateEstimate(bpa, calculationTypeMap.get(1)));
+				totalTax = totalTax.add(calculateEstimate(totalBuiltupArea, constructionCost, calcTypeUpper));
 			}
 
 			TaxHeadEstimate estimate = new TaxHeadEstimate();
@@ -319,7 +323,8 @@ public class CalculationService {
 		return estimatesAndSlabs;
 	}
 
-	private BigDecimal calculateEstimate(BPA bpa, Map<String, Object> calcType) {
+	private BigDecimal calculateEstimate(BigDecimal totalBuiltUpArea, BigDecimal constructionCost,
+			Map<String, Object> calcType) {
 
 		String unitType = (String) calcType.get("unitType");
 		BigDecimal rate = new BigDecimal(calcType.get("rate").toString());
@@ -330,11 +335,11 @@ public class CalculationService {
 
 		switch (unitType.toLowerCase()) {
 		case "per sq. m":
-			amount = bpa.getTotalBuiltUpArea().multiply(rate);
+			amount = totalBuiltUpArea.multiply(rate);
 			break;
 
 		case "percentage":
-			amount = bpa.getConstructionCost().multiply(rate).divide(BigDecimal.valueOf(100));
+			amount = constructionCost.multiply(rate).divide(BigDecimal.valueOf(100));
 			break;
 
 		case "fixed":
