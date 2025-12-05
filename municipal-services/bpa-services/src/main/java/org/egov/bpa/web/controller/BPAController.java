@@ -118,8 +118,14 @@ public class BPAController {
 	 * @return Calculation Response
 	 */
 	@PostMapping(value = { "/_estimate" })
-	public ResponseEntity<Object> getFeeEstimate(@RequestBody CalculationReq bpaRequest) {
+	public ResponseEntity<Object> getFeeEstimate(@RequestBody Object bpaRequest) {
 		Object response = bpaService.getFeeEstimateFromBpaCalculator(bpaRequest);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = { "/v2/_estimate" })
+	public ResponseEntity<Object> getFeeEstimatev2(@RequestBody CalculationReq bpaRequest) {
+		Object response = bpaService.getFeeEstimateFromBpaCalculatorV2(bpaRequest);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	

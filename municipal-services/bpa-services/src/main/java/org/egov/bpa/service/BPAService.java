@@ -1030,7 +1030,11 @@ public class BPAService {
 	 * @param bpaRequest
 	 * @return
 	 */
-	public Object getFeeEstimateFromBpaCalculator(CalculationReq calcRequest) {
+	public Object getFeeEstimateFromBpaCalculator(Object bpaRequest) {
+		return calculationService.callBpaCalculatorEstimate(bpaRequest);
+	}
+
+	public Object getFeeEstimateFromBpaCalculatorV2(CalculationReq calcRequest) {
 
 		RequestInfo requestInfo = calcRequest.getRequestInfo();
 		List<CalulationCriteria> input = calcRequest.getCalulationCriteria();
