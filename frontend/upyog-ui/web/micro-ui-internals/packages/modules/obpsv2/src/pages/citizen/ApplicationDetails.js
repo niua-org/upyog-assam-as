@@ -76,6 +76,7 @@ import {
     const [showGisResponse, setShowGisResponse] = useState(false);
     const [gisValidationSuccess, setGisValidationSuccess] = useState(false);
     const [gisData, setGisData] = useState(null);
+    const sessionAreaMappingData = Digit.SessionStorage.get("CITIZEN.AREA.MAPPING");
     const { data: mdmsData } = Digit.Hooks.useEnabledMDMS("as", "BPA", [{ name: "PermissibleZone" }], {
     select: (data) => {
       return data?.BPA?.PermissibleZone || {};
@@ -334,6 +335,7 @@ import {
            },
            gisRequest: {
              tenantId: tenantId,
+             planningAreaCode:sessionAreaMappingData?.planningArea?.gisCode,
              applicationNo: data?.bpa?.[0]?.applicationNo,
              rtpiId: data?.bpa?.[0]?.rtpDetails?.rtpUUID,
            },
@@ -393,7 +395,7 @@ import {
             return false;
           } catch (err) {
             console.error("GIS Validation Error:", err);
-            setActionError(err?.response?.data?.Errors?.[0]?.message || t("CS_GIS_VALIDATION_FAILED"));
+            setActionError(err?.response?.data?.error || t("CS_GIS_VALIDATION_FAILED"));
           } finally {
             setIsUploading(false);
           }

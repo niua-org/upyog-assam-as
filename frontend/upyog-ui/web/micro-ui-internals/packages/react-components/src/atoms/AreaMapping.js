@@ -85,6 +85,7 @@ const AreaMapping = ({
           code: area.planningAreaCode,
           name: area.planningAreaName,
           i18nKey: area.planningAreaCode,
+          gisCode: area.planningAreaGisCode
         })) || [];
       setPlanningAreas(formattedPlanningAreas);
     } else {
