@@ -512,7 +512,6 @@ public class BPAService {
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, null);
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE_ALL_BUILDING_PLAN);
-			calculationService.addCalculation(bpaRequest, "PLANNING_PERMIT_FEE");
 			landService.updateLandInfo(bpaRequest);
 			break;
 
@@ -524,6 +523,7 @@ public class BPAService {
 
 			nocService.createNocRequest(bpaRequest, mdmsData);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
+            calculationService.addCalculation(bpaRequest, "PLANNING_PERMIT_FEE");
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE);
 			break;
