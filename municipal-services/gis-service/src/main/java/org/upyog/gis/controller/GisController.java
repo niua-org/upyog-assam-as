@@ -95,15 +95,6 @@ public class GisController {
             @RequestBody @Valid GisLogSearchRequest searchRequest
     ) {
         try {
-            GisLogSearchCriteria criteria = searchRequest.getCriteria();
-            if (criteria.getTenantId() != null && criteria.getTenantId().contains(".")) {
-                String[] ulbName = criteria.getTenantId().split("\\.");
-                criteria.setTenantId(ulbName[ulbName.length - 1]);
-            }
-            if(criteria.getPlanningAreaCode() != null && criteria.getPlanningAreaCode().contains(".")) {
-                String[] planningArea = criteria.getPlanningAreaCode().split("\\.");
-                criteria.setPlanningAreaCode(planningArea[planningArea.length - 1]);
-            }
             log.info("Searching GIS logs with criteria: {}", searchRequest.getCriteria());
 
             List<GisLog> gisLogs = gisService.searchGisLog(searchRequest.getCriteria());
