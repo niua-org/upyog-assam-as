@@ -21,6 +21,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
   const [showGisResponse, setShowGisResponse] = useState(false);
   const [gisValidationSuccess, setGisValidationSuccess] = useState(false);
 
+  const sessionAreaMappingData = Digit.SessionStorage.get("CITIZEN.AREA.MAPPING");
   const WORKFLOW_ACTIONS = [
     "APPROVE",
     "ACCEPT",
@@ -297,6 +298,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
         },
         gisRequest: {
           tenantId: tenantId,
+          planningAreaCode:sessionAreaMappingData?.planningArea?.gisCode,
           applicationNo,
           rtpiId: bpaDetails?.bpa?.[0]?.rtpDetails?.rtpUUID,
         },
@@ -354,7 +356,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
       return false;
     } catch (err) {
       console.error("GIS Validation Error:", err);
-      setError(err?.response?.data?.Errors?.[0]?.message || t("CS_GIS_VALIDATION_FAILED"));
+      setError(err?.response?.data?.error || t("CS_GIS_VALIDATION_FAILED"));
     } finally {
       setIsUploading(false);
     }

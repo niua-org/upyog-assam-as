@@ -133,6 +133,7 @@ const RTPForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addN
                 selected={tenantIdData}
                 optionKey="i18nKey"
                 select={setTypeOfTenantID}
+                disable={true}
                 uploadMessage={uploadMessage}
             />
             <CardLabel>{`${t("RTP_SCRUTINY_NAME_LABEL")}`}<span className="check-page-link-button"> *</span></CardLabel>
