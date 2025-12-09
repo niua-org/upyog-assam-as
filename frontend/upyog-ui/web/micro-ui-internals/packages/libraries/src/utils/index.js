@@ -214,8 +214,7 @@ const BPAAccess = () => {
     "BPA_STRUCTURALENGINEER",
     "BPA_SUPERVISOR",
     "BPA_DOC_VERIFIER",
-    "EMPLOYEE",
-    "SOIL_TEST_APPROVER"
+    "EMPLOYEE"
   ];
 
   const BPA_ACCESS = userRoles?.filter((role) => BPA_ROLES?.includes(role));
