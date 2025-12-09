@@ -10,7 +10,17 @@ const NOCEmployeeHomeCard = () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
 
     if (!Digit.Utils.NOCAccess()) return null;
-       
+
+    const { data: nocTypeRoleMapping } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "NOC", [{ name: "NOCBusinessServiceRoleMaping" }],
+    {
+        select: (data) => {
+            const formattedData = data?.["NOC"]?.["NOCBusinessServiceRoleMaping"]
+            const activeData = formattedData?.filter(item => item.active === true);
+            return activeData;
+        },
+    });
+
+    
     const searchFormDefaultValues = {}
   
     const filterFormDefaultValues = {
@@ -37,7 +47,8 @@ const NOCEmployeeHomeCard = () => {
     const { isLoading: isInboxLoading, data: {table , statuses, totalCount,nearingSlaCount} = {} } = Digit.Hooks.noc.useInbox({
         tenantId,
         filters: { ...formInitValue },
-        config : { enabled : formInitValue?.filterForm?.businessServiceArray?.length > 0}
+        config : { enabled : formInitValue?.filterForm?.businessServiceArray?.length > 0},
+        workflowCode:nocTypeRoleMapping
     });
 
     const ComplaintIcon = () => <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">

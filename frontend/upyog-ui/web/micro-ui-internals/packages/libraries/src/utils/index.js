@@ -176,11 +176,10 @@ const NOCAccess = () => {
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
 
   const NOC_ROLES = [
-    "FIRE_NOC_APPROVER"
+    "FIRE_NOC_APPROVER",
+    "SOIL_TEST_APPROVER"
   ]
-
   const NOC_ACCESS = userRoles?.filter((role) => NOC_ROLES?.includes(role));
-
   return NOC_ACCESS?.length > 0;
 };
 
@@ -216,6 +215,7 @@ const BPAAccess = () => {
     "BPA_SUPERVISOR",
     "BPA_DOC_VERIFIER",
     "EMPLOYEE",
+    "SOIL_TEST_APPROVER"
   ];
 
   const BPA_ACCESS = userRoles?.filter((role) => BPA_ROLES?.includes(role));

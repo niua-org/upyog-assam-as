@@ -1,44 +1,40 @@
 import useInbox from "../useInbox"
 
-const useNOCInbox = ({ tenantId, filters, config={} }) => {
+const useNOCInbox = ({ tenantId, filters, config={}, workflowCode}) => {
     const { filterForm, searchForm , tableForm } = filters;
     let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
     const { sourceRefId, applicationNo } = searchForm;
     const { sortBy, limit, offset, sortOrder } = tableForm;
     const user = Digit.UserService.getUser();
     const businessServiceList = () => {
-      const availableBusinessServices = [{
-        code: "FIRE_NOC_SRV",
-        active: true,
-        roles: ["FIRE_NOC_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
-      }, {
-        code: "AIRPORT_NOC_SRV",
-        active: true,
-        roles: ["AIRPORT_AUTHORITY_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV"
-      }];
-      const newAvailableBusinessServices = [], loggedInUserRoles = user?.info?.roles || [];
-      availableBusinessServices.map(({ roles }, index) => {
-        roles.map((role) => {
-          loggedInUserRoles.map((el) => {
-            if (el.code === role) newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code)
-          })
-        })
+    const availableBusinessServices = workflowCode || []; // fallback to empty if undefined
+    const newAvailableBusinessServices = [];
+    const loggedInUserRoles = user?.info?.roles || [];
+
+    availableBusinessServices.forEach(({ roles, code }) => {
+      roles.forEach((role) => {
+        loggedInUserRoles.forEach((el) => {
+          if (el.code === role) {
+            newAvailableBusinessServices.push(code);
+          }
+        });
       });
+    });
+
     return newAvailableBusinessServices;
-  }
+  };
 
   if (!businessServiceArray?.length && !businessService) {
     businessServiceArray = businessServiceList(true)
   }
+
 
     const _filters = {
         tenantId,
         processSearchCriteria: {
           assignee : assignee === "ASSIGNED_TO_ME"?user?.info?.uuid:"",
           moduleName: "noc-services", 
-          businessService: businessService?.code ? [businessService?.code] : businessServiceArray ,
+          businessService:businessService?.code ? [businessService?.code] : businessServiceArray ,
           ...(applicationStatus?.length > 0 ? {status: applicationStatus} : {}),
         },
         moduleSearchCriteria: {

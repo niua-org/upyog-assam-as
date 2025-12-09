@@ -1,0 +1,86 @@
+{
+  "tenantId": "as",
+  "businessService": "SOIL_TEST_SRV",
+  "business": "noc-services",
+  "businessServiceSla": 5184000000,
+  "states": [
+    {
+      "tenantId": "as",
+      "sla": null,
+      "state": null,
+      "applicationStatus": "INITIATED",
+      "docUploadRequired": false,
+      "isStartState": true,
+      "isTerminateState": false,
+      "isStateUpdatable": true,
+      "actions": [
+        {
+          "tenantId": "as",
+          "currentState": null,
+          "action": "INITIATE",
+          "nextState": "INITIATED",
+          "roles": [
+            "CITIZEN",
+            "BPA_ARCHITECT",
+            "BPA_ENGINEER"
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "tenantId": "as",
+      "sla": null,
+      "state": "INITIATED",
+      "applicationStatus": "INPROGRESS",
+      "docUploadRequired": false,
+      "isStartState": false,
+      "isTerminateState": false,
+      "isStateUpdatable": false,
+      "actions": [
+        {
+          "tenantId": "as",
+          "currentState": "INITIATED",
+          "action": "APPROVE",
+          "nextState": "APPROVED",
+          "roles": [
+            "SOIL_TEST_APPROVER"
+          ],
+          "active": true
+        },
+        {
+          "tenantId": "as",
+          "currentState": "INITIATED",
+          "action": "REJECT",
+          "nextState": "REJECTED",
+          "roles": [
+            "SOIL_TEST_APPROVER"
+          ],
+          "active": true
+        }
+      ]
+    },
+    {
+      "tenantId": "as",
+      "sla": null,
+      "state": "REJECTED",
+      "applicationStatus": "REJECTED",
+      "docUploadRequired": false,
+      "isStartState": false,
+      "isTerminateState": true,
+      "isStateUpdatable": false,
+      "actions": null
+    },
+    {
+      "tenantId": "as",
+      "sla": null,
+      "state": "APPROVED",
+      "applicationStatus": "APPROVED",
+      "docUploadRequired": false,
+      "isStartState": false,
+      "isTerminateState": true,
+      "isStateUpdatable": false,
+      "actions": null
+    }
+  ]
+}
