@@ -91,7 +91,7 @@ public class EDCRService {
 		uri.append("&").append("edcrNumber=").append(edcrNo);
 		RequestInfo edcrRequestInfo = new RequestInfo();
 		BeanUtils.copyProperties(request.getRequestInfo(), edcrRequestInfo);
-		Map<String, List<String>> masterData = mdmsValidator.getAttributeValues(mdmsData);
+		Map<String, List<String>> masterData = mdmsValidator.getAttributeValuesForState(mdmsData);
 		LinkedHashMap responseMap = null;
 		try {
 			responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri,

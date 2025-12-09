@@ -63,6 +63,10 @@ public class BPAValidator {
 		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
 	}
 
+	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+		mdmsValidator.validateStateMdmsData(bpaRequest, mdmsData);
+	}
+
 	/**
 	 * Validates the BPA request during creation.
 	 * Ensures that MDMS data, application documents, and risk type are valid.
@@ -95,7 +99,7 @@ public class BPAValidator {
 	 * @param values Additional values for validation.
 	 */
 	private void validateApplicationDocuments(BPARequest request, Object mdmsData, String currentState, Map<String, String> values) {
-		Map<String, List<String>> masterData = mdmsValidator.getAttributeValues(mdmsData);
+		Map<String, List<String>> masterData = mdmsValidator.getAttributeValuesForState(mdmsData);
 		BPA bpa = request.getBPA();
 
 		if (!bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_REJECT)

@@ -84,7 +84,7 @@ public class EnrichmentService {
 	 * @param mdmsData
 	 * @param edcrValues
 	 */
-	public void enrichBPACreateRequest(BPARequest bpaRequest, Object mdmsData, Map<String, String> edcrValues) {
+	public void enrichBPACreateRequest(BPARequest bpaRequest, Map<String, String> edcrValues) {
 		RequestInfo requestInfo = bpaRequest.getRequestInfo();
 		AuditDetails auditDetails = bpaUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
 		bpaRequest.getBPA().setAuditDetails(auditDetails);
@@ -230,7 +230,7 @@ public class EnrichmentService {
 			if (bpa.getBusinessService().equals(BPAConstants.BPA_LOW_MODULE_CODE)) {
 				bpa.setRiskType(BPAConstants.LOW_RISKTYPE);
 			} else {
-				Map<String, List<String>> masterData = mdmsValidator.getAttributeValues(mdmsData);
+				Map<String, List<String>> masterData = mdmsValidator.getAttributeValuesForState(mdmsData);
 				StringBuilder uri = new StringBuilder(config.getEdcrHost());
 				uri.append(config.getGetPlanEndPoint());
 				uri.append("?").append("tenantId=").append(BPAConstants.BPA_ASSAM);
