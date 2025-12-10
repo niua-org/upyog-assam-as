@@ -18,7 +18,7 @@ import { PaymentModule, PaymentLinks, paymentConfigs } from "@upyog/digit-ui-mod
 import { HRMSModule } from "@upyog/digit-ui-module-hrms";
 // import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
 import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
-// import { initNOCComponents } from "@upyog/digit-ui-module-noc";
+import { initNOCComponents } from "@upyog/digit-ui-module-noc";
 // import { initWSComponents } from "@upyog/digit-ui-module-ws";
 import { DigitUI } from "@upyog/digit-ui-module-core";
 // import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
@@ -69,7 +69,7 @@ const enabledModules = [
   "Reports",
   // "OBPS",
   "Engagement",
-  // "NOC",
+  "NOC",
   // "WS",
   // "CommonPT",
   // "NDSS",
@@ -175,7 +175,7 @@ const initDigitUI = () => {
   // initOBPSComponents();
   initOBPSV2Components();
   initEngagementComponents();
-  // initNOCComponents();
+  initNOCComponents();
   // initWSComponents();
   // initCommonPTComponents();
   initBillsComponents();

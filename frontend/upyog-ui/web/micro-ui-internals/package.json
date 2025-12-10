@@ -10,7 +10,8 @@
     "packages/modules/core",
     "packages/modules/common",
     "packages/modules/hrms",
-    "packages/modules/obpsv2"
+    "packages/modules/obpsv2",
+    "packages/modules/noc"
   ],
   "license": "MIT",
   "private": true,
@@ -33,6 +34,7 @@
     "dev:obpsv2": "cd packages/modules/obpsv2 && yarn start",
     "dev:engagement": "cd packages/modules/engagement && yarn start",
     "dev:bills": "cd packages/modules/bills && yarn start",
+    "dev:noc": "cd packages/modules/noc && yarn start",
     "dev:example": "cd example && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
@@ -42,6 +44,7 @@
     "buildD:receipts": "cd packages/modules/receipts && yarn build",
     "build:hrms": "cd packages/modules/hrms && yarn build",
     "build:obpsv2": "cd packages/modules/obpsv2 && yarn build",
+    "build:noc": "cd packages/modules/noc && yarn build",
     "buildD:engagement": "cd packages/modules/engagement && yarn build",
     "buildD:bills": "cd packages/modules/bills && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"

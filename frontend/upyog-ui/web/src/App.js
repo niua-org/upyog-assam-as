@@ -31,7 +31,7 @@ import {
 import { initReceiptsComponents, ReceiptsModule } from "@upyog/digit-ui-module-receipts";
 // import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
 import { initOBPSV2Components } from "@nudmcdgnpm/upyog-ui-module-obpsv2";
-// import { initNOCComponents } from "@upyog/digit-ui-module-noc";
+import { initNOCComponents } from "@upyog/digit-ui-module-noc";
 import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
 // import { initWSComponents } from "@upyog/digit-ui-module-ws";
 // import { initCustomisationComponents } from "./Customisations";
@@ -74,7 +74,7 @@ const enabledModules = [
   // "TL",
   "Receipts",
   // "OBPS",
-  // "NOC",
+  "NOC",
   "Engagement",
   // "CommonPT",
   // "WS",
@@ -148,7 +148,7 @@ initHRMSComponents();
 initReceiptsComponents();
 // initOBPSComponents();
 initOBPSV2Components();
-// initNOCComponents();
+initNOCComponents();
 initEngagementComponents();
 // initWSComponents();
 // initCommonPTComponents();

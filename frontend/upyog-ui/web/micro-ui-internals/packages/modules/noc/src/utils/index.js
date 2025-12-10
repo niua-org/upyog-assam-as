@@ -26,17 +26,26 @@ export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
 
 export const businessServiceList = (isCode= false) => {
     let isSearchScreen = window.location.href.includes("/search");
-    const availableBusinessServices = [{
+    const availableBusinessServices = 
+    [{
         code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
         active: true,
         roles: ["FIRE_NOC_APPROVER"],
         i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
-    }, {
+    }, 
+    {
         code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
         active: true,
         roles: ["AIRPORT_AUTHORITY_APPROVER"],
         i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV"
-    }];
+    },
+    {
+        code: "SOIL_TEST_SRV",
+        active: true,
+        roles: ["SOIL_TEST_APPROVER"],
+        i18nKey: "WF_SOIL_TEST_SRV"
+    }
+];
 
     const newAvailableBusinessServices = [];
     const loggedInUserRoles = Digit.UserService.getUser().info.roles;
