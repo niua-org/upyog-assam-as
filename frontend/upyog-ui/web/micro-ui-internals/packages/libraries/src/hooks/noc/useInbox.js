@@ -25,7 +25,7 @@ const useNOCInbox = ({ tenantId, filters, config={}, workflowCode}) => {
   };
 
   if (!businessServiceArray?.length && !businessService) {
-    businessServiceArray = businessServiceList(true)
+    businessServiceArray = businessServiceList();
   }
 
 

@@ -8,19 +8,27 @@ const NOCEmployeeHomeCard = () => {
     const { t } = useTranslation();
     const location = useLocation()
     const tenantId = Digit.ULBService.getCurrentTenantId();
-
-    if (!Digit.Utils.NOCAccess()) return null;
-
-    const { data: nocTypeRoleMapping } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "NOC", [{ name: "NOCBusinessServiceRoleMaping" }],
-    {
-        select: (data) => {
-            const formattedData = data?.["NOC"]?.["NOCBusinessServiceRoleMaping"]
-            const activeData = formattedData?.filter(item => item.active === true);
-            return activeData;
-        },
-    });
-
     
+    const { data: nocTypeRoleMapping, isLoading: isMDMSLoading } = Digit.Hooks.useCustomMDMS(
+        Digit.ULBService.getStateId(),
+        "NOC",
+        [{ name: "NOCBusinessServiceRoleMaping" }],
+        {
+            select: (data) => {
+                const formattedData = data?.["NOC"]?.["NOCBusinessServiceRoleMaping"];
+                return formattedData?.filter(item => item.active === true);
+            },
+        }
+    );
+
+    const nocRoles = useMemo(() => {
+        return nocTypeRoleMapping?.map((items) => items.roles)?.flat() || [];
+    }, [nocTypeRoleMapping]);
+
+    const hasNOCAccess = useMemo(() => {
+        return Digit.Utils.NOCAccess(nocRoles);
+    }, [nocRoles]);
+
     const searchFormDefaultValues = {}
   
     const filterFormDefaultValues = {
@@ -44,11 +52,13 @@ const NOCEmployeeHomeCard = () => {
       tableForm: tableOrderFormDefaultValues
     }
 
-    const { isLoading: isInboxLoading, data: {table , statuses, totalCount,nearingSlaCount} = {} } = Digit.Hooks.noc.useInbox({
+    const { isLoading: isInboxLoading, data: {table, statuses, totalCount, nearingSlaCount} = {} } = Digit.Hooks.noc.useInbox({
         tenantId,
         filters: { ...formInitValue },
-        config : { enabled : formInitValue?.filterForm?.businessServiceArray?.length > 0},
-        workflowCode:nocTypeRoleMapping
+        config: { 
+            enabled: !isMDMSLoading && hasNOCAccess && formInitValue?.filterForm?.businessServiceArray?.length > 0
+        },
+        workflowCode: nocTypeRoleMapping
     });
 
     const ComplaintIcon = () => <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -56,40 +66,44 @@ const NOCEmployeeHomeCard = () => {
         <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V5h2v6zm0 4h-2v-2h2v2z" fill="white"></path>
     </svg>
 
-    useEffect(()=>{
-      if (location.pathname === "/upyog-ui/employee"){
-        Digit.SessionStorage.del("NOC.INBOX")
-      }
-    },[location.pathname])
-
-    const propsForModuleCard = useMemo(()=>({
-      Icon: <ComplaintIcon />,
-      moduleName: t("ACTION_TEST_NOC"),
-      kpis:[
-        {
-            count: !isInboxLoading ? totalCount : "",
-            label: t("TOTAL_FSM"),
-            link: `/upyog-ui/employee/obps/inbox`
-        },
-        {   count:!isInboxLoading ?nearingSlaCount:"-",
-            label: t("TOTAL_NEARING_SLA"),
-            link: `/upyog-ui/employee/obps/inbox`
-        }  
-      ],
-      links: [
-        {
-          count: totalCount ,
-          label: t("ES_COMMON_INBOX"),
-          link: `/upyog-ui/employee/noc/inbox`
-        },
-        {
-          label: t("ES_COMMON_APPLICATION_SEARCH"),
-          link: `/upyog-ui/employee/noc/search`
+    useEffect(() => {
+        if (location.pathname === "/upyog-ui/employee") {
+            Digit.SessionStorage.del("NOC.INBOX");
         }
-      ]
-    }),[isInboxLoading, totalCount]);
-  
-    return Digit.Utils.NOCAccess() ? <EmployeeModuleCard {...propsForModuleCard} /> : null
-  }
+    }, [location.pathname]);
 
-  export default NOCEmployeeHomeCard
+    const propsForModuleCard = useMemo(() => ({
+        Icon: <ComplaintIcon />,
+        moduleName: t("ACTION_TEST_NOC"),
+        kpis: [
+            {
+                count: !isInboxLoading ? totalCount : "",
+                label: t("TOTAL_FSM"),
+                link: `/upyog-ui/employee/obps/inbox`
+            },
+            {   
+                count: !isInboxLoading ? nearingSlaCount : "-",
+                label: t("TOTAL_NEARING_SLA"),
+                link: `/upyog-ui/employee/obps/inbox`
+            }  
+        ],
+        links: [
+            {
+                count: totalCount,
+                label: t("ES_COMMON_INBOX"),
+                link: `/upyog-ui/employee/noc/inbox`
+            },
+            {
+                label: t("ES_COMMON_APPLICATION_SEARCH"),
+                link: `/upyog-ui/employee/noc/search`
+            }
+        ]
+    }), [isInboxLoading, totalCount, nearingSlaCount, t, ComplaintIcon]);
+
+    // Early return AFTER all hooks
+    if (isMDMSLoading || !hasNOCAccess) return null;
+  
+    return <EmployeeModuleCard {...propsForModuleCard} />;
+};
+
+export default NOCEmployeeHomeCard;
