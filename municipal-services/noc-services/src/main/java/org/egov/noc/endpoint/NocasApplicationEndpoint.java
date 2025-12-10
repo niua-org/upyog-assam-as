@@ -1,23 +1,21 @@
 package org.egov.noc.endpoint;
 
-import java.io.StringReader;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.servlet.http.HttpServletResponse;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.noc.service.AAINOCService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
-import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,8 +52,7 @@ public class NocasApplicationEndpoint {
 	 * @throws Exception if authentication fails or XML generation fails
 	 */
 	@PayloadRoot(namespace = NAMESPACE_URI, localPart = "GetApplicationsRequest")
-	@ResponsePayload
-	public Element getApplications(@RequestPayload Element request) throws Exception {
+	public void getApplications(@RequestPayload Element request) throws Exception {
 		try {
 			String requestInfoJson = extractElementValue(request, "RequestInfo");
 			String tenantId = extractElementValue(request, "tenantId");
@@ -67,16 +64,16 @@ public class NocasApplicationEndpoint {
 			RequestInfo requestInfo = parseRequestInfoFromJson(requestInfoJson);
 			String applicationsXml = nocasApplicationService.generateNocasXml(requestInfo, tenantId);
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-			factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-			factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-			factory.setExpandEntityReferences(false);
-			
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(new InputSource(new StringReader(applicationsXml)));
-
-			return doc.getDocumentElement();
+			RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+			if (requestAttributes instanceof ServletRequestAttributes) {
+				HttpServletResponse response = ((ServletRequestAttributes) requestAttributes).getResponse();
+				if (response != null) {
+					response.setContentType("text/xml; charset=utf-8");
+					response.setCharacterEncoding("utf-8");
+					response.getWriter().write(applicationsXml);
+					response.getWriter().flush();
+				}
+			}
 
 		} catch (CustomException ce) {
 			throw ce;

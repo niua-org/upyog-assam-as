@@ -143,7 +143,24 @@ public class NOCConfiguration {
 	@Value("${nocas.authority.name}")
 	private String authorityName;
 
-	@Value("${nocas.authority.placeholder.fileurl}")
-	private String authorityPlaceholderFileUrl;
+//	@Value("${nocas.authority.placeholder.fileurl}")
+//	private String authorityPlaceholderFileUrl;
+
+	// EDCR Configuration
+	@Value("${egov.edcr.host}")
+	private String edcrHost;
+
+	@Value("${egov.edcr.scrutiny.details.endpoint}")
+	private String edcrScrutinyDetailsEndpoint;
+
+	@Value("${egov.edcr.tenant.id}")
+	private String edcrTenantId;
+
+	// FileStore Configuration
+	@Value("${egov.filestore.host}")
+	private String fileStoreHost;
+
+	@Value("${egov.filestore.path}")
+	private String fileStorePath;
 
 }

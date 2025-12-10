@@ -47,4 +47,23 @@ public class ServiceRequestRepository {
 
 		return response;
 	}
+
+	/**
+	 * Fetch results using GET request
+	 * @param uri URI with query parameters
+	 * @return Response object
+	 */
+	public Object fetchResultUsingGet(StringBuilder uri) {
+		Object response = null;
+		log.info("URI: " + uri.toString());
+		try {
+			response = restTemplate.getForObject(uri.toString(), Map.class);
+		} catch (HttpClientErrorException e) {
+			log.error("External Service threw an Exception: ", e);
+			throw new ServiceCallException(e.getResponseBodyAsString());
+		} catch (Exception e) {
+			log.error("Exception while fetching from service: ", e);
+		}
+		return response;
+	}
 }

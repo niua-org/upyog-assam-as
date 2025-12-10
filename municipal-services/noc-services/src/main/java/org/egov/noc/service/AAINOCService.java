@@ -12,6 +12,7 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -19,25 +20,26 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.noc.config.NOCConfiguration;
-import org.egov.noc.util.NOCUtil;
+import org.egov.noc.util.NOCConstants;
 import org.egov.noc.web.model.BpaApplication;
+import org.egov.noc.web.model.Document;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.RequestInfoWrapper;
 import org.egov.noc.web.model.SiteCoordinate;
 import org.egov.noc.web.model.bpa.Address;
 import org.egov.noc.web.model.bpa.BPA;
-import org.egov.noc.web.model.bpa.GeoLocation;
 import org.egov.noc.web.model.bpa.LandInfo;
 import org.egov.noc.web.model.bpa.OwnerInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import lombok.extern.slf4j.Slf4j;
+
+import static javax.xml.transform.OutputKeys.INDENT;
+import static javax.xml.transform.OutputKeys.STANDALONE;
 
 @Service
 @Slf4j
@@ -52,7 +54,10 @@ public class AAINOCService {
 	private NOCService nocService;
 
 	@Autowired
-	private NOCUtil nocUtil;
+	private EDCRService edcrService;
+
+	@Autowired
+	private FileStoreService fileStoreService;
 
 	/**
 	 * Generates NOCAS XML response by fetching newly created NOC applications
@@ -75,6 +80,14 @@ public class AAINOCService {
 			RequestInfoWrapper requestInfoWrapper =	new RequestInfoWrapper();
 			requestInfoWrapper.setRequestInfo(requestInfo);
 
+			// Map NOC by sourceRefId for document lookup
+			Map<String, Noc> nocMap = new HashMap<>();
+			for (Noc noc : nocList) {
+				if (noc != null && noc.getSourceRefId() != null) {
+					nocMap.put(noc.getSourceRefId(), noc);
+				}
+			}
+
 			// Fetch BPA details for the NOC applications
 			List<BPA> bpaDetails = nocService.getBPADetails(nocList, requestInfoWrapper);
 			
@@ -90,6 +103,9 @@ public class AAINOCService {
 				try {
 					BpaApplication obj = mapBPAToBpaApplication(bpa);
 					if (obj != null) {
+						// Set corresponding NOC for document mapping
+						Noc correspondingNoc = nocMap.get(bpa.getApplicationNo());
+						obj.setNoc(correspondingNoc);
 						applications.add(obj);
 					}
 				} catch (Exception e) {
@@ -103,13 +119,13 @@ public class AAINOCService {
 			// Create XML document
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			Document doc = docBuilder.newDocument();
+			org.w3c.dom.Document doc = docBuilder.newDocument();
+			doc.setXmlStandalone(true);
 
 			// Root element
 			Element rootElement = doc.createElement(config.getAuthorityName() + "DETAILS");
 			doc.appendChild(rootElement);
 
-			// Add each application
 			for (BpaApplication app : applications) {
 				Element toAAI = doc.createElement("TOAAI");
 				rootElement.appendChild(toAAI);
@@ -137,9 +153,8 @@ public class AAINOCService {
 				addElement(doc, appData, "ISINAIRPORTPREMISES", app.getIsInAirportPremises());
 				addElement(doc, appData, "PERMISSIONTAKEN", app.getPermissionTaken());
 
-				// Site Details (Coordinates)
 				BPA correspondingBPA = bpaMap.get(app.getApplicationNo());
-				List<SiteCoordinate> coordinates = extractCoordinatesFromBPA(correspondingBPA);
+				List<SiteCoordinate> coordinates = extractCoordinatesFromBPA(correspondingBPA, requestInfo);
 
 				Element siteDetails = doc.createElement("SiteDetails");
 				toAAI.appendChild(siteDetails);
@@ -162,27 +177,34 @@ public class AAINOCService {
 					}
 				}
 
-				// Files (Document paths)
+				// Files (Document URLs from NOC documents)
 				Element files = doc.createElement("FILES");
 				toAAI.appendChild(files);
 
-				addElement(doc, files, "UNDERTAKING1A", config.getAuthorityPlaceholderFileUrl());
-				addElement(doc, files, "SITEELEVATION",  "");
-				addElement(doc, files, "SITECORDINATES",  "");
-				addElement(doc, files, "AUTHORIZATION",  "");
-
-				addElement(doc, files, "UNDERTAKING1A", app.getUniqueId() + "_UNDERTAKING1A.pdf");
-				addElement(doc, files, "SITEELEVATION", app.getUniqueId() + "_SiteElevationCertificate.pdf");
-				addElement(doc, files, "SITECORDINATES", app.getUniqueId() + "_SiteCoordinatesCertificate.pdf");
-				addElement(doc, files, "AUTHORIZATION", app.getUniqueId() + "_AuthorizationLetter.pdf");
+				Map<String, String> documentUrls = getDocumentUrls(app.getNoc());
+				
+				addElement(doc, files, "UNDERTAKING1A", 
+						documentUrls.getOrDefault(NOCConstants.DOC_TYPE_UNDERTAKING1A, ""));
+				addElement(doc, files, "SITEELEVATION", 
+						documentUrls.getOrDefault(NOCConstants.DOC_TYPE_SITEELEVATION, ""));
+				addElement(doc, files, "SITECORDINATES", 
+						documentUrls.getOrDefault(NOCConstants.DOC_TYPE_SITECORDINATES, ""));
+				addElement(doc, files, "AUTHORIZATION", 
+						documentUrls.getOrDefault(NOCConstants.DOC_TYPE_AUTHORIZATION, ""));
 				if ("Yes".equalsIgnoreCase(app.getIsInAirportPremises())) {
-					addElement(doc, files, "PERMISSION", app.getUniqueId() + "_PermissionLetter.pdf");
+					addElement(doc, files, "PERMISSION", 
+							documentUrls.getOrDefault(NOCConstants.DOC_TYPE_PERMISSION, ""));
 				}
 			}
 
-			// Convert Document to String
+			// Convert Document to String with XML declaration
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+			transformer.setOutputProperty(STANDALONE, "yes");
+			transformer.setOutputProperty(INDENT, "no");
+			
 			StringWriter writer = new StringWriter();
 			transformer.transform(new DOMSource(doc), new StreamResult(writer));
 
@@ -201,7 +223,7 @@ public class AAINOCService {
 	 * @param tagName Element tag name
 	 * @param value Element value
 	 */
-	private void addElement(Document doc, Element parent, String tagName, String value) {
+	private void addElement(org.w3c.dom.Document doc, Element parent, String tagName, String value) {
 		Element element = doc.createElement(tagName);
 		element.appendChild(doc.createTextNode(value != null ? value : ""));
 		parent.appendChild(element);
@@ -379,30 +401,37 @@ public class AAINOCService {
 		try {
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			Document doc = docBuilder.newDocument();
+			org.w3c.dom.Document doc = docBuilder.newDocument();
+			doc.setXmlStandalone(true);
 			
 			Element rootElement = doc.createElement(authorityName + "DETAILS");
 			doc.appendChild(rootElement);
 			
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(javax.xml.transform.OutputKeys.ENCODING, "UTF-8");
+			transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "no");
+			transformer.setOutputProperty(STANDALONE, "yes");
+			transformer.setOutputProperty(INDENT, "no");
+			
 			StringWriter writer = new StringWriter();
 			transformer.transform(new DOMSource(doc), new StreamResult(writer));
 			
 			return writer.toString();
 		} catch (Exception e) {
 			log.error("Error creating empty response", e);
-			return "<" + authorityName + "DETAILS></" + authorityName + "DETAILS>";
+			return "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\" ?><" + authorityName + "DETAILS></" + authorityName + "DETAILS>";
 		}
 	}
 
 	/**
 	 * Extracts coordinates from BPA GeoLocation
-	 * 
-	 * @param bpa BPA object
+	 *
+	 * @param bpa         BPA object
+	 * @param requestInfo
 	 * @return List of coordinates
 	 */
-	private List<SiteCoordinate> extractCoordinatesFromBPA(BPA bpa) {
+	private List<SiteCoordinate> extractCoordinatesFromBPA(BPA bpa, RequestInfo requestInfo) {
 		List<SiteCoordinate> coordinates = new ArrayList<>();
 
 		/*if (bpa == null || bpa.getLandInfo() == null || bpa.getLandInfo().getAddress() == null) {
@@ -420,15 +449,64 @@ public class AAINOCService {
 					.build();
 		}*/
 
+		Double buildingHeight = null;
+		if (bpa.getEdcrNumber() != null && !bpa.getEdcrNumber().isEmpty()) {
+			buildingHeight = edcrService.fetchBuildingHeight(bpa.getEdcrNumber(), requestInfo);
+		}
+		
 		SiteCoordinate coord = SiteCoordinate.builder()
 				.latitude("26 26 27.9")
 				.longitude("91 26 27.6")
 				.siteElevation(42.0)
-				.buildingHeight(12.0)
+				.buildingHeight(buildingHeight)
 				.structureNo(1)
 				.build();
 		coordinates.add(coord);
 		return coordinates;
+	}
+
+	/**
+	 * Gets document URLs from NOC documents mapped by document type
+	 * 
+	 * @param noc NOC object with documents
+	 * @return Map of document type to file URL
+	 */
+	private Map<String, String> getDocumentUrls(Noc noc) {
+		Map<String, String> documentUrls = new HashMap<>();
+		
+		if (noc == null || CollectionUtils.isEmpty(noc.getDocuments())) {
+			return documentUrls;
+		}
+
+		for (Document doc : noc.getDocuments()) {
+			if (doc == null || doc.getDocumentType() == null || doc.getFileStoreId() == null) {
+				continue;
+			}
+
+			String documentType = doc.getDocumentType().toUpperCase();
+			if (isValidDocumentType(documentType)) {
+				String fileUrl = fileStoreService.getFileUrl(doc.getFileStoreId(), noc.getTenantId());
+				if (fileUrl != null && !fileUrl.isEmpty()) {
+					documentUrls.put(documentType, fileUrl);
+				}
+			}
+		}
+
+		return documentUrls;
+	}
+
+	/**
+	 * Validates if document type is a valid AAI document type
+	 * 
+	 * @param documentType Document type to validate
+	 * @return true if valid
+	 */
+	private boolean isValidDocumentType(String documentType) {
+		return NOCConstants.DOC_TYPE_UNDERTAKING1A.equals(documentType) ||
+				NOCConstants.DOC_TYPE_SITEELEVATION.equals(documentType) ||
+				NOCConstants.DOC_TYPE_SITECORDINATES.equals(documentType) ||
+				NOCConstants.DOC_TYPE_AUTHORIZATION.equals(documentType) ||
+				NOCConstants.DOC_TYPE_PERMISSION.equals(documentType);
 	}
 
 }
