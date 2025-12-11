@@ -88,21 +88,13 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   
 
   const getSubmitReport = (data) => {
-    let formdata = [], inspectionOb = [];
-
-    if(data.status == "PENDING_DA_ENGINEER" || data.status == "PENDING_DD_AD_DEVELOPMENT_AUTHORITY") {
-      formdata = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
-      formdata?.length > 0 && formdata.map((ob,ind) => {
-        inspectionOb.push(ob)
-      })
-      //inspectionOb = inspectionOb.filter((ob) => ob.docs && ob.docs.length>0);
-    } else {
-      sessionStorage.removeItem("SUBMIT_REPORT_DATA")
-    }
-  
-    let submitReportinspection_pending = [ ...inspectionOb];
-    return submitReportinspection_pending;
-  }
+    let inspectionOb = [];
+      const formdata = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
+      if (formdata) {
+        inspectionOb.push(formdata.submitReport);  
+      }   
+    return inspectionOb;
+  };
 
   const getDocuments = (applicationData) => {
     let documentsformdata = JSON.parse(sessionStorage.getItem("OBPS_DOCUMENTS"));
@@ -111,6 +103,11 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       if(doc?.uploadedDocuments?.[0]?.values?.length > 0) documentList = [...documentList, ...doc?.uploadedDocuments?.[0]?.values];
       if(doc?.newUploadedDocs?.length > 0) documentList = [...documentList, ...doc?.newUploadedDocs]
     });
+    const submitReportFormdata = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
+    const nocDocuments = submitReportFormdata?.nocDetails?.AAI_NOC_DETAILS?.documents;
+    if (Array.isArray(nocDocuments) && nocDocuments.length > 0) {
+      documentList = [...documentList, ...nocDocuments];
+    }  
     return documentList;
   }
 
@@ -123,11 +120,21 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }
 
   async function submit(data) {
-    let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
+    const storedData = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA")) || {};
+    const submitReport = getSubmitReport(applicationData);
+    const nocList = storedData.nocList || [];
+    const nocDetails = storedData.nocDetails || {};
+    nocDetails.permitType = "Planning Permit";
     applicationData = {
       ...applicationData,
+      nocList: nocList,
       documents: getDocuments(applicationData),
-      additionalDetails: {...applicationData?.additionalDetails, submitReportinspection_pending:getSubmitReport(applicationData), pendingapproval: getPendingApprovals() },
+      additionalDetails: {
+        ...applicationData?.additionalDetails,
+        submitReportinspection_pending: submitReport,
+        nocDetails:nocDetails,
+        pendingapproval: getPendingApprovals()
+      },
        workflow:{
         action: action?.action,
         comment: data?.comments?.length > 0 ? data?.comments : null,
