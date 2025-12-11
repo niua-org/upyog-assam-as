@@ -56,8 +56,7 @@ public class NOCEvaluator {
 				applicable.add(type);
 			}
 		}
-
-		log.info("Applicable NOCs: " + applicable);
+		
 		return applicable;
 	}
 

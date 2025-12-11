@@ -91,7 +91,8 @@ public class BPAUtil {
 	 *            The tenantId of the BPA
 	 * @return request to search ApplicationType and etc from MDMS
 	 */
-	public List<ModuleDetail> getBPAModuleRequest() {
+	public List<ModuleDetail> getBPAModuleRequest(String tenantCode) {
+		
 
 		// master details for BPA module
 		List<MasterDetail> bpaMasterDtls = new ArrayList<>();
@@ -111,17 +112,12 @@ public class BPAUtil {
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE_MAPPING).build());
 //		New MDMS masters added for BPA
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.PERMISSIBLE_ZONE).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.BP_AUTHORITY).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.CONCERNED_AUTHORITIES).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.CONSTRUCTION_TYPE).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.DISTRICTS).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.PLANNING_AREA).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.PP_AUTHORITY).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.REVENUE_VILLAGE).build());
+		
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.RTP_CATEGORIES).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.STATES).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.ULB_WARD_DETAILS).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.VILLAGES).build());
+		
 
 		ModuleDetail bpaModuleDtls = ModuleDetail.builder().masterDetails(bpaMasterDtls)
 				.moduleName(BPAConstants.BPA_MODULE).build();
@@ -141,8 +137,52 @@ public class BPAUtil {
 				.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE).build());
 		ModuleDetail nocMDtl = ModuleDetail.builder().masterDetails(nocMasterDetails)
 				.moduleName(BPAConstants.NOC_MODULE).build();
+		
+		List<MasterDetail> egovLocationMasterDetails = new ArrayList<>();
+		egovLocationMasterDetails.add(MasterDetail.builder().name(BPAConstants.EGOV_LOCATION).build());
+		
+		ModuleDetail egovLocationMasterDtl = ModuleDetail.builder().masterDetails(egovLocationMasterDetails)
+				.moduleName(BPAConstants.EGOV_LOCATION).build();
+		
+		List<MasterDetail> tenantMasterDetails = new ArrayList<>();
+		tenantMasterDetails.add(MasterDetail.builder().name(BPAConstants.TENANTS).build());
+		ModuleDetail tenantsMasterDtl = ModuleDetail.builder().masterDetails(tenantMasterDetails)
+				.moduleName(BPAConstants.TENANT).build();
+		
 
-		return Arrays.asList(bpaModuleDtls, commonMasterMDtl, nocMDtl);
+		return Arrays.asList(bpaModuleDtls, commonMasterMDtl, nocMDtl, egovLocationMasterDtl, tenantsMasterDtl);
+
+	}
+
+	/**
+	 * Builds and returns the list of MDMS {@link ModuleDetail} required for
+	 * fetching tenant-level BPA module data from MDMS.
+	 * <p>
+	 * This method prepares the MDMS request structure specifically for:
+	 * <ul>
+	 *     <li>{@code EGOV_LOCATION}</li>
+	 *     <li>{@code TENANT_BOUNDARY}</li>
+	 * </ul>
+	 * These modules are used to extract ward, village, and boundary-level details
+	 * needed during BPA validations.
+	 * </p>
+	 *
+	 * @param tenantCode The tenant for which the MDMS request structure is needed.
+	 *                   (Currently not used in logic but kept for future extensibility.)
+	 *
+	 * @return A list containing the {@link ModuleDetail} definitions required for
+	 *         MDMS lookup at tenant level.
+	 */
+	public List<ModuleDetail> getBPAModuleRequestTenant(String tenantCode) {
+
+		List<MasterDetail> egovLocationMasterDetails = new ArrayList<>();
+		egovLocationMasterDetails.add(MasterDetail.builder().name(BPAConstants.EGOV_LOCATION).build());
+		egovLocationMasterDetails.add(MasterDetail.builder().name(BPAConstants.TENANT_BOUNDARY).build());
+		ModuleDetail egovLocationMasterDtl = ModuleDetail.builder().masterDetails(egovLocationMasterDetails)
+				.moduleName(BPAConstants.EGOV_LOCATION).build();
+		
+		
+		return Arrays.asList(egovLocationMasterDtl);
 
 	}
 
@@ -153,8 +193,13 @@ public class BPAUtil {
 	 * @return
 	 */
 	public MdmsCriteriaReq getMDMSRequest(RequestInfo requestInfo, String tenantId) {
-		List<ModuleDetail> moduleRequest = getBPAModuleRequest();
+		List<ModuleDetail> moduleRequest = null;
+		if (tenantId != null && tenantId.contains(".")) {
 
+		 moduleRequest = getBPAModuleRequestTenant(tenantId);
+		} else {
+			moduleRequest = getBPAModuleRequest(tenantId);
+		}
 		List<ModuleDetail> moduleDetails = new LinkedList<>();
 		moduleDetails.addAll(moduleRequest);
 

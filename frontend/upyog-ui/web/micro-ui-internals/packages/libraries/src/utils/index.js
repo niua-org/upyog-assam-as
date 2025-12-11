@@ -171,18 +171,15 @@ const fsmAccess = () => {
   return FSM_ACCESS?.length > 0;
 };
 
-const NOCAccess = () => {
+const NOCAccess = (dynamicRoles) => {
   const userInfo = Digit.UserService.getUser();
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
-
-  const NOC_ROLES = [
-    "FIRE_NOC_APPROVER"
-  ]
-
+  
+  const NOC_ROLES = dynamicRoles;
   const NOC_ACCESS = userRoles?.filter((role) => NOC_ROLES?.includes(role));
-
   return NOC_ACCESS?.length > 0;
 };
+
 
 const BPAREGAccess = () => {
   const userInfo = Digit.UserService.getUser();
@@ -215,7 +212,7 @@ const BPAAccess = () => {
     "BPA_STRUCTURALENGINEER",
     "BPA_SUPERVISOR",
     "BPA_DOC_VERIFIER",
-    "EMPLOYEE",
+    "EMPLOYEE"
   ];
 
   const BPA_ACCESS = userRoles?.filter((role) => BPA_ROLES?.includes(role));

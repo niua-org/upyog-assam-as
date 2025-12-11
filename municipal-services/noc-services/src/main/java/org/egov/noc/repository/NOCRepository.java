@@ -3,7 +3,9 @@ package org.egov.noc.repository;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.egov.common.exception.InvalidTenantIdException;
@@ -86,17 +88,22 @@ public class NOCRepository {
 	}
 	
 	/**
-	 * Retrieves Source reference ID and Tenant ID of NOC records from the database
+	 * Retrieves Source reference ID, Tenant ID and documents of NOC records from the database
 	 * based on the given search criteria. Builds a dynamic SQL query using NOC type
 	 * and application status filters. This method handles multi-tenant scenarios by
 	 * using state-level tenant for schema replacement.
 	 *
 	 * @param criteria search filters for NOC type and status
-	 * @return list of matching NOC records
+	 * @return list of matching NOC records with documents
 	 */
 	public List<Noc> getNewAAINocData(NocSearchCriteria criteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		StringBuilder query = new StringBuilder("SELECT NOC.SOURCEREFID, NOC.TENANTID FROM EG_NOC NOC WHERE 1=1");
+		StringBuilder query = new StringBuilder("SELECT NOC.SOURCEREFID, NOC.TENANTID, NOC.ID as NOC_ID, ")
+				.append("NOCDOC.ID as NOC_DOC_ID, NOCDOC.DOCUMENTTYPE, NOCDOC.FILESTOREID, ")
+				.append("NOCDOC.DOCUMENTUID ")
+				.append("FROM EG_NOC NOC ")
+				.append("LEFT OUTER JOIN EG_NOC_DOCUMENT NOCDOC ON NOCDOC.NOCID = NOC.ID ")
+				.append("WHERE 1=1");
 
 		String nocType = criteria.getNocType();
 		if (nocType != null && !nocType.trim().isEmpty()) {
@@ -121,15 +128,37 @@ public class NOCRepository {
 		}
 
 		try {
-//			String stateLevelTenant = centralInstanceUtil.getStateLevelTenant(tenantId);
 			String finalQuery = centralInstanceUtil.replaceSchemaPlaceholder(query.toString(), criteria.getTenantId());
 			
-			return jdbcTemplate.query(finalQuery, preparedStmtList.toArray(), (rs, rowNum) -> {
-				Noc noc = new Noc();
-				noc.setSourceRefId(rs.getString("SOURCEREFID"));
-				noc.setTenantId(rs.getString("TENANTID"));
+			Map<String, Noc> nocMap = new HashMap<>();
+			jdbcTemplate.query(finalQuery, preparedStmtList.toArray(), (rs, rowNum) -> {
+				String nocId = rs.getString("NOC_ID");
+				Noc noc = nocMap.get(nocId);
+				
+				if (noc == null) {
+					noc = new Noc();
+					noc.setId(nocId);
+					noc.setSourceRefId(rs.getString("SOURCEREFID"));
+					noc.setTenantId(rs.getString("TENANTID"));
+					noc.setDocuments(new ArrayList<>());
+					nocMap.put(nocId, noc);
+				}
+				
+				String documentId = rs.getString("NOC_DOC_ID");
+				if (documentId != null && !documentId.trim().isEmpty()) {
+					org.egov.noc.web.model.Document document = new org.egov.noc.web.model.Document();
+					document.setId(documentId);
+					document.setDocumentType(rs.getString("DOCUMENTTYPE"));
+					document.setFileStoreId(rs.getString("FILESTOREID"));
+					document.setDocumentUid(rs.getString("DOCUMENTUID"));
+					
+					noc.addDocumentsItem(document);
+				}
+				
 				return noc;
 			});
+			
+			return new ArrayList<>(nocMap.values());
 		} catch (InvalidTenantIdException e) {
 			throw new CustomException("EG_NOC_TENANTID_ERROR",
 					"TenantId length is not sufficient to replace query schema in a multi state instance");

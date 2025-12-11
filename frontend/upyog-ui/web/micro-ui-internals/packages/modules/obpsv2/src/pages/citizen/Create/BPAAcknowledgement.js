@@ -1,5 +1,5 @@
 import { Banner, Card, LinkButton, Loader, Row, StatusTable, SubmitBar, Toast,CardText } from "@upyog/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { bpaPayload } from "../../../utils";
@@ -98,9 +98,21 @@ const BPAAcknowledgement = ({ data, onSuccess }) => {
       </StatusTable>
       {/* {mutation.isSuccess && <SubmitBar label={t("BPA_DOWNLOAD_ACKNOWLEDGEMENT")} onSubmit={handleDownloadPdf} />} */}
       {user?.type === "CITIZEN" ? (
-        <Link to={`/upyog-ui/citizen`}>
-          <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
-        </Link>
+        <>
+          {flow === "edit" && (
+            <Link to={`/upyog-ui/citizen/obpsv2/rtp/inbox`}>
+              <LinkButton label={t("CORE_COMMON_GO_BACK_TO_INBOX")} />
+            </Link>
+          )}
+          {mutation.isSuccess && flow === "edit" && (
+            <Link to={`/upyog-ui/citizen/obpsv2/application/${mutation.data?.bpa?.[0]?.applicationNo}/${tenantId}`}>
+              <LinkButton label={t("CORE_COMMON_GO_BACK_TO_APPLICATION")} />
+            </Link>
+          )}
+          <Link to={`/upyog-ui/citizen`}>
+            <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        </>
       ) : (
         <Link to={`/upyog-ui/employee`}>
           <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />

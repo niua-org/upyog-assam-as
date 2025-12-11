@@ -71,7 +71,7 @@ public class NOCController {
 
 	@PostMapping(value = "/_create")
 	public ResponseEntity<NocResponse> create(@Valid @RequestBody NocRequest nocRequest) {
-		List<Noc> nocList = nocService.create(nocRequest);
+		List<Noc> nocList = nocService.createNocs(nocRequest);
 		NocResponse response = NocResponse.builder().noc(nocList)
 				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(nocRequest.getRequestInfo(), true))
 				.build();

@@ -36,4 +36,5 @@ public class BpaApplication {
 	private NocasStatus nocasStatus;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	private Noc noc;
 }

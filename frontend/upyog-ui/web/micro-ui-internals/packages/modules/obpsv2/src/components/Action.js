@@ -21,7 +21,6 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
   const [showGisResponse, setShowGisResponse] = useState(false);
   const [gisValidationSuccess, setGisValidationSuccess] = useState(false);
 
-  const sessionAreaMappingData = Digit.SessionStorage.get("CITIZEN.AREA.MAPPING");
   const WORKFLOW_ACTIONS = [
     "APPROVE",
     "ACCEPT",
@@ -297,8 +296,8 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           },
         },
         gisRequest: {
-          tenantId: tenantId,
-          planningAreaCode:sessionAreaMappingData?.planningArea?.gisCode,
+          tenantId: bpaDetails?.bpa?.[0]?.tenantId,
+          planningAreaCode:bpaDetails?.bpa?.[0]?.additionalDetails?.gisCode,
           applicationNo,
           rtpiId: bpaDetails?.bpa?.[0]?.rtpDetails?.rtpUUID,
         },

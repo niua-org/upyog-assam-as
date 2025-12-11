@@ -1,13 +1,16 @@
 package org.egov.bpa.service;
 
 import static org.egov.bpa.util.BPAConstants.INPROGRESS_STATUS;
+import static org.egov.bpa.util.BPAConstants.ACTION_INITIATE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
@@ -20,6 +23,7 @@ import org.egov.bpa.web.model.RequestInfoWrapper;
 import org.egov.bpa.web.model.NOC.Noc;
 import org.egov.bpa.web.model.NOC.NocRequest;
 import org.egov.bpa.web.model.NOC.NocResponse;
+import org.egov.bpa.web.model.NOC.NocType;
 import org.egov.bpa.web.model.NOC.Workflow;
 import org.egov.bpa.web.model.NOC.enums.ApplicationType;
 import org.egov.tracer.model.CustomException;
@@ -52,36 +56,137 @@ public class NocService {
 	@Autowired
 	private ObjectMapper mapper;
 
+	/**
+	 * Creates the list of applicable NOC types for a BPA application based on
+	 * permit type, EDCR response, site engineer suggestions and MDMS NOC mapping.
+	 *
+	 * @param bpaRequest The BPA request containing application details and request
+	 *                   info.
+	 * @param mdmsData   MDMS master data containing NOC type mapping configuration.
+	 */
 	@SuppressWarnings("unchecked")
-	
 	public void createNocRequest(BPARequest bpaRequest, Object mdmsData) {
 
-		BPA bpa = bpaRequest.getBPA();
+		List<String> nocTypes = new ArrayList<>();
+
 		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
 
-		Map<String, String> nocSourceCnofig = config.getNocSourceConfig();
-		String nocPath = BPAConstants.NOC_TYPE_MAPPING_PATH.replace("{1}", "Planning Permit");
-		List<Object> nocMappingResponse = (List<Object>) JsonPath.read(mdmsData, nocPath);
-		Map<String, List<String>> nocTypeConditionsMap = nocMappingResponse.stream()
-				.map(obj -> (Map<String, Object>) obj)
-				.collect(Collectors.toMap(m -> (String) m.get("type"), m -> (List<String>) m.get("conditions")));
-
-		if (!CollectionUtils.isEmpty(nocTypeConditionsMap)) {
-			List<String> nocTypes = nocEval.getApplicableNOCList(nocTypeConditionsMap, edcrResponse);
-			log.info("Applicable NOCs are, "+nocTypes);
-			for (String nocType : nocTypes) {
-				NocRequest nocRequest = NocRequest.builder()
-						.noc(Noc.builder().tenantId(bpa.getTenantId())
-								.applicationType(ApplicationType.valueOf(BPAConstants.NOC_APPLICATIONTYPE))
-								.sourceRefId(bpa.getApplicationNo()).nocType(nocType).source(nocSourceCnofig.get(edcrResponse.get(BPAConstants.APPLICATIONTYPE)))
-								.build())
-						.requestInfo(bpaRequest.getRequestInfo()).build();
-				createNoc(nocRequest);
-			}
-		} else {
-			log.debug("NOC Mapping is not found!!");
+		BPA bpa = bpaRequest.getBPA();
+		Object additionalDetails = bpa.getAdditionalDetails();
+		String permitType = null;
+		if (additionalDetails instanceof Map) {
+			Map<String, Object> adMap = (Map<String, Object>) additionalDetails;
+			permitType = (String) adMap.get("permitType");
+		}
+		
+		if (StringUtils.isBlank(permitType)) {
+			throw new CustomException("ERROR", "Permit type can't be null.");
 		}
 
+		String nocPath = BPAConstants.NOC_TYPE_MAPPING_PATH.replace("{1}", permitType);
+		List<Object> nocMappingResponse = (List<Object>) JsonPath.read(mdmsData, nocPath);
+
+		// fetching Site Engr NOCs
+		String SiteEngrfilterExp = "$.[?(@.source=='SITE_ENGINEER')].type";
+		Set<String> allowedNocsBySiteEng = new HashSet<>(JsonPath.read(nocMappingResponse, SiteEngrfilterExp));
+		nocTypes.addAll(fetchNOCBySiteEngr(bpa.getNocList(), allowedNocsBySiteEng));
+
+		// fetching other source NOCs
+		String OthersfilterExp = "$.[?(@.source!='SITE_ENGINEER')]";
+		List<Map<String, Object>> nocByOthers = JsonPath.read(nocMappingResponse, OthersfilterExp);
+		nocTypes.addAll(fetchNOCByOthers(edcrResponse, nocByOthers));
+
+		// CREATE NOCs
+		String applType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
+		createNOCList(bpaRequest, nocTypes, applType);
+
+	}
+
+	/**
+	 * Builds a list of NOC request objects for each applicable NOC type and
+	 * initiates NOC creation workflow.
+	 *
+	 * @param bpaRequest The BPA request containing tenant and application details.
+	 * @param nocTypes   List of applicable NOC types to be created.
+	 * @param applType   Application type derived from EDCR, used to determine NOC
+	 *                   source.
+	 */
+	private void createNOCList(BPARequest bpaRequest, List<String> nocTypes, String applType) {
+
+		List<Noc> nocs = new ArrayList<>();
+		String tenantId = bpaRequest.getBPA().getTenantId();
+		String applicationNo = bpaRequest.getBPA().getApplicationNo();
+		ApplicationType applicationType = ApplicationType.valueOf(BPAConstants.NOC_APPLICATIONTYPE);
+		String source = config.getNocSourceConfig().get(applType);
+		Workflow workflow = Workflow.builder().action(ACTION_INITIATE).build();
+
+		log.info("Applicable NOCs are, " + nocTypes);
+
+		for (String nocType : nocTypes) {
+
+			Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
+					.nocType(nocType).source(source).workflow(workflow).build();
+			nocs.add(noc);
+		}
+
+		NocRequest nocRequest = NocRequest.builder().nocList(nocs).requestInfo(bpaRequest.getRequestInfo()).build();
+
+		createNoc(nocRequest);
+	}
+
+	/**
+	 * Determines the applicable NOCs whose eligibility depends on EDCR parameters.
+	 * Reads NOC conditions from MDMS and evaluates them against EDCR response.
+	 *
+	 * @param edcrResponse EDCR key–value details fetched for the application.
+	 * @param nocByOthers  List of NOC mapping entries other than Site Engineer
+	 *                     source.
+	 * @return List of applicable NOC types based on EDCR evaluation.
+	 */
+	private List<String> fetchNOCByOthers(Map<String, String> edcrResponse, List<Map<String, Object>> nocByOthers) {
+
+		Map<String, List<String>> nocTypeConditionsByOthers = nocByOthers.stream()
+				.collect(Collectors.toMap(n -> (String) n.get("type"), n -> (List<String>) n.get("conditions")));
+
+		if (!CollectionUtils.isEmpty(nocTypeConditionsByOthers)) {
+			return nocEval.getApplicableNOCList(nocTypeConditionsByOthers, edcrResponse);
+		} else {
+			log.debug("NOC Mapping is not found!!");
+			return new ArrayList<>();
+		}
+	}
+
+	/**
+	 * Filters the NOCs suggested by Site Engineer based on the list of allowed NOCs
+	 * configured in MDMS. Invalid suggestions are logged and ignored.
+	 *
+	 * @param siteEngrNocs         List of NOCs suggested by Site Engineer in the
+	 *                             BPA request.
+	 * @param allowedNocsBySiteEng Set of NOC types allowed for SITE_ENGINEER as per
+	 *                             MDMS mapping.
+	 * @return List of valid NOC types requested by Site Engineer.
+	 */
+	private List<String> fetchNOCBySiteEngr(List<NocType> siteEngrNocs, Set<String> allowedNocsBySiteEng) {
+
+		List<String> nocTypes = new ArrayList<>();
+
+		if (siteEngrNocs == null || siteEngrNocs.isEmpty()) {
+			log.info("No NOCs suggested by Site Engineer.");
+			return nocTypes;
+		}
+
+		List<String> siteEngSuggestedNocs = siteEngrNocs.stream().map(NocType::toString).collect(Collectors.toList());
+
+		for (String nocType : siteEngSuggestedNocs) {
+			if (allowedNocsBySiteEng.contains(nocType)) {
+				nocTypes.add(nocType);
+			} else {
+				log.warn("Site Engineer suggested invalid NOC: {}", nocType);
+			}
+		}
+
+		log.info("NOCs requested by Site Engineer : " + nocTypes);
+		return nocTypes;
 	}
 
 	public void createPreApproveNocRequest(BPARequest bpaRequest, Object mdmsData, List<String> edcrSuggestedNocs,
@@ -162,10 +267,8 @@ public class NocService {
 
 		LinkedHashMap<String, Object> responseMap = null;
 		try {
-			log.debug("Creating NOC application with nocType : " + nocRequest.getNoc().getNocType());
 			responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository.fetchResult(uri, nocRequest);
 			NocResponse nocResponse = mapper.convertValue(responseMap, NocResponse.class);
-			log.debug("NOC created with applicationNo : " + nocResponse.getNoc().get(0).getApplicationNo());
 		} catch (Exception se) {
 			throw new CustomException(BPAErrorConstants.NOC_SERVICE_EXCEPTION,
 					" Failed to create NOC of Type " + nocRequest.getNoc().getNocType());

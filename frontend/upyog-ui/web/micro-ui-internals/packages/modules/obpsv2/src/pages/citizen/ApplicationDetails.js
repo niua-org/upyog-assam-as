@@ -77,7 +77,6 @@ import {
     const [showGisResponse, setShowGisResponse] = useState(false);
     const [gisValidationSuccess, setGisValidationSuccess] = useState(false);
     const [gisData, setGisData] = useState(null);
-    const sessionAreaMappingData = Digit.SessionStorage.get("CITIZEN.AREA.MAPPING");
     const { data: mdmsData } = Digit.Hooks.useEnabledMDMS("as", "BPA", [{ name: "PermissibleZone" }], {
     select: (data) => {
       return data?.BPA?.PermissibleZone || {};
@@ -335,8 +334,8 @@ import {
              },
            },
            gisRequest: {
-             tenantId: tenantId,
-             planningAreaCode:sessionAreaMappingData?.planningArea?.gisCode,
+             tenantId: data?.bpa?.[0]?.tenantId,
+             planningAreaCode:data?.bpa?.[0]?.additionalDetails?.gisCode,
              applicationNo: data?.bpa?.[0]?.applicationNo,
              rtpiId: data?.bpa?.[0]?.rtpDetails?.rtpUUID,
            },

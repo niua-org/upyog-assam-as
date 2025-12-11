@@ -64,6 +64,9 @@ const CheckPage = ({ onSubmit, value = {} }) => {
   const { form22, form23A, form23B, loading } = useScrutinyFormDetails("DCR102025WDMEL", tenantId);
   const {areaMapping={}, applicant = {}, address = {}, land = {}, documents = {}, propertyValidation ={} } = value;
   const flow = window.location.href.includes("editApplication") ? "editApplication" : "buildingPermit"
+  const baseRoute = flow === "editApplication" 
+    ? `/upyog-ui/citizen/obpsv2/editApplication/${window.location.pathname.split("/").find((seg, i, arr) => arr[i - 1] === "editApplication")}`
+    : `/upyog-ui/citizen/obpsv2/building-permit`
   const setDeclarationHandler = () => {
     setAgree(!agree);
   };
@@ -243,7 +246,7 @@ const handleDownloadPdf = async (formType) => {
             {t("BPA_AREA_MAPPING")}
           </CardSubHeader>
           <ActionButton
-            jumpTo={`/upyog-ui/citizen/obpsv2/building-permit/area-mapping`}
+            jumpTo={`${baseRoute}/area-mapping`}
           />
         </div>
 
@@ -302,7 +305,7 @@ const handleDownloadPdf = async (formType) => {
             {t("BPA_PROPERTY_DETAILS")}
           </CardSubHeader>
           <ActionButton
-            jumpTo={`/upyog-ui/citizen/obpsv2/building-permit/property-validation`}
+            jumpTo={`${baseRoute}/property-validation`}
           />
         </div>
         <StatusTable>
@@ -329,7 +332,7 @@ const handleDownloadPdf = async (formType) => {
             {t("BPA_APPLICANT_DETAILS")}
           </CardSubHeader>
           <ActionButton
-            jumpTo={`/upyog-ui/citizen/obpsv2/building-permit/applicant-details`}
+            jumpTo={`${baseRoute}/applicant-details`}
           />
         </div>
 
@@ -388,7 +391,7 @@ const handleDownloadPdf = async (formType) => {
             {t("BPA_ADDRESS_DETAILS")}
           </CardSubHeader>
           <ActionButton
-            jumpTo={`/upyog-ui/citizen/obpsv2/building-permit/address-details`}
+            jumpTo={`${baseRoute}/address-details`}
           />
         </div>
 
@@ -502,7 +505,7 @@ const handleDownloadPdf = async (formType) => {
             {t("BPA_LAND_DETAILS")}
           </CardSubHeader>
           <ActionButton
-            jumpTo={`/upyog-ui/citizen/obpsv2/building-permit/land-details`}
+            jumpTo={`${baseRoute}/land-details`}
           />
         </div>
 

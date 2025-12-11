@@ -69,7 +69,7 @@ public class Noc {
 	  @JsonProperty("documents")
 	  private List<Document> documents;
 
-	  @JsonProperty("dev-helper/sql-scripts/workflow")
+	  @JsonProperty("workflow")
 	  private Workflow workflow;
 
 	  @JsonProperty("auditDetails")

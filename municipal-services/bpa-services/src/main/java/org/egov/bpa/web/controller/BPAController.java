@@ -122,13 +122,7 @@ public class BPAController {
 		Object response = bpaService.getFeeEstimateFromBpaCalculator(bpaRequest);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
-	@PostMapping(value = { "/v2/_estimate" })
-	public ResponseEntity<Object> getFeeEstimatev2(@RequestBody CalculationReq bpaRequest) {
-		Object response = bpaService.getFeeEstimateFromBpaCalculatorV2(bpaRequest);
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-	
+
 	@PostMapping(value = "/_rtpsearch")
 	public ResponseEntity<UserDetailResponse> rtpSearch(@Valid @RequestBody UserSearchRequest userSearchRequest) {
 		

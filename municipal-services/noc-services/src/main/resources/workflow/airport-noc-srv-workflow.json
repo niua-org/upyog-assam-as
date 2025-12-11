@@ -1,11 +1,11 @@
  {
-        "tenantId": "pg",
+        "tenantId": "as",
         "businessService": "AIRPORT_NOC_SRV",
         "business": "noc-services",
         "businessServiceSla": 5184000000,
         "states": [
           {
-            "tenantId": "pg",
+            "tenantId": "as",
             "sla": null,
             "state": null,
             "applicationStatus": "INITIATED",
@@ -15,25 +15,21 @@
             "isStateUpdatable": true,
             "actions": [
               {
-                "tenantId": "pg",
+                "tenantId": "as",
                 "currentState": null,
                 "action": "INITIATE",
                 "nextState": "INITIATED",
                 "roles": [
                   "CITIZEN",
                   "BPA_ARCHITECT",
-                  "BPA_ENGINEER",
-                  "BPA_BUILDER",
-                  "BPA_STRUCTURALENGINEER",
-                  "BPA_TOWNPLANNER",
-                  "BPA_SUPERVISOR"
+                  "BPA_ENGINEER"
                 ],
                 "active": true
               }
             ]
           },
           {
-            "tenantId": "pg",
+            "tenantId": "as",
             "sla": null,
             "state": "INITIATED",
             "applicationStatus": "INPROGRESS",
@@ -43,17 +39,7 @@
             "isStateUpdatable": false,
             "actions": [
               {
-                "tenantId": "pg",
-                "currentState": "INITIATED",
-                "action": "REJECT",
-                "nextState": "REJECTED",
-                "roles": [
-                  "AIRPORT_AUTHORITY_APPROVER"
-                ],
-                "active": true
-              },
-              {
-                "tenantId": "pg",
+                "tenantId": "as",
                 "currentState": "INITIATED",
                 "action": "APPROVE",
                 "nextState": "APPROVED",
@@ -63,21 +49,19 @@
                 "active": true
               },
               {
-                "tenantId": "pg",
+                "tenantId": "as",
                 "currentState": "INITIATED",
-                "action": "VOID",
-                "nextState": "VOIDED",
+                "action": "REJECT",
+                "nextState": "REJECTED",
                 "roles": [
-                  "BPA_VERIFIER",
-                  "BPA_FIELD_INSPECTOR",
-                  "BPA_NOC_VERIFIER"
+                  "AIRPORT_AUTHORITY_APPROVER"
                 ],
                 "active": true
               }
             ]
           },
           {
-            "tenantId": "pg",
+            "tenantId": "as",
             "sla": null,
             "state": "REJECTED",
             "applicationStatus": "REJECTED",
@@ -88,21 +72,10 @@
             "actions": null
           },
           {
-            "tenantId": "pg",
+            "tenantId": "as",
             "sla": null,
             "state": "APPROVED",
             "applicationStatus": "APPROVED",
-            "docUploadRequired": false,
-            "isStartState": false,
-            "isTerminateState": true,
-            "isStateUpdatable": false,
-            "actions": null
-          },
-          {
-            "tenantId": "pg",
-            "sla": null,
-            "state": "VOIDED",
-            "applicationStatus": "VOIDED",
             "docUploadRequired": false,
             "isStartState": false,
             "isTerminateState": true,

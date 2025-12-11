@@ -67,7 +67,11 @@ public class BPAConstants {
 	// mdms path codes
 
 	public static final String BPA_JSONPATH_CODE = "$.MdmsRes.BPA";
+	
+	public static final String EGOV_LOCATION_PATH = "$.MdmsRes.egov-location";
 
+	public static final String TENANT_PATH = "$.MdmsRes.tenant";
+	
 	public static final String COMMON_MASTER_JSONPATH_CODE = "$.MdmsRes.common-masters";
 
 	// error constants
@@ -111,14 +115,34 @@ public class BPAConstants {
 	public static final String BP_AUTHORITY = "bpAuthorities";
 
 	public static final String CONCERNED_AUTHORITIES = "concernedAuthorities";
+	
+	public static final String TENANT_BOUNDARY_JSON = "$.MdmsRes.egov-location.TenantBoundary";
 
 	public static final String CONSTRUCTION_TYPE = "constructionTypes";
 
 	public static final String DISTRICTS = "districts";
+	
+	public static final String DISTRICT_CODE = "districtCode";
 
 	public static final String PLANNING_AREA = "planningAreas";
+	
+	public static final String CODES = "code";
+	
+	public static final String LABEL = "label";
+	
+	public static final String REVENUE_VILLAGE_CODE = "RevenueVillage";
+	
+	public static final String VILLAGE_CODE = "Village";
+	
+	public static final String CHILDREN = "children";
+	
+	public static final String BOUNDARY = "boundary";
 
 	public static final String PP_AUTHORITY = "ppAuthorities";
+	
+	public static final String PP_AUTHORIT = "ppAuthority";
+	
+	public static final String PP_AUTHORITY_CODE = "ppAuthorityCode";
 
 	public static final String REVENUE_VILLAGE = "revenueVillages";
 
@@ -130,6 +154,15 @@ public class BPAConstants {
 
 	public static final String VILLAGES = "villages";
 
+	public static final String EGOV_LOCATION = "egov-location";
+	
+	public static final String TENANT_BOUNDARY = "TenantBoundary";
+	
+	public static final String PA_CODE = "planningAreaCode";
+	
+	public static final String TENANTS = "tenants";
+	
+	public static final String TENANT = "tenant";
 
 	// FINANCIAL YEAR
 
@@ -302,7 +335,7 @@ public class BPAConstants {
 	public static final String NOCTYPE_REQUIRED_MAP = "$.MdmsRes.BPA.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\")].nocTypes";
 	public static final String NOCTYPE_OFFLINE_MAP = "$.MdmsRes.NOC.NocType[?(@.mode==\"offline\")].code";	
 	public static final String NOC_TRIGGER_STATE_MAP = "$.MdmsRes.BPA.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\")].nocTriggerState";
-	public static final String NOC_TYPE_MAPPING_PATH = "$.MdmsRes.BPA.NocTypeMapping[?(@.permitType=='{1}')].nocs[?(@.source!='SITE_ENGINEER')]";
+	public static final String NOC_TYPE_MAPPING_PATH = "$.MdmsRes.BPA.NocTypeMapping[?(@.permitType=='{1}')].nocs[*]";
 
 	// SMS Notification messages
 	public static final String APP_CREATE = "APPLICATION_CREATE_MSG";

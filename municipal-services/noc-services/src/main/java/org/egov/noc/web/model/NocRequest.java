@@ -1,5 +1,6 @@
 package org.egov.noc.web.model;
 
+import java.util.List;
 import java.util.Objects;
 
 import javax.validation.Valid;
@@ -24,6 +25,9 @@ public class NocRequest   {
 
   @JsonProperty("Noc")
   private Noc noc = null;
+
+	@JsonProperty("NocList")
+	private List<Noc> nocList = null;
 
   public NocRequest requestInfo(RequestInfo requestInfo) {
     this.requestInfo = requestInfo;
@@ -65,6 +69,14 @@ public class NocRequest   {
     this.noc = noc;
   }
 
+	@Valid
+	public List<Noc> getNocList() {
+		return nocList;
+	}
+
+	public void setNocList(List<Noc> nocList) {
+		this.nocList = nocList;
+	}
 
   @Override
   public boolean equals(java.lang.Object o) {

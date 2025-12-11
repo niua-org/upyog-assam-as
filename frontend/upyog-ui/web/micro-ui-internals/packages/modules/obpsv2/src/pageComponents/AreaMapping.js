@@ -8,23 +8,23 @@ const AreaMapping = ({ t, config, onSelect, formData, searchResult }) => {
   const sessionData = Digit.SessionStorage.get("CITIZEN.AREA.MAPPING");
 
   // State for all dropdown values
-  const [district, setDistrict] = useState(sessionData?.district || formData?.areaMapping?.district || (searchResult?.areaMapping?.district ? { code: searchResult.areaMapping.district, name: searchResult.areaMapping.district, i18nKey: searchResult.areaMapping.district } : ""));
+  const [district, setDistrict] = useState(formData?.areaMapping?.district || (searchResult?.areaMapping?.district ? { code: searchResult.areaMapping.district, name: searchResult.areaMapping.district, i18nKey: searchResult.areaMapping.district } : "") || sessionData?.district);
 
-  const [planningArea, setPlanningArea] = useState(sessionData?.planningArea || formData?.areaMapping?.planningArea || (searchResult?.areaMapping?.planningArea ? { code: searchResult.areaMapping.planningArea, name: searchResult.areaMapping.planningArea, i18nKey: searchResult.areaMapping.planningArea } : ""));
+  const [planningArea, setPlanningArea] = useState(formData?.areaMapping?.planningArea || (searchResult?.areaMapping?.planningArea ? { code: searchResult.areaMapping.planningArea, name: searchResult.areaMapping.planningArea, i18nKey: searchResult.areaMapping.planningArea } : "") || sessionData?.planningArea);
 
-  const [ppAuthority, setPpAuthority] = useState(sessionData?.ppAuthority || formData?.areaMapping?.ppAuthority || (searchResult?.areaMapping?.planningPermitAuthority ? { code: searchResult.areaMapping.planningPermitAuthority, name: searchResult.areaMapping.planningPermitAuthority, i18nKey: searchResult.areaMapping.planningPermitAuthority } : ""));
+  const [ppAuthority, setPpAuthority] = useState(formData?.areaMapping?.ppAuthority || (searchResult?.areaMapping?.planningPermitAuthority ? { code: searchResult.areaMapping.planningPermitAuthority, name: searchResult.areaMapping.planningPermitAuthority, i18nKey: searchResult.areaMapping.planningPermitAuthority } : "") || sessionData?.ppAuthority);
 
-  const [concernedAuthority, setConcernedAuthority] = useState(sessionData?.concernedAuthority || formData?.areaMapping?.concernedAuthority || (searchResult?.areaMapping?.concernedAuthority ? { code: searchResult.areaMapping.concernedAuthority, name: searchResult.areaMapping.concernedAuthority, i18nKey: searchResult.areaMapping.concernedAuthority } : ""));
+  const [concernedAuthority, setConcernedAuthority] = useState(formData?.areaMapping?.concernedAuthority || (searchResult?.areaMapping?.concernedAuthority ? { code: searchResult.areaMapping.concernedAuthority, name: searchResult.areaMapping.concernedAuthority, i18nKey: searchResult.areaMapping.concernedAuthority } : "") || sessionData?.concernedAuthority);
 
-  const [bpAuthority, setBpAuthority] = useState(sessionData?.bpAuthority || formData?.areaMapping?.bpAuthority || (searchResult?.areaMapping?.buildingPermitAuthority ? { code: searchResult.areaMapping.buildingPermitAuthority, name: searchResult.areaMapping.buildingPermitAuthority, i18nKey: searchResult.areaMapping.buildingPermitAuthority } : ""));
+  const [bpAuthority, setBpAuthority] = useState(formData?.areaMapping?.bpAuthority || (searchResult?.areaMapping?.buildingPermitAuthority ? { code: searchResult.areaMapping.buildingPermitAuthority, name: searchResult.areaMapping.buildingPermitAuthority, i18nKey: searchResult.areaMapping.buildingPermitAuthority } : "") || sessionData?.bpAuthority);
 
-  const [revenueVillage, setRevenueVillage] = useState(sessionData?.revenueVillage || formData?.areaMapping?.revenueVillage || (searchResult?.areaMapping?.revenueVillage ? { code: searchResult.areaMapping.revenueVillage, name: searchResult.areaMapping.revenueVillage, i18nKey: searchResult.areaMapping.revenueVillage } : ""));
+  const [revenueVillage, setRevenueVillage] = useState(formData?.areaMapping?.revenueVillage || (searchResult?.areaMapping?.revenueVillage ? { code: searchResult.areaMapping.revenueVillage, name: searchResult.areaMapping.revenueVillage, i18nKey: searchResult.areaMapping.revenueVillage } : "") || sessionData?.revenueVillage);
 
-  const [mouza, setMouza] = useState(sessionData?.mouza || formData?.areaMapping?.mouza || searchResult?.areaMapping?.mouza || "");
+  const [mouza, setMouza] = useState(formData?.areaMapping?.mouza || searchResult?.areaMapping?.mouza || sessionData?.mouza || "");
 
-  const [ward, setWard] = useState(sessionData?.ward || formData?.areaMapping?.ward || (searchResult?.areaMapping?.ward ? { code: searchResult.areaMapping.ward, name: searchResult.areaMapping.ward, i18nKey: searchResult.areaMapping.ward } : ""));
+  const [ward, setWard] = useState(formData?.areaMapping?.ward || (searchResult?.areaMapping?.ward ? { code: searchResult.areaMapping.ward, name: searchResult.areaMapping.ward, i18nKey: searchResult.areaMapping.ward } : "") || sessionData?.ward);
 
-  const [villageName, setVillageName] = useState(sessionData?.villageName || formData?.areaMapping?.villageName || (searchResult?.areaMapping?.villageName ? { code: searchResult.areaMapping.villageName, name: searchResult.areaMapping.villageName, i18nKey: searchResult.areaMapping.villageName } : ""));
+  const [villageName, setVillageName] = useState(formData?.areaMapping?.villageName || (searchResult?.areaMapping?.villageName ? { code: searchResult.areaMapping.villageName, name: searchResult.areaMapping.villageName, i18nKey: searchResult.areaMapping.villageName } : "") || sessionData?.villageName);
 
   // Validation logic
   const getValidationLogic = () => {

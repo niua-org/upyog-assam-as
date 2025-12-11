@@ -72,6 +72,29 @@ public class NOCService {
 
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
+	
+	public List<Noc> createNocs(NocRequest nocRequest) {
+
+		List<Noc> inputNoc = nocRequest.getNocList();
+
+		if (inputNoc != null && !inputNoc.isEmpty()) {
+
+			List<Noc> result = new ArrayList<>();
+
+			for (Noc noc : inputNoc) {
+				nocRequest.setNoc(noc);
+				result.addAll(create(nocRequest));
+			}
+
+			return result;
+
+		} else if (nocRequest.getNoc() != null) {
+			// this condition is added for backward compatibility
+			return create(nocRequest);
+		}
+		return null;
+	}
+	
 	/**
 	 * entry point from controller, takes care of next level logic from controller to create NOC application
 	 * @param nocRequest

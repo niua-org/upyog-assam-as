@@ -1,5 +1,7 @@
 package org.egov.bpa.web.model.NOC;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -27,5 +29,9 @@ public class NocRequest {
 	@Valid
 	@JsonProperty("Noc")
 	private Noc noc;
+
+	@Valid
+	@JsonProperty("NocList")
+	private List<Noc> nocList;
 	  
 }

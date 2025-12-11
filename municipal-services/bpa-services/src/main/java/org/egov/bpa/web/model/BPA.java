@@ -1,6 +1,5 @@
 package org.egov.bpa.web.model;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.egov.bpa.web.model.NOC.NocType;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.property.PropertyValidationResponse;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -148,6 +148,8 @@ public class BPA {
 
   /** JSON object to capture custom fields. */
   private Object additionalDetails;
+  
+  private List<NocType> nocList;
 
   public void addDocument(Document documentsItem) {
     if (this.documents == null) {

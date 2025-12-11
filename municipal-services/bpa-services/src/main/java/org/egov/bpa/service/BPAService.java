@@ -119,6 +119,9 @@ public class BPAService {
 
     @Autowired
     private MultiStateInstanceUtil centralInstanceUtil;
+    
+    @Autowired
+    private MdmsCacheService mdmsCacheService;
 
     /**
      * does all the validations required to create BPA Record in the system
@@ -129,9 +132,14 @@ public class BPAService {
     public BPA create(BPARequest bpaRequest) {
       //  Map<String, String> values = new HashMap<>();
         RequestInfo requestInfo = bpaRequest.getRequestInfo();
-        String tenantId = centralInstanceUtil.getStateLevelTenant(bpaRequest.getBPA().getTenantId());
+        String stateTenantId = centralInstanceUtil.getStateLevelTenant(bpaRequest.getBPA().getTenantId());
+        String tenantId = bpaRequest.getBPA().getAreaMapping().getConcernedAuthority();
+        
         // Get MDMS Data for request validation
-        Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+        Object mdmsTenantData = mdmsCacheService.getMdmsData(requestInfo, tenantId);
+        
+        Object mdmsStateData = mdmsCacheService.getMdmsData(requestInfo, stateTenantId);
+
         LinkedHashMap<String, Object> edcr = new LinkedHashMap<>();
         if (centralInstanceUtil.isTenantIdStateLevel(bpaRequest.getBPA().getTenantId())) {
             throw new CustomException(BPAErrorConstants.INVALID_TENANT, "Application cannot be create at StateLevel");
@@ -149,12 +157,12 @@ public class BPAService {
        // String serviceType = values.get(BPAConstants.SERVICETYPE);
        // this.validateCreateOC(applicationType, values, requestInfo, bpaRequest);
 
-
-        // Validating the create request
-     //   bpaValidator.validateMdmsData(bpaRequest, mdmsData);
+		bpaValidator.validateStateMdmsData(bpaRequest, mdmsStateData);
+        bpaValidator.validateMdmsData(bpaRequest, mdmsTenantData);
+       
 
         landService.addLandInfoToBPA(bpaRequest);
-        enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, null);
+        enrichmentService.enrichBPACreateRequest(bpaRequest, null);
 
         wfIntegrator.callWorkFlow(bpaRequest);
 
@@ -439,13 +447,18 @@ public class BPAService {
     @SuppressWarnings("unchecked")
     public BPA update(BPARequest bpaRequest) {
         RequestInfo requestInfo = bpaRequest.getRequestInfo();
-        String tenantId = centralInstanceUtil.getStateLevelTenant(bpaRequest.getBPA().getTenantId());
-
+        
+        String stateTenantId = centralInstanceUtil.getStateLevelTenant(bpaRequest.getBPA().getTenantId());
+        String tenantId = bpaRequest.getBPA().getAreaMapping().getConcernedAuthority();
 
         // Get MDMS Data for request validation
-        Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+        // Get MDMS Data for request validation
+        Object mdmsTenantData = mdmsCacheService.getMdmsData(requestInfo, tenantId);
+        
+        Object mdmsStateData = mdmsCacheService.getMdmsData(requestInfo, stateTenantId);
         // Validate the update request
-        //bpaValidator.validateMdmsData( bpaRequest, mdmsData);
+        bpaValidator.validateStateMdmsData(bpaRequest, mdmsStateData);
+        bpaValidator.validateMdmsData(bpaRequest, mdmsTenantData);
 
         BPA bpa = bpaRequest.getBPA();
 
@@ -521,7 +534,7 @@ public class BPAService {
 			bpaRequest.getBPA().setPlanningPermitDate(util.getCurrentTimestampMillis());
 			log.info("Planning Permit No. generated : " + bpaRequest.getBPA().getPlanningPermitNo());
 
-			nocService.createNocRequest(bpaRequest, mdmsData);
+			//nocService.createNocRequest(bpaRequest, mdmsStateData);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
             calculationService.addCalculation(bpaRequest, "PLANNING_PERMIT_FEE");
 			wfIntegrator.callWorkFlow(bpaRequest);
@@ -1016,7 +1029,11 @@ public class BPAService {
 		for (CalulationCriteria obj : input) {
 			Map<String, Object> edcrDetails = edcrService.getEDCRFeeCalculationDetails(requestInfo, obj.getBpa());
 			List<Floor> floors = (List<Floor>) edcrDetails.get(BPAConstants.FLOOR);
+			String wallType = (String) edcrDetails.get(BPAConstants.WALLTYPE);
+			String occupancy = (String) edcrDetails.get(BPAConstants.APPLICATIONTYPE);
 			obj.setFloors(floors);
+			obj.setWallType(wallType);
+			obj.setApplicationType(occupancy);
 		}
 
 		return calculationService.callBpaCalculatorEstimate(calcRequest);
