@@ -87,7 +87,7 @@ public class NocService {
 		List<Object> nocMappingResponse = (List<Object>) JsonPath.read(mdmsData, nocPath);
 
 		// fetching Site Engr NOCs
-		String SiteEngrfilterExp = "$.[?(@.source=='SITE_ENGINEER')].type";
+		String SiteEngrfilterExp = "$.[?(@.source=='SITE_ENGINEER')].code";
 		Set<String> allowedNocsBySiteEng = new HashSet<>(JsonPath.read(nocMappingResponse, SiteEngrfilterExp));
 		nocTypes.addAll(fetchNOCBySiteEngr(bpa.getNocList(), allowedNocsBySiteEng));
 
@@ -146,7 +146,7 @@ public class NocService {
 	private List<String> fetchNOCByOthers(Map<String, String> edcrResponse, List<Map<String, Object>> nocByOthers) {
 
 		Map<String, List<String>> nocTypeConditionsByOthers = nocByOthers.stream()
-				.collect(Collectors.toMap(n -> (String) n.get("type"), n -> (List<String>) n.get("conditions")));
+				.collect(Collectors.toMap(n -> (String) n.get("code"), n -> (List<String>) n.get("conditions")));
 
 		if (!CollectionUtils.isEmpty(nocTypeConditionsByOthers)) {
 			return nocEval.getApplicableNOCList(nocTypeConditionsByOthers, edcrResponse);
@@ -209,7 +209,7 @@ public class NocService {
 		Map<String,String> nocSourceCnofig = config.getNocSourceConfig();
 
 		List<Object> nocMappingResponse = (List<Object>) JsonPath.read(mdmsData, nocPath);
-		List<String> nocTypes = JsonPath.read(nocMappingResponse, "$..type");
+		List<String> nocTypes = JsonPath.read(nocMappingResponse, "$..code");
 		Map<String, String> bypassNocs = new HashMap<>();
 		Map<String,Object> additionalDetails = (Map<String, Object>) bpa.getAdditionalDetails();
 		if(!CollectionUtils.isEmpty(additionalDetails)) {

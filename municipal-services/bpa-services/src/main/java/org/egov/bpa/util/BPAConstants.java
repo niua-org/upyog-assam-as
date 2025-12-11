@@ -331,11 +331,11 @@ public class BPAConstants {
 	public static final String CODE = "documentType";
 	public static final String QUESTIONS_PATH = "$.[?(@.active==true)].question";
 	public static final String DOCTYPESS_PATH = "$.[?(@.required==true)].code";
-	public static final String NOCTYPE_MAP = "$.MdmsRes.BPA.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\" && @.nocTriggerState==\"{4}\")].nocTypes";
-	public static final String NOCTYPE_REQUIRED_MAP = "$.MdmsRes.BPA.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\")].nocTypes";
+	public static final String NOCTYPE_MAP = "$.MdmsRes.NOC.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\" && @.nocTriggerState==\"{4}\")].nocTypes";
+	public static final String NOCTYPE_REQUIRED_MAP = "$.MdmsRes.NOC.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\")].nocTypes";
 	public static final String NOCTYPE_OFFLINE_MAP = "$.MdmsRes.NOC.NocType[?(@.mode==\"offline\")].code";	
-	public static final String NOC_TRIGGER_STATE_MAP = "$.MdmsRes.BPA.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\")].nocTriggerState";
-	public static final String NOC_TYPE_MAPPING_PATH = "$.MdmsRes.BPA.NocTypeMapping[?(@.permitType=='{1}')].nocs[*]";
+	public static final String NOC_TRIGGER_STATE_MAP = "$.MdmsRes.NOC.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\")].nocTriggerState";
+	public static final String NOC_TYPE_MAPPING_PATH = "$.MdmsRes.NOC.NocTypeMapping[?(@.permitType=='{1}')].nocs[*]";
 
 	// SMS Notification messages
 	public static final String APP_CREATE = "APPLICATION_CREATE_MSG";

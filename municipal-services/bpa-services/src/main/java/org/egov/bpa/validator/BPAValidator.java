@@ -641,7 +641,7 @@ public class BPAValidator {
 						.replace("{2}", edcrResponse.get(BPAConstants.SERVICETYPE)).replace("{3}", riskType);
 
 				List<Object> nocMappingResponse = (List<Object>) JsonPath.read(mdmsRes, nocPath);
-				List<String> nocTypes = JsonPath.read(nocMappingResponse, "$..type");
+				List<String> nocTypes = JsonPath.read(nocMappingResponse, "$..code");
 
 				log.debug("===========> valdiateNocApprove method called, noctypes====",nocTypes);
 				List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);

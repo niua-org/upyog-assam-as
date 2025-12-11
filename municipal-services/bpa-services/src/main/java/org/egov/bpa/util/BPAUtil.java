@@ -133,6 +133,7 @@ public class BPAUtil {
 		
 		// master details for NOC module
 		List<MasterDetail> nocMasterDetails = new ArrayList<>();
+		nocMasterDetails.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE_MAPPING).build());
 		nocMasterDetails
 				.add(MasterDetail.builder().name(BPAConstants.NOC_TYPE).build());
 		ModuleDetail nocMDtl = ModuleDetail.builder().masterDetails(nocMasterDetails)
