@@ -359,3 +359,26 @@ export const getEstimatePayload = ({
   };
 };
 
+export const formatEpochDateDMY = (epochValue) => {
+  if (!epochValue) return "NA";
+
+  // Convert to number
+  let epoch = Number(epochValue);
+  // Handle epoch in seconds (10 digits)
+  if (epochValue.toString().length === 10) {
+    epoch = epoch * 1000;
+  }
+  // Create Date object
+  const date = new Date(epoch);
+
+  // If invalid date
+  if (isNaN(date.getTime())) return "NA";
+
+  // Extract day, month, year
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  // Return formatted date
+  return `${day}/${month}/${year}`;
+};

@@ -859,4 +859,14 @@ export const OBPSV2Services = {
       ...(isFormData && { multipartFormData: true }),
     });
   },
+
+   NOCSearch: (tenantId, sourceRefId) =>
+    Request({
+      url: Urls.obpsv2.nocSearch,
+      params: { tenantId, ...sourceRefId },
+      auth: true,
+      userService: true,
+      method: "POST"
+  }),
+
 };
