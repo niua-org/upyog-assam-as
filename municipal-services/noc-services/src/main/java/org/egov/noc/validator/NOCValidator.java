@@ -250,18 +250,23 @@ public class NOCValidator {
 					} else if (requiredDocTypes.size() > 0) {
 						List<String> addedDocTypes = new ArrayList<String>();
 
+						/// TODO: Need to CHeck this Logic Why it is extracting only part before (.) only
+//						documents.forEach(doc -> {
+//							String docType = doc.getDocumentType();
+//							int lastIndex = docType.lastIndexOf(".");
+//							String documentNs = "";
+//							if (lastIndex > 1) {
+//								documentNs = docType.substring(0, lastIndex);
+//							} else if (lastIndex == 1) {
+//								throw new CustomException("NOC_INVALID_DOCUMENTTYPE", document.getDocumentType() + " is invalid");
+//							} else {
+//								documentNs = docType;
+//							}
+//							addedDocTypes.add(documentNs);
+//						});
+
 						documents.forEach(doc -> {
-							String docType = doc.getDocumentType();
-							int lastIndex = docType.lastIndexOf(".");
-							String documentNs = "";
-							if (lastIndex > 1) {
-								documentNs = docType.substring(0, lastIndex);
-							} else if (lastIndex == 1) {
-								throw new CustomException("NOC_INVALID_DOCUMENTTYPE", document.getDocumentType() + " is invalid");
-							} else {
-								documentNs = docType;
-							}
-							addedDocTypes.add(documentNs);
+							addedDocTypes.add(doc.getDocumentType());
 						});
 						requiredDocTypes.forEach(docType -> {
 							if (!addedDocTypes.contains(docType)) {
