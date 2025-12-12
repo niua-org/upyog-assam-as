@@ -33,7 +33,7 @@ const PropertyValidation = ({ t, config, onSelect, formData, searchResult }) => 
     if (!propertyID || typeof propertyID !== 'string') {
       return false;
     }
-    const regex = /^([A-Z]{3}\d{10}|\d{16}|\d+\/\d+)$/;
+    const regex = /^([A-Z]{3}\d{10}|\d{16}|\d+\/\d+|[a-zA-Z]+\d+)$/;
     return regex.test(propertyID.replace(/\s/g, ''));
   };
 
