@@ -20,6 +20,7 @@ import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.NocRequest;
 import org.egov.noc.web.model.NocSearchCriteria;
 import org.egov.noc.web.model.RequestInfoWrapper;
+import org.egov.noc.web.model.Workflow;
 import org.egov.noc.web.model.bpa.BPA;
 import org.egov.noc.web.model.bpa.BPAResponse;
 import org.egov.noc.web.model.bpa.BPASearchCriteria;
@@ -38,6 +39,8 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Valid;
 
 @Service
 @Slf4j
@@ -72,6 +75,9 @@ public class NOCService {
 
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
+
+	@Autowired
+	private FireNOCValidationService fireNOCValidationService;
 	
 	public List<Noc> createNocs(NocRequest nocRequest) {
 
@@ -318,9 +324,10 @@ public class NOCService {
 	/**
          * entry point from controller,applies the quired fileters and encrich search criteria and
          * return the noc application count the search criteria
-         * @param nocRequest
-         * @return
-         */
+	 * @param criteria
+	 * @param requestInfo
+	 * @return Integer count of NOC applications
+     */
         public Integer getNocCount(NocSearchCriteria criteria, RequestInfo requestInfo) {
                 /*List<String> uuids = new ArrayList<String>();
                 uuids.add(requestInfo.getUserInfo().getUuid());
@@ -374,4 +381,91 @@ public class NOCService {
 			return bpaList;
 		}
 
+	/**
+	 * Validates Fire NOC applications by calling external Fire NOC verification API.
+	 * Searches for existing NOC by nocNo (ARN number), validates with external API,
+	 * updates workflow to APPROVE with business service FIRE_NOC_SRV, and saves
+	 * all validation details in additionalDetails field.
+	 * 
+	 * @param nocRequest NOC request containing nocNo (ARN number) and tenantId to validate
+	 * @return List of validated and approved NOC applications with updated additionalDetails
+	 * @throws CustomException if NOC not found, validation fails, or workflow update fails
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Noc> validateNocs(@Valid NocRequest nocRequest) {
+		List<Noc> validatedNocs = new ArrayList<>();
+		Noc inputNoc = nocRequest.getNoc();
+		
+		if (inputNoc == null) {
+			throw new CustomException("INVALID_REQUEST", "NOC is required for validation");
+		}
+
+		String nocNo = inputNoc.getNocNo();
+		if (StringUtils.isEmpty(nocNo)) {
+			throw new CustomException("INVALID_NOC_NUMBER", "NOC number (nocNo) is required");
+		}
+
+		String tenantId = centralInstanceUtil.getStateLevelTenant(inputNoc.getTenantId());
+		
+		NocSearchCriteria criteria = new NocSearchCriteria();
+		criteria.setNocNo(nocNo);
+		criteria.setTenantId(tenantId);
+		
+		List<Noc> existingNocs = nocRepository.getNocData(criteria);
+		
+		if (CollectionUtils.isEmpty(existingNocs)) {
+			throw new CustomException("NOC_NOT_FOUND", "NOC not found for nocNo: " + nocNo);
+		}
+
+		if (existingNocs.size() > 1) {
+			throw new CustomException("MULTIPLE_NOCS_FOUND", "Multiple NOCs found for nocNo: " + nocNo);
+		}
+
+		Noc existingNoc = existingNocs.get(0);
+		log.info("Validating NOC - applicationNo: {}, nocNo: {}", existingNoc.getApplicationNo(), nocNo);
+
+		Map<String, Object> validationResponse = fireNOCValidationService.validateFireNOC(nocNo);
+		LinkedHashMap<String, Object> nocDetails = (LinkedHashMap<String, Object>) validationResponse.get("noc_details");
+		
+		Map<String, Object> additionalDetails = new HashMap<>();
+		if (existingNoc.getAdditionalDetails() instanceof Map) {
+			additionalDetails.putAll((Map<String, Object>) existingNoc.getAdditionalDetails());
+		}
+
+		if (nocDetails != null) {
+			nocDetails.entrySet().stream()
+					.filter(entry -> entry.getValue() != null)
+					.forEach(entry -> additionalDetails.put(entry.getKey(), entry.getValue()));
+		}
+
+		additionalDetails.put("validation_status", validationResponse.get("status"));
+		additionalDetails.put("validation_message", validationResponse.get("message"));
+		existingNoc.setAdditionalDetails(additionalDetails);
+
+		Workflow workflow = new Workflow();
+		workflow.setAction(NOCConstants.ACTION_APPROVE);
+		existingNoc.setWorkflow(workflow);
+
+		NocRequest updateRequest = new NocRequest();
+		updateRequest.setNoc(existingNoc);
+		updateRequest.setRequestInfo(nocRequest.getRequestInfo());
+		
+		wfIntegrator.callWorkFlow(updateRequest, NOCConstants.FIRE_NOC_WORKFLOW_CODE);
+		enrichmentService.postStatusEnrichment(updateRequest, NOCConstants.FIRE_NOC_WORKFLOW_CODE);
+		existingNoc.setApplicationStatus(NOCConstants.APPROVED_STATE);
+
+		BusinessService businessService = workflowService.getBusinessService(existingNoc,
+				nocRequest.getRequestInfo(), NOCConstants.FIRE_NOC_WORKFLOW_CODE);
+		
+		boolean isStateUpdatable = businessService == null 
+				? true 
+				: workflowService.isStateUpdatable(existingNoc.getApplicationStatus(), businessService);
+		
+		nocRepository.update(updateRequest, isStateUpdatable);
+
+		log.info("NOC validated and approved - applicationNo: {}", existingNoc.getApplicationNo());
+		validatedNocs.add(existingNoc);
+
+		return validatedNocs;
 	}
+}

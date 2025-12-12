@@ -98,4 +98,14 @@ public class NOCController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@PostMapping(value = "/_validate")
+	public ResponseEntity<NocResponse> validateNoc(@Valid @RequestBody NocRequest nocRequest) {
+		List<Noc> nocList = nocService.validateNocs(nocRequest);
+		NocResponse response = NocResponse.builder().noc(nocList)
+				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(nocRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

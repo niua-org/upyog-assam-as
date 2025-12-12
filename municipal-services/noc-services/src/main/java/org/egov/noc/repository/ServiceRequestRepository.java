@@ -4,6 +4,9 @@ import java.util.Map;
 
 import org.egov.tracer.model.ServiceCallException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -63,6 +66,44 @@ public class ServiceRequestRepository {
 			throw new ServiceCallException(e.getResponseBodyAsString());
 		} catch (Exception e) {
 			log.error("Exception while fetching from service: ", e);
+		}
+		return response;
+	}
+
+	/**
+	 * Fetch results using POST request with custom headers
+	 * @param uri URI endpoint
+	 * @param request Request body object
+	 * @param headers Custom headers map (e.g., Cookie, Content-Type)
+	 * @return Response object
+	 */
+	public Object fetchResultWithHeaders(StringBuilder uri, Object request, Map<String, String> headers) {
+		Object response = null;
+		log.info("URI: " + uri.toString());
+		try {
+			HttpHeaders httpHeaders = new HttpHeaders();
+			httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+			
+			// Add custom headers
+			if (headers != null) {
+				headers.forEach((key, value) -> {
+					if ("Cookie".equalsIgnoreCase(key)) {
+						httpHeaders.add("Cookie", value);
+					} else {
+						httpHeaders.add(key, value);
+					}
+				});
+			}
+			
+			HttpEntity<Object> httpEntity = new HttpEntity<>(request, httpHeaders);
+			log.info("Request: " + mapper.writeValueAsString(request));
+			response = restTemplate.postForObject(uri.toString(), httpEntity, Map.class);
+		} catch (HttpClientErrorException e) {
+			log.error("External Service threw an Exception: ", e);
+			throw new ServiceCallException(e.getResponseBodyAsString());
+		} catch (Exception e) {
+			log.error("Exception while fetching from external service: ", e);
+			throw new ServiceCallException("Error calling external service: " + e.getMessage());
 		}
 		return response;
 	}

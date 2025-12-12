@@ -163,4 +163,11 @@ public class NOCConfiguration {
 	@Value("${egov.filestore.path}")
 	private String fileStorePath;
 
+	// Fire NOC Validation Configuration
+	@Value("${fire.noc.api.url:}")
+	private String fireNocApiUrl;
+
+	@Value("${fire.noc.api.session.cookie:}")
+	private String fireNocApiSessionCookie;
+
 }
