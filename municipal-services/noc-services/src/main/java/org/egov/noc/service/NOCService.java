@@ -382,49 +382,55 @@ public class NOCService {
 		}
 
 	/**
-	 * Validates Fire NOC applications by calling external Fire NOC verification API.
-	 * Searches for existing NOC by nocNo (ARN number), validates with external API,
-	 * updates workflow to APPROVE with business service FIRE_NOC_SRV, and saves
+	 * Validates Fire NOC by calling external Fire NOC verification API.
+	 * Searches for existing NOC by sourceRefId (BPA application number),
+	 * validates the Fire NOC number (ARN) from request with external API,
+	 * updates NOC with validated nocNo, calls workflow to APPROVE, and saves
 	 * all validation details in additionalDetails field.
 	 * 
-	 * @param nocRequest NOC request containing nocNo (ARN number) and tenantId to validate
-	 * @return List of validated and approved NOC applications with updated additionalDetails
+	 * @param nocRequest NOC request containing sourceRefId (BPA app number) and nocNo (Fire NOC ARN to validate)
+	 * @return List of validated and approved NOC applications with updated nocNo and additionalDetails
 	 * @throws CustomException if NOC not found, validation fails, or workflow update fails
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Noc> validateNocs(@Valid NocRequest nocRequest) {
-		List<Noc> validatedNocs = new ArrayList<>();
 		Noc inputNoc = nocRequest.getNoc();
 		
 		if (inputNoc == null) {
 			throw new CustomException("INVALID_REQUEST", "NOC is required for validation");
 		}
 
-		String nocNo = inputNoc.getNocNo();
-		if (StringUtils.isEmpty(nocNo)) {
-			throw new CustomException("INVALID_NOC_NUMBER", "NOC number (nocNo) is required");
+		String sourceRefId = inputNoc.getSourceRefId();
+		if (StringUtils.isEmpty(sourceRefId)) {
+			throw new CustomException("INVALID_SOURCE_REF_ID", "Source reference ID (BPA application number) is required");
+		}
+
+		String fireNocNumber = inputNoc.getNocNo();
+		if (StringUtils.isEmpty(fireNocNumber)) {
+			throw new CustomException("INVALID_NOC_NUMBER", "Fire NOC number (nocNo) is required for validation");
 		}
 
 		String tenantId = centralInstanceUtil.getStateLevelTenant(inputNoc.getTenantId());
 		
 		NocSearchCriteria criteria = new NocSearchCriteria();
-		criteria.setNocNo(nocNo);
+		criteria.setSourceRefId(sourceRefId);
 		criteria.setTenantId(tenantId);
 		
 		List<Noc> existingNocs = nocRepository.getNocData(criteria);
 		
 		if (CollectionUtils.isEmpty(existingNocs)) {
-			throw new CustomException("NOC_NOT_FOUND", "NOC not found for nocNo: " + nocNo);
+			throw new CustomException("NOC_NOT_FOUND", "NOC not found for sourceRefId: " + sourceRefId);
 		}
 
 		if (existingNocs.size() > 1) {
-			throw new CustomException("MULTIPLE_NOCS_FOUND", "Multiple NOCs found for nocNo: " + nocNo);
+			throw new CustomException("MULTIPLE_NOCS_FOUND", "Multiple NOCs found for sourceRefId: " + sourceRefId);
 		}
 
 		Noc existingNoc = existingNocs.get(0);
-		log.info("Validating NOC - applicationNo: {}, nocNo: {}", existingNoc.getApplicationNo(), nocNo);
+		log.info("Validating Fire NOC - applicationNo: {}, sourceRefId: {}, fireNocNumber: {}", 
+				existingNoc.getApplicationNo(), sourceRefId, fireNocNumber);
 
-		Map<String, Object> validationResponse = fireNOCValidationService.validateFireNOC(nocNo);
+		Map<String, Object> validationResponse = fireNOCValidationService.validateFireNOC(fireNocNumber);
 		LinkedHashMap<String, Object> nocDetails = (LinkedHashMap<String, Object>) validationResponse.get("noc_details");
 		
 		Map<String, Object> additionalDetails = new HashMap<>();
@@ -440,6 +446,8 @@ public class NOCService {
 
 		additionalDetails.put("validation_status", validationResponse.get("status"));
 		additionalDetails.put("validation_message", validationResponse.get("message"));
+		
+		existingNoc.setNocNo(fireNocNumber);
 		existingNoc.setAdditionalDetails(additionalDetails);
 
 		Workflow workflow = new Workflow();
@@ -463,9 +471,9 @@ public class NOCService {
 		
 		nocRepository.update(updateRequest, isStateUpdatable);
 
-		log.info("NOC validated and approved - applicationNo: {}", existingNoc.getApplicationNo());
-		validatedNocs.add(existingNoc);
-
-		return validatedNocs;
+		log.info("NOC validated and approved - applicationNo: {}, nocNo: {}", 
+				existingNoc.getApplicationNo(), existingNoc.getNocNo());
+		
+		return Arrays.asList(existingNoc);
 	}
 }

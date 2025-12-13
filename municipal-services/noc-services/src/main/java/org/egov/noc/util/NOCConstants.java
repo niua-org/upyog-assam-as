@@ -99,4 +99,7 @@ public class NOCConstants {
 	public static final String DOC_TYPE_SITECORDINATES = "NOC.SITECORDINATES";
 	public static final String DOC_TYPE_AUTHORIZATION = "NOC.AUTHORIZATION";
 	public static final String DOC_TYPE_PERMISSION = "NOC.PERMISSION";
+
+	// Fire NOC Workflow Constants
+	public static final String FIRE_NOC_WORKFLOW_CODE = "FIRE_NOC_SRV";
 }
