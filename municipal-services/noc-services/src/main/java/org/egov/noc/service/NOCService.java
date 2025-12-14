@@ -410,7 +410,10 @@ public class NOCService {
 			throw new CustomException("INVALID_NOC_NUMBER", "Fire NOC number (nocNo) is required for validation");
 		}
 
-		String tenantId = centralInstanceUtil.getStateLevelTenant(inputNoc.getTenantId());
+		String tenantId = inputNoc.getTenantId();
+		if (StringUtils.isEmpty(tenantId)) {
+			throw new CustomException("INVALID_TENANT_ID", "Tenant ID is required");
+		}
 		
 		NocSearchCriteria criteria = new NocSearchCriteria();
 		criteria.setSourceRefId(sourceRefId);
