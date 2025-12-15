@@ -76,8 +76,8 @@ public class NocService {
 		Object additionalDetails = bpa.getAdditionalDetails();
 		String permitType = null;
 		if (additionalDetails instanceof Map) {
-			Map<String, Object> adMap = (Map<String, Object>) additionalDetails;
-			Object nocDetails = adMap.get("nocDetails");
+			Map<String, Object> bpaAdditionalDetails = (Map<String, Object>) additionalDetails;
+			Object nocDetails = bpaAdditionalDetails.get("nocDetails");
 			if (nocDetails instanceof Map) {
 				Map<String, Object> nocMap = (Map<String, Object>) nocDetails;
 				permitType = (String) nocMap.get("permitType");
@@ -104,6 +104,14 @@ public class NocService {
 		// CREATE NOCs
 		String applType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
 		createNOCList(bpaRequest, nocTypes, applType);
+
+		//Removing NOC details from bpa additional details
+		if (bpa.getAdditionalDetails() instanceof Map) {
+			Map<String, Object> details =
+					(Map<String, Object>) bpa.getAdditionalDetails();
+			details.remove("nocDetails");
+			bpa.setAdditionalDetails(details);
+		}
 
 	}
 
@@ -204,7 +212,7 @@ public class NocService {
 				documents.add(document);
 			}
 		}
-
+		log.info("NOC document details to be sent : {}", documents);
 		return documents;
 	}
 
