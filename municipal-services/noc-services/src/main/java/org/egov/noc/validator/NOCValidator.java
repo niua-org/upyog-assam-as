@@ -163,7 +163,7 @@ public class NOCValidator {
 		List<String> docTypeMappings = JsonPath.read(docTypes, "$..documentType");
 
 		filterExp = "$.[?(@.active==true)].code";
-		List<String> validDocumentTypes = JsonPath.read(masterData.get(NOCConstants.DOCUMENT_TYPE), filterExp);
+		//List<String> validDocumentTypes = JsonPath.read(masterData.get(NOCConstants.DOCUMENT_TYPE), filterExp);
 
 		if (!CollectionUtils.isEmpty(documents)) {
 			List<String> addedDocTypes = new ArrayList<String>();
@@ -171,7 +171,7 @@ public class NOCValidator {
 				if (StringUtils.isEmpty(document.getFileStoreId())) {
 					throw new CustomException("NOC_FILE_EMPTY", "Filestore id is empty");
 				}
-				if (!validDocumentTypes.contains(document.getDocumentType())) {
+				if (!docTypeMappings.contains(document.getDocumentType())) {
 					throw new CustomException("NOC_UNKNOWN_DOCUMENTTYPE", document.getDocumentType() + " is Unkown");
 				}
 				String docType = document.getDocumentType();
@@ -230,35 +230,20 @@ public class NOCValidator {
 			List<String> requiredDocTypes = JsonPath.read(docTypeMappings, filterExp);
 
 			filterExp = "$.[?(@.active==true)].code";
-			List<String> validDocumentTypes = JsonPath.read(masterData.get(NOCConstants.DOCUMENT_TYPE), filterExp);
+		
 
 			if (!CollectionUtils.isEmpty(documents)) {
 				documents.forEach(document -> {
 					if (StringUtils.isEmpty(document.getFileStoreId())) {
 						throw new CustomException("NOC_FILE_EMPTY", "Filestore id is empty");
 					}
-					if (!validDocumentTypes.contains(document.getDocumentType())) {
+					if (!requiredDocTypes.contains(document.getDocumentType())) {
 						throw new CustomException("NOC_UNKNOWN_DOCUMENTTYPE", document.getDocumentType() + " is Unkown");
 					}
 					if (requiredDocTypes.size() > 0 && documents.size() < requiredDocTypes.size()) {
 						throw new CustomException("NOC_MANDATORY_DOCUMENTYPE_MISSING", requiredDocTypes.size() + " Documents are requied ");
 					} else if (requiredDocTypes.size() > 0) {
 						List<String> addedDocTypes = new ArrayList<String>();
-
-						/// TODO: Need to CHeck this Logic Why it is extracting only part before (.) only
-//						documents.forEach(doc -> {
-//							String docType = doc.getDocumentType();
-//							int lastIndex = docType.lastIndexOf(".");
-//							String documentNs = "";
-//							if (lastIndex > 1) {
-//								documentNs = docType.substring(0, lastIndex);
-//							} else if (lastIndex == 1) {
-//								throw new CustomException("NOC_INVALID_DOCUMENTTYPE", document.getDocumentType() + " is invalid");
-//							} else {
-//								documentNs = docType;
-//							}
-//							addedDocTypes.add(documentNs);
-//						});
 
 						documents.forEach(doc -> {
 							addedDocTypes.add(doc.getDocumentType());

@@ -92,12 +92,12 @@ public class NOCUtil {
 		
 		final String filterCode = "$.[?(@.active==true)]";
 
-		List<MasterDetail> commonMasterDetails = new ArrayList<>();
-			commonMasterDetails.add(MasterDetail.builder().name(NOCConstants.DOCUMENT_TYPE).filter(filterCode).build());
-		ModuleDetail commonMasterMDtl = ModuleDetail.builder().masterDetails(commonMasterDetails)
-				.moduleName(NOCConstants.COMMON_MASTERS_MODULE).build();
+//		List<MasterDetail> commonMasterDetails = new ArrayList<>();
+//			commonMasterDetails.add(MasterDetail.builder().name(NOCConstants.DOCUMENT_TYPE).filter(filterCode).build());
+//		ModuleDetail commonMasterMDtl = ModuleDetail.builder().masterDetails(commonMasterDetails)
+//				.moduleName(NOCConstants.COMMON_MASTERS_MODULE).build();
 
-		return Arrays.asList(nocModuleDtls, commonMasterMDtl);
+		return Arrays.asList(nocModuleDtls);
 	}	
 
 	/**
