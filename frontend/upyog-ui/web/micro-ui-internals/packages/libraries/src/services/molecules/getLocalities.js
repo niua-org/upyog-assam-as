@@ -22,4 +22,8 @@ export const getLocalities = {
     await StoreService.defaultData(tenant, tenant, Digit.StoreData.getCurrentLanguage());
     return (await LocationService.getRevenueVillage(tenant)).TenantBoundary[0];
   },
+  mouza: async (tenant) => {
+    await StoreService.defaultData(tenant, tenant, Digit.StoreData.getCurrentLanguage());
+    return (await LocationService.getMouza(tenant)).TenantBoundary[0];
+  },
 };

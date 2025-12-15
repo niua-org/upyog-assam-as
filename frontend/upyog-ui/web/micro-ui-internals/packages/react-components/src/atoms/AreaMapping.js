@@ -1,8 +1,8 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { CardLabel, Dropdown, TextInput } from "@upyog/digit-ui-react-components";
 
-const AreaMapping = ({ 
-  t, 
+const AreaMapping = ({
+  t,
   district, setDistrict,
   planningArea, setPlanningArea,
   ppAuthority, setPpAuthority,
@@ -12,7 +12,7 @@ const AreaMapping = ({
   mouza, setMouza,
   ward, setWard,
   villageName, setVillageName,
-  isDisabled=false,
+  isDisabled = false,
   isLoading
 }) => {
 
@@ -25,10 +25,11 @@ const AreaMapping = ({
   const [revenueVillages, setRevenueVillages] = useState([]);
   const [wards, setWards] = useState([]);
   const [villages, setVillages] = useState([]);
-  
+  const [mouzaOptions, setMouzaOptions] = useState([]);
+
   const stateId = Digit.ULBService.getStateId();
 
-  const { data : areaMappingData } = Digit.Hooks.useEnabledMDMS(stateId, "egov-location", [{ name: "egov-location" }], {
+  const { data: areaMappingData } = Digit.Hooks.useEnabledMDMS(stateId, "egov-location", [{ name: "egov-location" }], {
     select: (data) => {
       const formattedData = data?.["egov-location"]?.["egov-location"]?.[0];
       return formattedData;
@@ -36,26 +37,32 @@ const AreaMapping = ({
   });
 
   const tenantMasterDetails =
-  bpAuthority?.code && planningArea?.code
-    ? [{ name: "tenants", ulbGrade: bpAuthority.code, planningArea: planningArea.code }]
-    : [{ name: "tenants" }];
+    bpAuthority?.code && planningArea?.code
+      ? [{ name: "tenants", ulbGrade: bpAuthority.code, planningArea: planningArea.code }]
+      : [{ name: "tenants" }];
 
   const { data: tenantData } = Digit.Hooks.useEnabledMDMS(
-    stateId, 
-    "tenant", 
+    stateId,
+    "tenant",
     tenantMasterDetails,
     {
       select: (data) => {
         const formattedData = data?.["tenant"]?.["tenants"];
-        return formattedData?.filter((tenant) =>  (bpAuthority?.code === tenant?.city?.ulbGrade && planningArea?.code===tenant?.city?.planningAreaCode));
+        return formattedData?.filter((tenant) => (bpAuthority?.code === tenant?.city?.ulbGrade && planningArea?.code === tenant?.city?.planningAreaCode));
       },
       enabled: !!bpAuthority?.code,
     }
   );
 
+  const getBoundaryType = () => {
+    if (bpAuthority?.code === "GRAM_PANCHAYAT") return "village";
+    if (bpAuthority?.code === "MUNICIPAL_CORPORATION") return "mouza";
+    return "revenuevillage";
+  };
+
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     concernedAuthority?.code,
-    bpAuthority?.code==="GRAM_PANCHAYAT" ? "village" : "revenuevillage",
+    getBoundaryType(),
     {
       enabled: !!concernedAuthority && !!bpAuthority,
     },
@@ -69,7 +76,7 @@ const AreaMapping = ({
         code: dist.districtCode,
         name: dist.districtName,
         i18nKey: dist.districtCode,
-      })).sort((a,b)=> a.code.localeCompare(b.code));
+      })).sort((a, b) => a.code.localeCompare(b.code));
       setDistricts(formattedDistricts);
     }
   }, [areaMappingData]);
@@ -146,7 +153,7 @@ const AreaMapping = ({
     if (tenantData && tenantData.length > 0) {
       const formattedConcernedAuthorities = tenantData.map((tenant) => ({
         code: tenant.code,
-        name: tenant.name, 
+        name: tenant.name,
         i18nKey: tenant.name,
         ulbGrade: tenant.city?.ulbGrade,
         planningAreaCode: tenant.city?.planningAreaCode,
@@ -160,7 +167,6 @@ const AreaMapping = ({
   // Wards / Revenue Villages / Villages
   useEffect(() => {
     if (Array.isArray(fetchedLocalities) && fetchedLocalities.length > 0) {
-      
       if (bpAuthority?.code === "MUNICIPAL_BOARD") {
         const formattedWards = fetchedLocalities.map((ward) => ({
           code: ward.code,
@@ -182,6 +188,28 @@ const AreaMapping = ({
         setRevenueVillages(formattedRevenueVillages);
         setVillages([]);
 
+      } else if (bpAuthority?.code === "MUNICIPAL_CORPORATION") {
+        const formattedMouzaOptions = fetchedLocalities.map((mouza) => ({
+          code: mouza.code,
+          name: mouza.name,
+          i18nKey: mouza.name,
+          children: mouza.children || [],
+        }));
+
+        const formattedRevenueVillages = fetchedLocalities.flatMap((mouza) =>
+          (mouza.children || []).map((child) => ({
+            code: child.code,
+            name: child.name,
+            i18nKey: child.name,
+            parentMouzaCode: mouza.code,
+          }))
+        );
+
+        setMouzaOptions(formattedMouzaOptions);
+        setRevenueVillages(formattedRevenueVillages);
+        setWards([]);
+        setVillages([]);
+
       } else if (bpAuthority?.code === "GRAM_PANCHAYAT") {
         const formattedVillages = fetchedLocalities.map((loc) => ({
           code: loc.code,
@@ -192,11 +220,12 @@ const AreaMapping = ({
         setWards([]);
         setRevenueVillages([]);
       }
-      
+
     } else {
       setVillages([]);
       setWards([]);
       setRevenueVillages([]);
+      setMouzaOptions([]);
     }
   }, [fetchedLocalities, bpAuthority]);
 
@@ -247,6 +276,11 @@ const AreaMapping = ({
     setVillageName("");
   };
 
+  const handleMouzaChange = (selectedMouza) => {
+    setMouza(selectedMouza);
+    setRevenueVillage("");
+  };
+
   const handleWardChange = (selectedWard) => {
     setWard(selectedWard);
     setRevenueVillage("");
@@ -273,12 +307,12 @@ const AreaMapping = ({
       <Dropdown
         t={t}
         option={planningAreas}
-        optionKey="i18nKey" 
+        optionKey="i18nKey"
         selected={planningArea}
-        select={handlePlanningAreaChange} 
+        select={handlePlanningAreaChange}
         disable={isDisabled}
         optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
-        placeholder={!district ? t("SELECT_DISTRICT_FIRST") : t("SELECT_PLANNING_AREA")} 
+        placeholder={!district ? t("SELECT_DISTRICT_FIRST") : t("SELECT_PLANNING_AREA")}
       />
 
       {/* PP Authority */}
@@ -288,7 +322,7 @@ const AreaMapping = ({
         option={ppAuthorities}
         optionKey="i18nKey"
         selected={ppAuthority}
-        select={handlePpAuthorityChange} 
+        select={handlePpAuthorityChange}
         disable={isDisabled}
         optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
         placeholder={!planningArea ? t("SELECT_PLANNING_AREA_FIRST") : t("SELECT_PP_AUTHORITY")}
@@ -316,7 +350,7 @@ const AreaMapping = ({
             option={concernedAuthorities}
             optionKey="i18nKey"
             selected={concernedAuthority}
-            select={handleConcernedAuthorityChange} 
+            select={handleConcernedAuthorityChange}
             disable={isDisabled}
             optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
             placeholder={t("SELECT_CONCERNED_AUTHORITY")}
@@ -354,6 +388,71 @@ const AreaMapping = ({
         </>
       )}
 
+      {/* Municipal Corporation Fields */}
+      {bpAuthority && (
+        <>
+          <CardLabel>
+            {`${t("MOUZA")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
+
+          {bpAuthority?.code === "MUNICIPAL_CORPORATION" ? (
+            <>
+              <Dropdown
+                t={t}
+                option={mouzaOptions}
+                optionKey="i18nKey"
+                selected={mouza}
+                select={handleMouzaChange}
+                disable={isDisabled}
+                optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
+                placeholder={
+                  !concernedAuthority
+                    ? t("SELECT_CONCERNED_AUTHORITY_FIRST")
+                    : t("SELECT_MOUZA")
+                }
+              />
+
+              <CardLabel>
+                {`${t("REVENUE_VILLAGE")}`}{" "}
+                <span className="check-page-link-button">*</span>
+              </CardLabel>
+              <Dropdown
+                t={t}
+                option={
+                  revenueVillages?.filter(
+                    rv => rv.parentMouzaCode === mouza?.code
+                  ) || []
+                }
+                optionKey="i18nKey"
+                selected={revenueVillage}
+                select={setRevenueVillage}
+                disable={isDisabled}
+                optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
+                placeholder={
+                  !mouza
+                    ? t("SELECT_MOUZA_FIRST")
+                    : t("SELECT_REVENUE_VILLAGE")
+                }
+              />
+            </>
+          ) : (
+            <TextInput
+              t={t}
+              name="mouza"
+              value={mouza}
+              placeholder={t("ENTER_MOUZA_NAME")}
+              disabled={isDisabled}
+              onChange={(e) =>
+                setMouza(e.target.value.replace(/[^a-zA-Z0-9\s]/g, ""))
+              }
+              ValidationRequired={true}
+              pattern="^[A-Za-z0-9 ]+$"
+              title={t("BPA_NAME_ERROR_MESSAGE")}
+            />
+          )}
+        </>
+      )}
+
       {/* Gram Panchayat Fields */}
       {bpAuthority?.code === "GRAM_PANCHAYAT" && (
         <>
@@ -366,28 +465,14 @@ const AreaMapping = ({
             select={setVillageName}
             disable={isDisabled}
             optionCardStyles={{ maxHeight: "300px", overflowY: "auto" }}
-            placeholder={!concernedAuthority ? t("SELECT_CONCERNED_AUTHORITY_FIRST") : t("SELECT_VILLAGE")}
+            placeholder={
+              !concernedAuthority
+                ? t("SELECT_CONCERNED_AUTHORITY_FIRST")
+                : t("SELECT_VILLAGE")
+            }
           />
         </>
       )}
-
-      {/* Mouza */}
-      <CardLabel>{`${t("MOUZA")}`}</CardLabel>
-      <TextInput
-        t={t}
-        name="mouza"
-        value={mouza}
-        placeholder={`${t("ENTER_MOUZA_NAME")}`}
-        disabled={isDisabled}
-        onChange={(e) =>
-          setMouza(
-            e.target.value.replace(/[^a-zA-Z0-9\s]/g, "")
-          )
-        }
-        ValidationRequired={true}
-        pattern="^[A-Za-z0-9 ]+$"
-        title={t("BPA_NAME_ERROR_MESSAGE")}
-      />
     </div>
   );
 };
