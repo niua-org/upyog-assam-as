@@ -48,4 +48,14 @@ export const LocationService = {
     });
     return response;
   },
+
+  getMouza: async (tenantId) => {
+    const response = await ServiceRequest({
+      serviceName: "getMouza",
+      url: Urls.location.mouza,
+      params: { tenantId: tenantId },
+      useCache: true,
+    });
+    return response;
+  },
 };
