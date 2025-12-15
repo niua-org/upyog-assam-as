@@ -10,7 +10,10 @@ const Search = ({ path }) => {
 
   const Search = Digit.ComponentRegistryService.getComponent("NOCSearchApplication");
 
-  const nocTypeList = businessServiceList();
+  const nocTypeList = businessServiceList()?.map((item) => ({
+    ...item,
+    code: item.code.replace(/_SRV$/, ""), // remove _SRV only at end
+  }));
   let availableNocTypes = [];
   if (nocTypeList?.length == 1) availableNocTypes = [nocTypeList?.[0]?.code];
   if (nocTypeList?.length > 1) nocTypeList?.forEach(nocDta => {availableNocTypes.push(nocDta.code);})

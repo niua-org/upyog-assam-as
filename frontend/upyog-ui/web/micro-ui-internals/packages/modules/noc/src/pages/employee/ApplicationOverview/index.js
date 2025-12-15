@@ -155,8 +155,6 @@ const ApplicationOverview = () => {
               <Row className="border-none" label={`${t(`NOC_${nocDataDetails?.[0]?.nocType}_APPLICATION_LABEL`)}`} text={t(nocDataDetails?.[0]?.applicationNo) || "NA"} />
               <Row className="border-none" label={`${t("NOC_STATUS_LABEL")}`} text={t(status) || "NA"} textStyle={nocDataDetails?.[0]?.applicationStatus == "APPROVED" || nocDataDetails?.[0]?.applicationStatus == "AUTO_APPROVED" ? {color : "#00703C"} : {color: "#D4351C"}}/>
               <Row className="border-none" label={`${t("NOC_SUBMITED_ON_LABEL")}`} text={nocDataDetails?.[0]?.additionalDetails?.SubmittedOn ? convertEpochToDate(Number(nocDataDetails?.[0]?.additionalDetails?.SubmittedOn)) : "NA"} />
-              <Row className="border-none" label={`${t("NOC_APPROVAL_NO_LABEL")}`} text={nocDataDetails?.[0]?.nocNo || "NA"} />
-              <Row className="border-none" label={`${t("NOC_APPROVED_ON_LABEL")}`} text={(status === "APPROVED" || status === "REJECTED" || status === "AUTO_APPROVED" || status === "AUTO_REJECTED") ? convertEpochToDate(Number(nocDataDetails?.[0]?.auditDetails?.lastModifiedTime)) : "NA"} />
               <Row className="border-none" label={`${t("Documents")}`} text={""} /> 
             </StatusTable>
             {nocDataDetails?.[0]?.documents && nocDataDetails?.[0]?.documents.length>0 ? 

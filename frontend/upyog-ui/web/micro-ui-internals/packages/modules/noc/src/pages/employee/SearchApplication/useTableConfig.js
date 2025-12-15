@@ -28,6 +28,16 @@ const useSearchApplicationTableConfig = () => {
           },
         },
         {
+          Header: t("NOC_TYPE_LABEL"),
+          disableSortBy: true,
+          accessor: (row) => GetCell(t(`${row?.nocType}` || "-")),
+        },
+        {
+          Header: t("NOC_BPA_APPLICATION_NUMBER_LABEL"),
+          disableSortBy: true,
+          accessor: (row) => GetCell(row?.sourceRefId || "-"),
+        },
+        {
           Header: t("NOC_COMMON_TABLE_COL_APP_DATE_LABEL"),
           disableSortBy: true,
           accessor: (row) => GetCell(row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "-"),
@@ -40,23 +50,8 @@ const useSearchApplicationTableConfig = () => {
           },
         },
         {
-          Header: t("NOC_SOURCE_MODULE_LABEL"),
-          disableSortBy: true,
-          accessor: (row) => GetCell(t(`MODULE_${row?.source}` || "-")),
-        },
-        {
-          Header: t("NOC_SOURCE_MODULE_NUMBER"),
-          disableSortBy: true,
-          accessor: (row) => GetCell(row?.sourceRefId || "-"),
-        },
-        {
           Header: t("NOC_STATUS_LABEL"),
           accessor: (row) =>GetCell(t(row?.applicationStatus && `${row.applicationStatus}`|| "-") ),
-          disableSortBy: true,
-        },
-        {
-          Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-          accessor: (row) =>GetCell(t(row?.additionalDetails?.currentOwner && `${row?.additionalDetails?.currentOwner}`|| "-") ),
           disableSortBy: true,
         }
       ]), [] )

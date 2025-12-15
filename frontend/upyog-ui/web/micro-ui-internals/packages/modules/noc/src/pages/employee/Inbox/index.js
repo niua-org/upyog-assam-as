@@ -105,9 +105,12 @@ const Inbox = ({parentRoute}) => {
         tenantId,
         filters: { ...formState }
     });
+
+    const newName = formInitValue?.filterForm?.businessServiceArray.map(item=>item);
+
     const PropsForInboxLinks = {
         logoIcon: <ComplaintIcon />,
-        headerText: "ACTION_TEST_NOC",
+        headerText: t(newName + "_NOCS"),
         links: [{
           text: t("ES_COMMON_APPLICATION_SEARCH"),
           link: "/upyog-ui/employee/noc/search",

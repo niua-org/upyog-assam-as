@@ -55,13 +55,12 @@ const useNOCInbox = ({ tenantId, filters, config={}, workflowCode}) => {
           statuses: data.statusMap,
           table: data?.items.map( application => ({
               applicationId: application.businessObject.applicationNo,
+              bpaApplicationId: application.businessObject?.sourceRefId,
               date: parseInt(application.businessObject?.auditDetails?.createdTime),
               businessService: application?.ProcessInstance?.businessService,
-              locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
-              status: `WF_${application.businessObject.additionalDetails.workflowCode}_${application.businessObject.applicationStatus}`,//application.businessObject.applicationStatus,
-              owner: application?.ProcessInstance?.assignes?.[0]?.name || "-",
-              source: application.businessObject.source,
-              sla: application?.businessObject?.applicationStatus.match(/^(APPROVED)$/) ? "CS_NA" : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000))
+              status: `WF_${application.businessObject.applicationStatus}`,
+              owner: application?.businessObject?.additionalDetails?.applicantName|| "-",
+              nocType: application.businessObject.nocType,
           })),
           totalCount: data.totalCount,
           nearingSlaCount: data.nearingSlaCount

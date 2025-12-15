@@ -8,14 +8,14 @@ import { format } from "date-fns";
 const useInboxMobileCardsData = ({parentRoute, table }) => {
     const { t } = useTranslation();
 
-    const dataForMobileInboxCards = table?.map(({ applicationId, date, source, locality, status, owner, sla, businessService}) => ({
+    const dataForMobileInboxCards = table?.map(({ applicationId, date, nocType, locality, status, owner, bpaApplicationId,sla, businessService}) => ({
             [t("NOC_APP_NO_LABEL")]: applicationId,
+            [t("NOC_BPA_APPLICATION_NUMBER_LABEL")]: bpaApplicationId,
             [t("TL_COMMON_TABLE_COL_APP_DATE")]:  format(new Date(date), 'dd/MM/yyyy'),
-            [t("NOC_MODULE_SOURCE_LABEL")]: t(`MODULE_${source}`),
+            [t("NOC_TYPE_LABEL")]: t(`${nocType}`),
             // [t("ES_INBOX_LOCALITY")]: locality,
             [t("NOC_STATUS_LABEL")]: t(status),
             [t("WF_INBOX_HEADER_CURRENT_OWNER")]: owner,
-            [t("ES_INBOX_SLA_DAYS_REMAINING")]: t(sla)
     }))
 
     const MobileSortFormValues = () => {

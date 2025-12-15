@@ -54,7 +54,7 @@ const SearchApplication = ({ tenantId, t, onSubmit, data, error, isLoading, Coun
         [t("NOC_APP_NO_LABEL")]: data.applicationNo,
         [t("NOC_COMMON_TABLE_COL_APP_DATE_LABEL")]: Digit.DateUtils.ConvertEpochToDate(data.auditDetails?.createdTime) || "-",
         [t("NOC_APPLICANTS_NAME_LABEL")]: data?.additionalDetails?.applicantName || "-",
-        [t("NOC_SOURCE_MODULE_LABEL")]: data.source ? t(`MODULE_${data.source}`) : "-",
+        [t("NOC_TYPE_LABEL")]: data.nocType ? t(`${data.nocType}`) : "-",
         [t("NOC_SOURCE_MODULE_NUMBER")]: data?.sourceRefId || "-",
         [t("WF_INBOX_HEADER_CURRENT_OWNER")]: data?.additionalDetails?.currentOwner || "-",
         [t("NOC_STATUS_LABEL")]: data.applicationStatus ? t(`${data.applicationStatus}`) : "-",

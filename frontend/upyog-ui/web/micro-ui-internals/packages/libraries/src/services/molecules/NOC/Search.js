@@ -49,11 +49,10 @@ export const NOCSearch = {
       title: "NOC_BULDING_DETAILS_LABEL",
       asSectionHeader: true,
       values: [
-        { title: "NOC_APP_NO_LABEL", value: <div><Link to={`/upyog-ui/employee/obps/bpa/${bpaResponse?.[0]?.applicationNo}`}><span className="link" style={{color: "#a82227"}}>{bpaResponse?.[0]?.applicationNo}</span></Link></div> },
-        // { title: "NOC_APP_NO_LABEL", value: bpaResponse?.[0]?.applicationNo || "NA" },
+        { title: "NOC_APP_NO_LABEL", value: response?.sourceRefId || "NA" },
         { title: "NOC_MODULE_SOURCE_LABEL", value: t(response?.source) || "NA" },
-        { title: "NOC_APPLICATION_TYPE_LABEL", value: edcrResponse?.appliactionType ? t(`WF_BPA_${edcrResponse?.appliactionType}`) : "NA" },
-        { title: "NOC_SERVICE_TYPE_LABEL", value: t(edcrResponse?.applicationSubType) || "NA" }
+        { title: "NOC_APPLICATION_TYPE_LABEL", value: response?.applicationType },
+        { title: "NOC_SERVICE_TYPE_LABEL", value: t(response?.nocType) || "NA" }
       ]
     };
 

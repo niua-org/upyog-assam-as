@@ -27,6 +27,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         },
       },
       {
+        Header: t("NOC_BPA_APPLICATION_NUMBER_LABEL"),
+        accessor: (row) => t(`${row?.bpaApplicationId}`),
+        disableSortBy: true,
+      },
+      {
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
         accessor: "applicationDate",
         Cell: ({ row }) => (row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : ""),
@@ -38,8 +43,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
 
       // },
       {
-        Header: t("NOC_MODULE_SOURCE_LABEL"),
-        accessor: (row) => t(`MODULE_${row?.source}`),
+        Header: t("NOC_TYPE_LABEL"),
+        accessor: (row) => t(`${row?.nocType}`),
         disableSortBy: true,
       },
       {
@@ -51,11 +56,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
         accessor: (row) => row?.owner,
         disableSortBy: true,
-      },
-      {
-        Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-        accessor: (row) => GetStatusCell(row?.sla),
-      },
+      }
     ];
   });
 
