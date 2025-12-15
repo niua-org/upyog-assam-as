@@ -104,7 +104,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       if(doc?.newUploadedDocs?.length > 0) documentList = [...documentList, ...doc?.newUploadedDocs]
     });
     const submitReportFormdata = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
-    const nocDocuments = submitReportFormdata?.nocDetails?.AAI_NOC_DETAILS?.documents;
+    const nocDocuments = submitReportFormdata?.nocDetails?.AAI_NOC_DETAILS?.[0]?.documents;
     if (Array.isArray(nocDocuments) && nocDocuments.length > 0) {
       documentList = [...documentList, ...nocDocuments];
     }  
