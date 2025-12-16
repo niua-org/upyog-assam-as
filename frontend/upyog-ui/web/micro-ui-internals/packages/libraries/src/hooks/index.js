@@ -357,6 +357,7 @@ import useEnabledMDMS from "./useEnabledMDMS";
 import useSelectedMDMS from "./useSelectedMDMS";
 import useRouteSubscription from "./useRouteSubscription";
 import { useCustomBackNavigation } from "./UseCustomBackNavigationProps";
+import { useBusinessServiceList } from "./noc/useBusinessServiceList";
 
 const pgr = {
   useComplaintDetails,
@@ -582,6 +583,7 @@ const noc = {
   useNOCApplicationActions,
   useInbox: useNOCInbox,
   useNOCSearchApplication,
+  useBusinessServiceList
 };
 
 const ws = {
