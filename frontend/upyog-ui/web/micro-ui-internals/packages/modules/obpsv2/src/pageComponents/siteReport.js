@@ -50,6 +50,7 @@ const siteReport = ({submitReport, onChange, data}) => {
     { code: "ABOVE_300", name: "Plot size above 300 meters" },
     { code: "BELOW_300", name: "Plot size below 300 meters" }
   ];
+
   const [form, setForm] = useState({
     proposalNo: "",
     submittedOn: "",
@@ -146,16 +147,19 @@ const siteReport = ({submitReport, onChange, data}) => {
       }));
     }
   }, [bpaData]);
-  const saveSession = (updatedNocDetails) => {
+  
+  const saveSession = (updatedNocDetails, updatedList) => {
+
     sessionStorage.setItem(
       "SUBMIT_REPORT_DATA",
       JSON.stringify({
         submitReport: form,
-        nocList,
+        nocList: updatedList || nocList,
         nocDetails: updatedNocDetails
       })
     );
   };
+
   const getAAIObject = () => {
     const list = nocDetails?.AAI_NOC_DETAILS;
     return Array.isArray(list) && list.length > 0
@@ -169,7 +173,7 @@ const siteReport = ({submitReport, onChange, data}) => {
   
   useEffect(() => {
     const prevAAI = getAAIObject();
-  
+
     let updatedAAI = {
       ...prevAAI,
       nocType: "CIVIL_AVIATION",
@@ -223,6 +227,7 @@ const siteReport = ({submitReport, onChange, data}) => {
   
     fetchGIS();
   }, [applicationNumber,tenantId]);
+
   useEffect(() => {
     if (plotSizeType === "BELOW_300" && gisData) {
       const prevAAI = getAAIObject();
@@ -273,6 +278,7 @@ const siteReport = ({submitReport, onChange, data}) => {
     setNocDetails(updated);
     saveSession(updated); 
   };
+
   const handleDocumentsUpload = (docsArray, docType) => {
     const formattedDocs = docsArray.map(([fileName, fileObj]) => ({
       documentType: docType,
@@ -283,6 +289,7 @@ const siteReport = ({submitReport, onChange, data}) => {
         nocType:"CIVIL_AVIATION"
       }
     }));
+
     setNocDetails(prev => {
       const prevAAI = Array.isArray(prev?.AAI_NOC_DETAILS)
         ? prev.AAI_NOC_DETAILS[0]
@@ -318,8 +325,9 @@ const siteReport = ({submitReport, onChange, data}) => {
       : nocList.filter(item => item !== nocType);
   
     setNocList(updatedList); 
-    saveSession(nocDetails);
+    saveSession(nocDetails, updatedList);
   };
+
   const handleChange = (key, value) => {
     const updatedForm = { ...form, [key]: value };
     setForm(updatedForm);
@@ -609,6 +617,7 @@ const siteReport = ({submitReport, onChange, data}) => {
                       checked={isChecked || false}
                     />
                   </div>
+
                   {noc.code === "CIVIL_AVIATION" && isChecked && (
                     <div
                       style={{

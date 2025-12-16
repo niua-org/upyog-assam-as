@@ -124,6 +124,12 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     const submitReport = getSubmitReport(applicationData);
     const nocList = storedData.nocList || [];
     const nocDetails = storedData.nocDetails || {};
+
+    if(!nocList.includes("CIVIL_AVIATION")){
+      // AAI_NOC_DETAILS contains details related to Civil Aviation NOC and if not selected by the user, it is removed here from nocDetails
+      delete nocDetails.AAI_NOC_DETAILS;
+    }
+
     nocDetails.permitType = "Planning Permit";
     applicationData = {
       ...applicationData,
@@ -132,7 +138,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       additionalDetails: {
         ...applicationData?.additionalDetails,
         submitReportinspection_pending: submitReport,
-        nocDetails:nocDetails,
+        nocDetails: nocDetails,
         pendingapproval: getPendingApprovals()
       },
        workflow:{
