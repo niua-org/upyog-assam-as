@@ -128,8 +128,7 @@ public class NOCStatusUpdateService {
      */
     private Noc executeNOCStatusUpdate(Noc existingNoc, AAIApplicationStatus aaiStatus, 
                                      String workflowAction, RequestInfo requestInfo) throws Exception {
-        Workflow workflow = new Workflow();
-        workflow.setAction(workflowAction);
+        Workflow workflow = Workflow.builder().action(workflowAction).build();
         workflow.setComment("Status updated from AAI: " + aaiStatus.getRemarks());
 
         existingNoc.setWorkflow(workflow);

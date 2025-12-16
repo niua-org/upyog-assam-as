@@ -102,4 +102,5 @@ public class NOCConstants {
 
 	// Fire NOC Workflow Constants
 	public static final String FIRE_NOC_WORKFLOW_CODE = "FIRE_SAFETY_SRV";
+	public static final String FIRE_SAFETY_NOC_TYPE = "FIRE_SAFETY";
 }

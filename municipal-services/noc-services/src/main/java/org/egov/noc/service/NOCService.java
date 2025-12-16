@@ -1,12 +1,6 @@
 package org.egov.noc.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.utils.MultiStateInstanceUtil;
@@ -79,6 +73,24 @@ public class NOCService {
 	@Autowired
 	private FireNOCValidationService fireNOCValidationService;
 	
+		// Define the list of fields to copy from the external API response to additionalDetails for fire NOC
+	private static final List<String> FIRE_NOC_ALLOWED_FIELDS = Arrays.asList(
+			"district_fire_office",
+			"fire_and_emergency_service_station_where_you_want_to_apply",
+			"mobile_number_of_the_applicant",
+			"type_of_occupancy",
+			"select_category_of_height_of_the_building",
+			"built_up_area_cum_other_parameters",
+			"pan_no",
+			"application_type",
+			"issued_date",
+			"status",
+			"issued_by",
+			"compliance_letter_no",
+			"letter_date"
+	);
+
+
 	public List<Noc> createNocs(NocRequest nocRequest) {
 
 		List<Noc> inputNoc = nocRequest.getNocList();
@@ -327,7 +339,7 @@ public class NOCService {
 	 * @param criteria
 	 * @param requestInfo
 	 * @return Integer count of NOC applications
-     */
+         */
         public Integer getNocCount(NocSearchCriteria criteria, RequestInfo requestInfo) {
                 /*List<String> uuids = new ArrayList<String>();
                 uuids.add(requestInfo.getUserInfo().getUuid());
@@ -381,102 +393,149 @@ public class NOCService {
 			return bpaList;
 		}
 
+
+
 	/**
-	 * Validates Fire NOC by calling external Fire NOC verification API.
-	 * Searches for existing NOC by sourceRefId (BPA application number),
-	 * validates the Fire NOC number (ARN) from request with external API,
-	 * updates NOC with validated nocNo, calls workflow to APPROVE, and saves
-	 * all validation details in additionalDetails field.
-	 * 
-	 * @param nocRequest NOC request containing sourceRefId (BPA app number) and nocNo (Fire NOC ARN to validate)
-	 * @return List of validated and approved NOC applications with updated nocNo and additionalDetails
-	 * @throws CustomException if NOC not found, validation fails, or workflow update fails
+	 * Validates a Fire NOC by verifying the NOC number (ARN) against an external Fire NOC API.
+	 * <p>
+	 * The process includes:
+	 * 1. Validating input constraints.
+	 * 2. Searching for the existing NOC application in the local DB.
+	 * 3. Calling the external Fire NOC service for validation.
+	 * 4. Merging external details into the local application's additional details.
+	 * 5. Triggering the Workflow to move the application to 'APPROVED'.
+	 * </p>
+	 *
+	 * @param nocRequest The request object containing the Source Ref ID (BPA Application No) and Fire NOC ARN.
+	 * @return A list containing the validated and updated NOC application.
+	 * @throws CustomException If validation fails, NOC is not found, or multiple NOCs exist.
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Noc> validateNocs(@Valid NocRequest nocRequest) {
+		// 1. Input Validation
 		Noc inputNoc = nocRequest.getNoc();
-		
 		if (inputNoc == null) {
-			throw new CustomException("INVALID_REQUEST", "NOC is required for validation");
+			throw new CustomException("INVALID_REQUEST", "NOC object is required for validation");
 		}
 
 		String sourceRefId = inputNoc.getSourceRefId();
+		String fireNocNumber = inputNoc.getNocNo();
+
 		if (StringUtils.isEmpty(sourceRefId)) {
 			throw new CustomException("INVALID_SOURCE_REF_ID", "Source reference ID (BPA application number) is required");
 		}
-
-		String fireNocNumber = inputNoc.getNocNo();
 		if (StringUtils.isEmpty(fireNocNumber)) {
 			throw new CustomException("INVALID_NOC_NUMBER", "Fire NOC number (nocNo) is required for validation");
 		}
 
-		String tenantId = inputNoc.getTenantId();
-		if (StringUtils.isEmpty(tenantId)) {
-			throw new CustomException("INVALID_TENANT_ID", "Tenant ID is required");
-		}
-		
-		NocSearchCriteria criteria = new NocSearchCriteria();
-		criteria.setSourceRefId(sourceRefId);
-		criteria.setTenantId(tenantId);
-		
+		// 2. Fetch Existing NOC
+		NocSearchCriteria criteria = getFireNocSearchCriteria(inputNoc.getTenantId(), sourceRefId);
 		List<Noc> existingNocs = nocRepository.getNocData(criteria);
-		
+
 		if (CollectionUtils.isEmpty(existingNocs)) {
 			throw new CustomException("NOC_NOT_FOUND", "NOC not found for sourceRefId: " + sourceRefId);
 		}
-
 		if (existingNocs.size() > 1) {
 			throw new CustomException("MULTIPLE_NOCS_FOUND", "Multiple NOCs found for sourceRefId: " + sourceRefId);
 		}
 
 		Noc existingNoc = existingNocs.get(0);
-		log.info("Validating Fire NOC - applicationNo: {}, sourceRefId: {}, fireNocNumber: {}", 
+
+		// Check if already approved to ensure idempotency
+		if (NOCConstants.APPROVED_STATE.equalsIgnoreCase(existingNoc.getApplicationStatus())) {
+			log.info("NOC_ALREADY_APPROVED - sourceRefId: {}, fireNocNumber: {}", sourceRefId, fireNocNumber);
+			return existingNocs;
+		}
+
+		log.info("Validating Fire NOC - applicationNo: {}, sourceRefId: {}, fireNocNumber: {}",
 				existingNoc.getApplicationNo(), sourceRefId, fireNocNumber);
 
+		// 3. External API Validation
 		Map<String, Object> validationResponse = fireNOCValidationService.validateFireNOC(fireNocNumber);
-		LinkedHashMap<String, Object> nocDetails = (LinkedHashMap<String, Object>) validationResponse.get("noc_details");
-		
-		Map<String, Object> additionalDetails = new HashMap<>();
-		if (existingNoc.getAdditionalDetails() instanceof Map) {
-			additionalDetails.putAll((Map<String, Object>) existingNoc.getAdditionalDetails());
+
+		boolean validationStatus = Boolean.TRUE.equals(validationResponse.get("status"));
+		String validationMessage = (String) validationResponse.getOrDefault("message", "Fire NOC validation failed");
+
+		if (!validationStatus) {
+			throw new CustomException("FIRE_NOC_VALIDATION_FAILED", validationMessage);
 		}
 
-		if (nocDetails != null) {
-			nocDetails.entrySet().stream()
-					.filter(entry -> entry.getValue() != null)
-					.forEach(entry -> additionalDetails.put(entry.getKey(), entry.getValue()));
-		}
+		// 4. Update Additional Details
+		Map<String, Object> additionalDetails = Optional.ofNullable((Map<String, Object>) existingNoc.getAdditionalDetails())
+				.orElse(new HashMap<>());
 
-		additionalDetails.put("validation_status", validationResponse.get("status"));
-		additionalDetails.put("validation_message", validationResponse.get("message"));
-		
+		Map<String, Object> externalNocDetails = (Map<String, Object>) validationResponse.get("noc_details");
+
+		// Helper method to map specific fields
+		enrichFireNocDetails(additionalDetails, externalNocDetails);
+
+		additionalDetails.put("validation_status", validationStatus);
+		additionalDetails.put("validation_message", validationMessage);
+
 		existingNoc.setNocNo(fireNocNumber);
 		existingNoc.setAdditionalDetails(additionalDetails);
 
-		Workflow workflow = new Workflow();
-		workflow.setAction(NOCConstants.ACTION_APPROVE);
+		// 5. Workflow Integration
+		Workflow workflow = Workflow.builder()
+				.action(NOCConstants.ACTION_APPROVE)
+				.build();
 		existingNoc.setWorkflow(workflow);
 
 		NocRequest updateRequest = new NocRequest();
 		updateRequest.setNoc(existingNoc);
 		updateRequest.setRequestInfo(nocRequest.getRequestInfo());
-		
+
+		// Call Workflow to transitions state
 		wfIntegrator.callWorkFlow(updateRequest, NOCConstants.FIRE_NOC_WORKFLOW_CODE);
-		enrichmentService.postStatusEnrichment(updateRequest, NOCConstants.FIRE_NOC_WORKFLOW_CODE);
 		existingNoc.setApplicationStatus(NOCConstants.APPROVED_STATE);
 
+		// Update Database
 		BusinessService businessService = workflowService.getBusinessService(existingNoc,
 				nocRequest.getRequestInfo(), NOCConstants.FIRE_NOC_WORKFLOW_CODE);
-		
-		boolean isStateUpdatable = businessService == null 
-				? true 
-				: workflowService.isStateUpdatable(existingNoc.getApplicationStatus(), businessService);
-		
+
+		boolean isStateUpdatable = businessService == null ||
+				workflowService.isStateUpdatable(existingNoc.getApplicationStatus(), businessService);
+
 		nocRepository.update(updateRequest, isStateUpdatable);
 
-		log.info("NOC validated and approved - applicationNo: {}, nocNo: {}", 
+		log.info("NOC validated and approved successfully - applicationNo: {}, nocNo: {}",
 				existingNoc.getApplicationNo(), existingNoc.getNocNo());
-		
-		return Arrays.asList(existingNoc);
+
+		return Collections.singletonList(existingNoc);
+	}
+
+	/**
+	 * Helper method to map allowed fields from the external API response to the local additional details map.
+	 * This avoids repetitive null checks and manual put operations.
+	 *
+	 * @param targetDetails The map where data needs to be saved (existing NOC additionalDetails).
+	 * @param sourceDetails The map received from the external API (noc_details).
+	 */
+	private void enrichFireNocDetails(Map<String, Object> targetDetails, Map<String, Object> sourceDetails) {
+		if (CollectionUtils.isEmpty(sourceDetails)) {
+			return;
+		}
+
+		for (String fieldKey : FIRE_NOC_ALLOWED_FIELDS) {
+			if (sourceDetails.containsKey(fieldKey)) {
+				targetDetails.put(fieldKey, sourceDetails.get(fieldKey));
+			}
+		}
+	}
+
+	/**
+	 * Constructs the search criteria for Fire NOCs.
+	 */
+	private NocSearchCriteria getFireNocSearchCriteria(String tenantId, String sourceRefId) {
+		if (StringUtils.isEmpty(tenantId)) {
+			throw new CustomException("INVALID_TENANT_ID", "Tenant ID is required");
+		}
+
+		// NocNumber and SourceRefId are already validated in the main method
+		NocSearchCriteria criteria = new NocSearchCriteria();
+		criteria.setSourceRefId(sourceRefId);
+		criteria.setTenantId(tenantId);
+		criteria.setNocType(NOCConstants.FIRE_SAFETY_NOC_TYPE);
+		return criteria;
 	}
 }
