@@ -57,6 +57,7 @@ function ApplicationDetailsContent({
   paymentsList,
   oldValue,
   isInfoLabel = false,
+  nocDetails
 }) {
   const { t } = useTranslation();
   let { id: applicationNo } = useParams(); // Extracts PG-1013-2025-I-001019
@@ -103,6 +104,30 @@ function ApplicationDetailsContent({
     }
   }, [applicationData?.applicationNo]);
   const [fetchBillData, updatefetchBillData] = useState({});
+
+  const formatEpochDateDMY = (epochValue) => {
+      if (!epochValue) return "NA";
+
+      // Convert to number
+      let epoch = Number(epochValue);
+      // Handle epoch in seconds (10 digits)
+      if (epochValue.toString().length === 10) {
+        epoch = epoch * 1000;
+      }
+      // Create Date object
+      const date = new Date(epoch);
+
+      // If invalid date
+      if (isNaN(date.getTime())) return "NA";
+
+      // Extract day, month, year
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+
+      // Return formatted date
+      return `${day}/${month}/${year}`;
+  };
 
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
     const assessmentData = await Digit.PTService.assessmentSearch({ tenantId, filters: { propertyIds } });
@@ -703,6 +728,36 @@ function ApplicationDetailsContent({
           )}
           {detail?.additionalDetails?.submitReportDetails && window.location.href.includes("obpsv2") ? (
             <div>
+              {nocDetails.length > 0 && (
+              <Accordion
+                title={t("BPA_NOC_DETAILS")}
+                t={t}
+                isFlag={false}
+              >
+                {nocDetails.map((noc, index) => (
+                  <div key={noc.id || index} style={{ marginBottom: "2rem" }}>
+                    <CardSubHeader style={{ fontSize: "20px", marginBottom: "0.5rem" }}>
+                      {`${t("BPA_NOC")} ${index + 1} - ${t(noc.nocType)}`}
+                    </CardSubHeader>
+
+                    <StatusTable>
+                      <Row
+                        label={t("BPA_NOC_APPLICATION_NO")}
+                        text={noc.applicationNo || t("CS_NA")}
+                      />
+                      <Row
+                        label={t("BPA_SUBMISSION_DATE")}
+                        text={formatEpochDateDMY(noc.submittedOn) || t("CS_NA")}
+                      />
+                      <Row
+                        label={t("BPA_APPLICATION_STATUS")}
+                        text={noc.applicationStatus || t("CS_NA")}
+                      />
+                    </StatusTable>
+                  </div>
+                ))}
+                </Accordion>
+            )}
            
             <StatusTable>
               <Accordion

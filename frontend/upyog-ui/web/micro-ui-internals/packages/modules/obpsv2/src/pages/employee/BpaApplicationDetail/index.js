@@ -20,6 +20,10 @@ const BPAEmployeeDetails = () => {
   const { roles } = Digit.UserService.getUser().info;
   const isMobile = window.Digit.Utils.browser.isMobile();
   const { data = {}, isLoading } = useBPAV2DetailsPage(tenantId, { applicationNo: acknowledgementIds });
+  const nocFilters = {
+      sourceRefId: acknowledgementIds,
+    };
+  const nocData = Digit.Hooks.noc.useNOCSearchApplication(tenantId, nocFilters);
   const [canSubmit, setSubmitValve] = useState(false);
   const [viewTimeline, setViewTimeline]=useState(false);
   const defaultValues = {};
@@ -31,40 +35,24 @@ const BPAEmployeeDetails = () => {
     id: acknowledgementIds,
     moduleCode: "OBPSV2",
   });
-  const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
-    let applicationNo=  data?.applicationData?.applicationNo ;
-    let bpaResponse = await Digit.OBPSV2Services.search({tenantId,
-      filters: { applicationNo }});
-     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.applicationData?.edcrNumber });
-    let bpaData = bpaResponse?.bpa?.[0];
-      let  edcrData = edcrResponse?.edcrDetail?.[0];
-    let currentDate = new Date();
-    bpaData.additionalDetails.runDate = convertDateToEpoch(
-      currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
-    );
-    let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
-    let response = await Digit.PaymentService.generatePdf(bpaData?.tenantId, { Bpa: [reqData] }, order);
-    const fileStore = await Digit.PaymentService.printReciept(bpaData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    //reqData["applicationType"] = data?.[0]?.additionalDetails?.applicationType;
-  };
-  const getBuildingPermitOrder = async (order, mode = "download") => {
-    let applicationNo=  data?.applicationData?.applicationNo ;
-    let bpaResponse = await Digit.OBPSV2Services.search({tenantId,
-      filters: { applicationNo }});
-     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.applicationData?.edcrNumber });
-    let bpaData = bpaResponse?.bpa?.[0];
-      let  edcrData = edcrResponse?.edcrDetail?.[0];
-    let currentDate = new Date();
-    bpaData.additionalDetails.runDate = convertDateToEpoch(
-      currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
-    );
-    let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
-    let response = await Digit.PaymentService.generatePdf(bpaData?.tenantId, { Bpa: [reqData] }, order);
-    const fileStore = await Digit.PaymentService.printReciept(bpaData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    //reqData["applicationType"] = data?.[0]?.additionalDetails?.applicationType;
-  };
+  
+      // Safely access and map the NOC array
+  const mappedNocData = nocData?.data?.Noc?.map(item => ({
+    id: item.id,
+    tenantId: item.tenantId,
+    applicationNo: item.applicationNo,
+    applicationType: item.applicationType,
+    nocType: item.nocType,
+    source: item.source,
+    sourceRefId: item.sourceRefId,
+    applicationStatus: item.applicationStatus,
+    applicantName: item.additionalDetails?.applicantName,
+    workflowCode: item.additionalDetails?.workflowCode,
+    submittedOn: item.additionalDetails?.SubmittedOn,
+    approvalDate: item.additionalDetails?.approvalDate,
+    rejectionDate: item.additionalDetails?.rejectionDate,
+  })) || [];
+
 
   const handlePlanningPermitOrder = async () => {
     const application = data?.applicationData;
@@ -379,6 +367,7 @@ const BPAEmployeeDetails = () => {
           closeToast={() => setShowToast(null)}
           statusAttribute={"state"}
           timelineStatusPrefix={`WF_${workflowDetails?.data?.applicationBusinessService ? workflowDetails?.data?.applicationBusinessService : data?.applicationData?.businessService}_`}
+          nocDetails={mappedNocData}
         />
       </div>
       </div>

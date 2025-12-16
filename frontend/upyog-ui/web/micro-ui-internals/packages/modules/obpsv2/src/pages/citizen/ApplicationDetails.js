@@ -85,9 +85,9 @@ import {
         applicantName: item.additionalDetails?.applicantName,
         workflowCode: item.additionalDetails?.workflowCode,
         submittedOn: item.additionalDetails?.SubmittedOn,
+        approvalDate: item.additionalDetails?.approvalDate,
+        rejectionDate: item.additionalDetails?.rejectionDate,
       })) || [];
-
-      console.log("ehgfhwef",mappedNocData);
 
 
     const [hasAccess, setHasAccess] = useState(false);
@@ -1376,12 +1376,13 @@ import {
                 text={t(landInfo?.units?.[0]?.occupancyType) || t("CS_NA")}
               />
 
+            <br />
             {mappedNocData.length > 0 && (
-              <React.Fragment>
-                <CardSubHeader style={{ fontSize: "24px" }}>
-                  {t("BPA_NOC_DETAILS")}
-                </CardSubHeader>
-
+              <Accordion
+                title={t("BPA_NOC_DETAILS")}
+                t={t}
+                isFlag={false}
+              >
                 {mappedNocData.map((noc, index) => (
                   <div key={noc.id || index} style={{ marginBottom: "2rem" }}>
                     <CardSubHeader style={{ fontSize: "20px", marginBottom: "0.5rem" }}>
@@ -1389,10 +1390,6 @@ import {
                     </CardSubHeader>
 
                     <StatusTable>
-                      {/* <Row
-                        label={t("BPA_NOC_TYPE")}
-                        text={t(noc.nocType) || t("CS_NA")}
-                      /> */}
                       <Row
                         label={t("BPA_NOC_APPLICATION_NO")}
                         text={noc.applicationNo || t("CS_NA")}
@@ -1408,7 +1405,7 @@ import {
                     </StatusTable>
                   </div>
                 ))}
-              </React.Fragment>
+                </Accordion>
             )}
 
 
