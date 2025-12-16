@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CardHeader } from "@upyog/digit-ui-react-components";
-import { businessServiceList } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 
 const Search = ({ path }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
+const { businessServices, isLoading: isBusinessServiceLoading } = Digit.Hooks.noc.useBusinessServiceList(true);
+console.log("businessServicesbusinessServices" , businessServices);
   const Search = Digit.ComponentRegistryService.getComponent("NOCSearchApplication");
 
-  const nocTypeList = businessServiceList()?.map((item) => ({
+  // Prepare NOC types by removing '_SRV' suffix so that it can be used in API filters
+  const nocTypeList = businessServices?.map((item) => ({
     ...item,
-    code: item.code.replace(/_SRV$/, ""), // remove _SRV only at end
+    code: item.replace(/_SRV$/, ""), // remove _SRV only at end
   }));
   let availableNocTypes = [];
   if (nocTypeList?.length == 1) availableNocTypes = [nocTypeList?.[0]?.code];

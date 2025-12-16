@@ -2,13 +2,13 @@ import React, { useMemo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EmployeeModuleCard } from "@upyog/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
-import { businessServiceList } from "../../utils";
 
 const NOCEmployeeHomeCard = () => {
     const { t } = useTranslation();
     const location = useLocation()
     const tenantId = Digit.ULBService.getCurrentTenantId();
-    
+    const { businessServices, isLoading: isBusinessServiceLoading } = Digit.Hooks.noc.useBusinessServiceList(true);
+
     const { data: nocTypeRoleMapping, isLoading: isMDMSLoading } = Digit.Hooks.useCustomMDMS(
         Digit.ULBService.getStateId(),
         "NOC",
@@ -36,7 +36,8 @@ const NOCEmployeeHomeCard = () => {
         applicationStatus: "",
         locality: [],
         assignee: "ASSIGNED_TO_ALL",
-        businessServiceArray: businessServiceList(true) || []
+        businessServiceArray: businessServices || []
+        // businessServiceList(true) || []
     }
 
     const tableOrderFormDefaultValues = {
