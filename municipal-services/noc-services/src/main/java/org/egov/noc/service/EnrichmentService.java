@@ -149,42 +149,61 @@ public class EnrichmentService {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void postStatusEnrichment(NocRequest nocRequest, String businessServiceValue) {
-		Noc noc = nocRequest.getNoc();
 
-		BusinessService businessService = workflowService.getBusinessService(noc, nocRequest.getRequestInfo(),
-				businessServiceValue);
+	    Noc noc = nocRequest.getNoc();
 
-		if (businessService != null) {
+	    BusinessService businessService = workflowService.getBusinessService(
+	            noc, nocRequest.getRequestInfo(), businessServiceValue);
 
-			State stateObj = workflowService.getCurrentState(noc.getApplicationStatus(), businessService);
-			String state = stateObj != null ? stateObj.getState() : StringUtils.EMPTY;
+	    if (businessService != null) {
 
-			if (state.equalsIgnoreCase(NOCConstants.APPROVED_STATE)
-					|| state.equalsIgnoreCase(NOCConstants.AUTOAPPROVED_STATE)) {
+	        State stateObj = workflowService.getCurrentState(
+	                noc.getApplicationStatus(), businessService);
 
-				Map<String, Object> additionalDetail = null;
-				if (noc.getAdditionalDetails() != null) {
-					additionalDetail = (Map) noc.getAdditionalDetails();
-				} else {
-					additionalDetail = new HashMap<String, Object>();
-					noc.setAdditionalDetails(additionalDetail);
-				}
+	        String state = stateObj != null ? stateObj.getState() : StringUtils.EMPTY;
 
-				List<IdResponse> idResponses = idGenRepository
-						.getId(nocRequest.getRequestInfo(), noc.getTenantId(), config.getApplicationNoIdgenName(), 1)
-						.getIdResponses();
-				noc.setNocNo(idResponses.get(0).getId());
-			}
-			if (state.equalsIgnoreCase(NOCConstants.VOIDED_STATUS)) {
-				noc.setStatus(Status.INACTIVE);
-			}
-		}
-		
-		if (noc.getWorkflow() != null && noc.getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE)) {
-			Map<String, String> details = (Map<String, String>) noc.getAdditionalDetails();
-			details.put(NOCConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
-			noc.setAdditionalDetails(details);
-		}
+	        Map<String, Object> additionalDetails =
+	                noc.getAdditionalDetails() != null
+	                        ? (Map<String, Object>) noc.getAdditionalDetails()
+	                        : new HashMap<>();
+
+	        if (state.equalsIgnoreCase(NOCConstants.APPROVED_STATE)
+	                || state.equalsIgnoreCase(NOCConstants.AUTOAPPROVED_STATE)) {
+
+	            	additionalDetails.put(NOCConstants.APPROVAL_DATE, Long.toString(System.currentTimeMillis()));
+	            List<IdResponse> idResponses = idGenRepository
+	                    .getId(
+	                            nocRequest.getRequestInfo(),
+	                            noc.getTenantId(),
+	                            config.getApplicationNoIdgenName(),
+	                            1)
+	                    .getIdResponses();
+
+	            noc.setNocNo(idResponses.get(0).getId());
+	        }
+
+	        if (state.equalsIgnoreCase(NOCConstants.APPLICATION_STATUS_REJECTED)) {
+	           
+	            additionalDetails.put( NOCConstants.REJECTION_DATE, Long.toString(System.currentTimeMillis()));
+	        }
+	        if (state.equalsIgnoreCase(NOCConstants.VOIDED_STATUS)) {
+	            noc.setStatus(Status.INACTIVE);
+	        }
+
+	        noc.setAdditionalDetails(additionalDetails);
+	    }
+	    if (noc.getWorkflow() != null
+	            && NOCConstants.ACTION_INITIATE.equals(noc.getWorkflow().getAction())) {
+
+	        Map<String, Object> details =
+	                noc.getAdditionalDetails() != null
+	                        ? (Map<String, Object>) noc.getAdditionalDetails()
+	                        : new HashMap<>();
+
+	        details.put(NOCConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
+
+	        noc.setAdditionalDetails(details);
+	    }
 	}
 
 }

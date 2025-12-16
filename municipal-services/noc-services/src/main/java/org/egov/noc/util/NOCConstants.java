@@ -64,6 +64,10 @@ public class NOCConstants {
 
 	public static final String INITIATED_TIME = "SubmittedOn";	
 	
+	public static final String APPROVAL_DATE = "approvalDate";	
+	
+	public static final String REJECTION_DATE = "rejectionDate";
+	
 	//sms notification
 
 	public static final String ACTION_STATUS_CREATED = "null_CREATED";
