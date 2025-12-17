@@ -1402,6 +1402,19 @@ import {
                         label={t("BPA_APPLICATION_STATUS")}
                         text={noc.applicationStatus || t("CS_NA")}
                       />
+                      {noc.applicationStatus === 'APPROVED' && (
+                        <Row
+                          label={t("BPA_NOC_APPROVAL_DATES")}
+                          text={formatEpochDateDMY(noc.approvalDate) || t("CS_NA")}
+                        />
+                      )}
+
+                      {noc.applicationStatus === 'REJECTED' && (
+                        <Row
+                          label={t("BPA_NOC_REJECTION_DATES")}
+                          text={formatEpochDateDMY(noc.rejectionDate) || t("CS_NA")}
+                        />
+                      )}
                     </StatusTable>
                   </div>
                 ))}
