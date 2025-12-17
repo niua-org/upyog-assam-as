@@ -356,7 +356,7 @@ public class NOCService {
 		 */
 		public List<Noc> fetchNewAAINOCs(String tenantId) {
 			NocSearchCriteria criteria = new NocSearchCriteria();
-			criteria.setApplicationStatus(NOCConstants.CREATED_STATUS);
+			criteria.setApplicationStatus(NOCConstants.APPLICATION_STATUS_INPROGRESS);
 			criteria.setNocType(NOCConstants.CIVIL_AVIATION_NOC_TYPE);
 			criteria.setTenantId(tenantId != null ? tenantId : config.getAssamStateCode());
 			return nocRepository.getNewAAINocData(criteria);
