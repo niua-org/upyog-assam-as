@@ -168,61 +168,270 @@ export const convertEpochToDate = (dateEpoch) => {
       return dateString;
     }
   };
-
-
-   const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
-    let applicationNo =  data?.[0]?.applicationNo ;
-    let bpaResponse = await Digit.OBPSV2Services.search({tenantId,
-      filters: { applicationNo }});
-    const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.[0]?.edcrNumber })
-        const gisResponse = await Digit.OBPSV2Services.gisSearch({
-          GisSearchCriteria: {
-            applicationNo: applicationNo,
+  const printPlanningPermitReceipt = async () => {
+    try {
+      const applicationNo =consumerCode;
+      
+      if (!applicationNo) return;
+      
+      const bpaResponse = await Digit.OBPSV2Services.search({
+        tenantId: tenantId,
+        filters: { applicationNo }
+      });
+      
+      const application = bpaResponse?.bpa?.[0];
+      if (!application) return;
+      
+      const filters = {
+        CalulationCriteria: [
+        {
             tenantId: tenantId,
-            status: "SUCCESS"
-          }
-        });
-    let bpaData = bpaResponse?.bpa?.[0];
-    let edcrData = edcrResponse?.edcrDetail?.[0];
-    let currentDate = new Date();
-    bpaData.additionalDetails.runDate = convertDateToEpoch(
-      currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
-    );
-    let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }], gisResponse };
-    let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [reqData] }, order);
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    if (fileStore && fileStore[response.filestoreIds[0]]) {
-     window.open(fileStore[response?.filestoreIds[0]], "_blank");
-    }
-    reqData["applicationType"] = data?.[0]?.additionalDetails?.applicationType;
-  };
-  const getBuildingPermitOrder = async (order, mode = "download") => {
-    let applicationNo =  data?.[0]?.applicationNo ;
-    let bpaResponse = await Digit.OBPSV2Services.search({tenantId,
-      filters: { applicationNo }});
-    const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.[0]?.edcrNumber });
-    let bpaData = bpaResponse?.bpa?.[0];
-    let edcrData = edcrResponse?.edcrDetail?.[0];
-        const gisResponse = await Digit.OBPSV2Services.gisSearch({
-          GisSearchCriteria: {
             applicationNo: applicationNo,
-            tenantId: tenantId,
-            status: "SUCCESS"
+            feeType: "PLANNING_PERMIT_FEE",
+            applicationType: "RESIDENTIAL_RCC",
+            BPA: {
+                edcrNumber: application?.edcrNumber,
+                tenantId: tenantId,
+            }
+        }
+    ]}
+      
+      const estimateResponse = await Digit.OBPSV2Services.estimate(filters, true, null);
+      const paymentData = payments?.Payments?.[0];
+      
+      if (!paymentData) return;
+      
+      const updatedPayment = {
+        ...paymentData,
+        paymentDetails: paymentData.paymentDetails?.map(detail => ({
+          ...detail,
+          additionalDetails: {
+            ...detail.additionalDetails,
+            feebreakup: estimateResponse?.Calculations?.[0]?.taxHeadEstimates || []
           }
+        }))
+      };
+      
+      let fileStoreId = paymentData?.fileStoreId;
+      
+      if (!fileStoreId) {
+        const pdfResponse = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [updatedPayment] },
+          "bpa-receipt"
+        );
+        fileStoreId = pdfResponse?.filestoreIds?.[0];
+        
+        // Update pp_fee_receipt_filestore_id in application
+        const updatedApplication = {
+          ...application,
+          additionalDetails: {
+            ...application.additionalDetails,
+            ppFeeReceiptFileStoreId: fileStoreId,
+            UPDATE_FILESTORE_ID: true,
+          },
+        };
+        
+        await Digit.OBPSV2Services.update({
+          BPA: updatedApplication,
         });
-    let currentDate = new Date();
-    bpaData.additionalDetails.runDate = convertDateToEpoch(
-      currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
-    );
-    let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }], gisResponse};
-    let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [reqData] }, order);
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    if (fileStore && fileStore[response.filestoreIds[0]]) {
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+      }
+      
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      
+      if (fileStore && fileStore[fileStoreId]) {
+        window.open(fileStore[fileStoreId], "_blank");
+      }
+    } catch (error) {}
+  };
+  
+  const printBuildingPermitReceipt = async () => {
+      try {
+        const applicationNo =consumerCode;
+        
+        if (!applicationNo) return;
+        
+        const bpaResponse = await Digit.OBPSV2Services.search({
+          tenantId: tenantId,
+          filters: { applicationNo }
+        });
+        
+        const application = bpaResponse?.bpa?.[0];
+        if (!application) return;
+        
+        const filters = {
+          CalulationCriteria: [
+          {
+              tenantId: tenantId,
+              applicationNo: applicationNo,
+              feeType: "BUILDING_PERMIT_FEE",
+              applicationType: "RESIDENTIAL_RCC",
+              BPA: {
+                  edcrNumber: application?.edcrNumber,
+                  tenantId: tenantId,
+              }
+          }
+      ]}
+        
+        const estimateResponse = await Digit.OBPSV2Services.estimate(filters, true, null);
+        const paymentData = payments?.Payments?.[0];
+        
+        if (!paymentData) return;
+        
+        const updatedPayment = {
+          ...paymentData,
+          paymentDetails: paymentData.paymentDetails?.map(detail => ({
+            ...detail,
+            additionalDetails: {
+              ...detail.additionalDetails,
+              feebreakup: estimateResponse?.Calculations?.[0]?.taxHeadEstimates || []
+            }
+          }))
+        };
+        
+        let fileStoreId = paymentData?.fileStoreId;
+        
+        if (!fileStoreId) {
+          const pdfResponse = await Digit.PaymentService.generatePdf(
+            tenantId,
+            { Payments: [updatedPayment] },
+            "bpa-receipt"
+          );
+          fileStoreId = pdfResponse?.filestoreIds?.[0];
+          
+          // Update pp_fee_receipt_filestore_id in application
+          const updatedApplication = {
+            ...application,
+            additionalDetails: {
+              ...application.additionalDetails,
+              bpFeeReceiptFileStoreId: fileStoreId,
+              UPDATE_FILESTORE_ID: true,
+            },
+          };
+          
+          await Digit.OBPSV2Services.update({
+            BPA: updatedApplication,
+          });
+        }
+        
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+        
+        if (fileStore && fileStore[fileStoreId]) {
+          window.open(fileStore[fileStoreId], "_blank");
+        }
+      } catch (error) {}
+    };  
+  const getBuildingPermitOrder = async () => {
+    let applicationNo =  data?.[0]?.applicationNo;
+    let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
+      filters: { applicationNo }});
+    const application = bpaResponse?.bpa?.[0];
+    let fileStoreId = application?.bpFileStoreId;
+    const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: application?.edcrNumber });
+    let edcrDetail = edcrResponse?.edcrDetail?.[0];
+    const gisResponse = await Digit.OBPSV2Services.gisSearch({
+      GisSearchCriteria: {
+        applicationNo: applicationNo,
+        tenantId: tenantId,
+        status: "SUCCESS",
+      },
+    });
+    if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        {
+          Bpa: [{ ...application, edcrDetail: [{ ...edcrDetail }], gisResponse }],
+        },
+        "bpaBuildingPermit"
+      );
+      fileStoreId = response?.filestoreIds?.[0];
+      const updatedApplication = {
+        ...application,
+        bpFileStoreId: fileStoreId,
+        additionalDetails: {
+          ...application.additionalDetails,
+          UPDATE_FILESTORE_ID: true,
+        },
+      };
+      await Digit.OBPSV2Services.update({
+        BPA: updatedApplication,
+      });
     }
-    reqData["applicationType"] = data?.[0]?.additionalDetails?.applicationType;
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
   };
 
+  const getPlanningPermitOrder = async () => {
+    let applicationNo =  data?.[0]?.applicationNo;
+    let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
+      filters: { applicationNo }});
+    const application = bpaResponse?.bpa?.[0];
+    let fileStoreId = application?.ppFileStoreId;
+    const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: application?.edcrNumber });
+    let edcrDetail = edcrResponse?.edcrDetail?.[0];
+    const gisResponse = await Digit.OBPSV2Services.gisSearch({
+      GisSearchCriteria: {
+        applicationNo: applicationNo,
+        tenantId: tenantId,
+        status: "SUCCESS",
+      },
+    });
+    if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [{ ...application, edcrDetail: [{ ...edcrDetail }], gisResponse }] }, "bpaPlanningPermit");
+      fileStoreId = response?.filestoreIds?.[0];
+      const updatedApplication = {
+        ...application,
+        ppFileStoreId: fileStoreId,
+        additionalDetails: {
+          ...application.additionalDetails,
+          UPDATE_FILESTORE_ID: true,
+        },
+      };
+      await Digit.OBPSV2Services.update({
+        BPA: updatedApplication,
+      });
+    }
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
+  };
+
+  // Occupancy Certificate Download
+  const getBuildingOccupancy = async () => {
+    let applicationNo =  data?.[0]?.applicationNo;
+    let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
+      filters: { applicationNo }});
+    const application = bpaResponse?.bpa?.[0];
+    let fileStoreId = application?.ocFileStoreId;
+    if (!fileStoreId) {
+      let currentDate = new Date();
+      let bpaResponse = await Digit.OBPSV2Services.search({
+        tenantId,
+        filters: { applicationNo },
+      });
+      let bpaData = bpaResponse?.bpa?.[0];
+      bpaData.additionalDetails.runDate = convertDateToEpoch(`${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`);
+      const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: application?.edcrNumber });
+      let edcrData = edcrResponse?.edcrDetail?.[0];
+      let requestData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
+      const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, "bpa-occupancy-certificate");
+      fileStoreId = response?.filestoreIds?.[0];
+      const updatedApplication = {
+        ...application,
+        ocFileStoreId: fileStoreId,
+        additionalDetails: {
+          ...application.additionalDetails,
+          UPDATE_FILESTORE_ID: true, // workflow flag to update file store id
+        },
+      };
+      await Digit.OBPSV2Services.update({
+        BPA: updatedApplication,
+      });
+    }
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, {
+      fileStoreIds: fileStoreId,
+    });
+    window.open(fileStore[fileStoreId], "_blank");
+  };
 
   let bannerText;
   if (workflw) {
@@ -281,24 +490,41 @@ export const convertEpochToDate = (dateEpoch) => {
         )}
       </StatusTable>
       <div style={{display:"flex"}}>
-      { <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginRight: "20px" }} onClick={printReciept}>
+      {/* { <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginRight: "20px" }} onClick={printReciept}>
               <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
               </svg>
               {t("CS_COMMON_PRINT_RECEIPT")}
-        </div>}
-      
+        </div>} */}
+        {business_service=== "BPA.PLANNING_PERMIT_FEE" ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printPlanningPermitReceipt}>
+          <DownloadPrefixIcon />
+            {t("CS_COMMON_PRINT_RECEIPT")}
+          </div>
+      ) : null}
+       {business_service=== "BPA.BUILDING_PERMIT_FEE" ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printBuildingPermitReceipt}>
+          <DownloadPrefixIcon />
+            {t("CS_COMMON_PRINT_RECEIPT")}
+          </div>
+      ) : null}
       {business_service=== "BPA.PLANNING_PERMIT_FEE" ? (
-        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={r => getPermitOccupancyOrderSearch("bpaPlanningPermit")}>
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={getPlanningPermitOrder}>
           <DownloadPrefixIcon />
             {t("BPA_PLANNING_PERMIT_ORDER")}
           </div>
       ) : null}
       {business_service === "BPA.BUILDING_PERMIT_FEE" ? (
-        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={r => getBuildingPermitOrder("bpaBuildingPermit")}>
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={getBuildingPermitOrder}>
           <DownloadPrefixIcon />
             {t("BPA_BUILDING_PERMIT_ORDER")}
+          </div>
+      ) : null}
+      {business_service === "BPA.BUILDING_PERMIT_FEE" ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={getBuildingOccupancy}>
+          <DownloadPrefixIcon />
+            {t("BPA_OCCUPANCY_CERTIFICATE")}
           </div>
       ) : null}
 

@@ -70,6 +70,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
   };
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
+  const userInfo = Digit.UserService.getUser();
   const cellStyle = {
     border: "1px solid #ccc",
     padding: "8px",
@@ -729,10 +730,13 @@ const CheckPage = ({ onSubmit, value = {} }) => {
           }}
         >
           <CheckBox
-            label={t("BPA_DECLARATION_MESSAGE").replace(
-              "{applicantName}",
-              applicant?.applicantName || t("CS_APPLICANT")
-            )}
+            label={
+              userInfo?.info?.name && 
+              applicant?.applicantName && 
+              userInfo?.info?.name !== applicant?.applicantName
+                ? t("BPA_DECLARATION_MESSAGE_RTP").replace("{rtpName}", userInfo.info.name).replace("{applicantName}", applicant.applicantName)
+                : t("BPA_DECLARATION_MESSAGE").replace("{applicantName}", applicant?.applicantName || t("CS_APPLICANT"))
+            }
             onChange={setDeclarationHandler}
             checked={agree}
           />
