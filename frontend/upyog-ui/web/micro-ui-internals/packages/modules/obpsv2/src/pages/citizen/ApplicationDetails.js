@@ -677,7 +677,6 @@ import {
           setCollectionBillArray(collectionArray);
           setCollectionBillDetails(collectionDetailsArray);
           setTotalAmount(total);
-          //console.log("collectiondet", collectionDetailsArray);
   
         } catch (err) {
           console.error("Error fetching collection details:", err);

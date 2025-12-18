@@ -86,14 +86,12 @@ const RTPAcknowledgement = (props) => {
     }
     
     try {
-      console.log('Starting BPA process for applicationNo:', applicationNo);
       // BPA Search call using applicationNumber from URL
       const bpaSearchResponse = await Digit.OBPSV2Services.search({
         tenantId: tenantId,
         filters: { applicationNo }
       });
       
-      console.log('BPA Search Response:', bpaSearchResponse);
 
       if (bpaSearchResponse?.bpa?.length > 0) {
         const bpaData = bpaSearchResponse.bpa[0];
@@ -110,7 +108,6 @@ const RTPAcknowledgement = (props) => {
           }
         });
         
-        console.log("BPA Update Response:", updateResponse);
         setBpaUpdateResponse(updateResponse);
       } else {
         console.log('No BPA data found for applicationNo:', applicationNo);

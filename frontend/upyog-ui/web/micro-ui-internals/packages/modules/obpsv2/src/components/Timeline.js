@@ -5,7 +5,6 @@ import { TickMark } from "@upyog/digit-ui-react-components";
 let actions = [];
 
 const getAction = (flow) => {
-  console.log("Flow in timeline:", flow);
   switch (flow) {
     case "buildingPermit":
       actions = [ "BPA_PROPERTY_VALIDATION", "BPA_APPLICANT_DETAILS", "BPA_ADDRESS_DETAILS", "BPA_LAND_DETAILS", "BPA_SUMMARY"];
