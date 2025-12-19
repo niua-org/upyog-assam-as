@@ -122,7 +122,7 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
 
             }
         }
-        boolean status = responseString.contains("API000");
+        boolean status = responseString.contains("SUBMIT_ACCEPTED");
 
         if(!status) {
             log.error("error response from third party api: info:"+responseMap.get("info"));
@@ -161,7 +161,7 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
                         map.add(key, /*smsProperties.getUsername()*/"pbdwss.sms");
                         break;
                     case "$password":
-                        map.add(key, /*smsProperties.getPassword()*/"Nkyf%403254");
+                        map.add(key, smsProperties.getPassword());
                         break;
                     case "$senderid":
                         map.add(key, smsProperties.getSenderid());
@@ -171,6 +171,9 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
                         break;
                     case "$message":
                         map.add(key, sms.getMessage());
+                        break;
+                    case "$templateid":
+                        map.add(key, sms.getTemplateId());
                         break;
                     default:
                         if (env.containsProperty(value.substring(1))) {
