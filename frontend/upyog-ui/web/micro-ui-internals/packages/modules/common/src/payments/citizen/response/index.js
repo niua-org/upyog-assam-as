@@ -212,7 +212,7 @@ export const convertEpochToDate = (dateEpoch) => {
         }))
       };
       
-      let fileStoreId = paymentData?.fileStoreId;
+      let fileStoreId = application?.ppFeeReceiptFileStoreId;
       
       if (!fileStoreId) {
         const pdfResponse = await Digit.PaymentService.generatePdf(
@@ -289,7 +289,7 @@ export const convertEpochToDate = (dateEpoch) => {
           }))
         };
         
-        let fileStoreId = paymentData?.fileStoreId;
+        let fileStoreId = application?.bpFeeReceiptFileStoreId;
         
         if (!fileStoreId) {
           const pdfResponse = await Digit.PaymentService.generatePdf(
