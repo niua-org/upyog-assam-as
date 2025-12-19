@@ -61,8 +61,23 @@ function ApplicationDetailsContent({
 }) {
   const { t } = useTranslation();
   let { id: applicationNo } = useParams(); // Extracts PG-1013-2025-I-001019
-  const ownersSequences = applicationDetails?.applicationData?.owners;
-  
+
+  const lastModifiedTime = workflowDetails?.data?.timeline?.[0]?.auditDetails?.lastModified;
+
+  const currentAction = workflowDetails?.data?.nextActions[0]?.action;
+  const actionRoles = workflowDetails?.data?.processInstances?.[0]?.nextActions?.[0]?.roles;
+  const loggedInUserRoles = Digit.UserService.getUser().info.roles;
+  const isEmployee = window.location.href.includes("employee/obpsv2");
+  const loggedInRoleCodes = loggedInUserRoles?.map((r) => r.code);
+
+    // Find matching roles between actionRoles & logged-in user
+  const matchingRoles = actionRoles?.filter((role) =>loggedInRoleCodes?.includes(role));
+  // Check if CITIZEN is involved
+  const hasCitizenRole = actionRoles?.includes("CITIZEN");
+
+  // conditions to Show Pending From 
+  const shouldShowPendingFrom = isEmployee && currentAction !== "PAY" && lastModifiedTime && matchingRoles?.length > 0 && !hasCitizenRole;
+
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -483,6 +498,24 @@ function ApplicationDetailsContent({
 
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
+      {shouldShowPendingFrom && (
+        <div
+          style={{
+            marginBottom: "16px",
+            marginLeft: "auto",
+            width: "fit-content",        
+            padding: "12px 16px",
+            backgroundColor: "#FFF7E6",
+            borderRight: "4px solid #F47738",
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#0B0C0C",
+            textAlign: "right",
+          }}
+        >
+          {t("PENDING_SINCE")} : {lastModifiedTime}
+        </div>
+      )}
       {/* For UM-4418 changes */}
       {isInfoLabel ? (
         <InfoDetails
