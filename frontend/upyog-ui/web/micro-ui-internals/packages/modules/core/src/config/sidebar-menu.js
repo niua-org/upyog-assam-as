@@ -34,13 +34,13 @@ return [
     Config for "Scrutiny" button in the sidebar.
     Triggers redirectToScrutinyPage on click.
   */
-  // {
-  //   text: t("Scrutiny"),
-  //   icon: "",
-  //   populators: {
-  //     onClick: redirectToScrutinyPage,
-  //   },
-  // },
+  {
+    text: t("Scrutiny"),
+    icon: "",
+    populators: {
+      onClick: redirectToScrutinyPage,
+    },
+  },
   {
     id: "help-line",
     text: (
