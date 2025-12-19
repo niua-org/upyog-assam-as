@@ -3,9 +3,9 @@ import { Request } from "../atoms/Utils/Request";
 import cloneDeep from "lodash/cloneDeep";
 
 const getThumbnails = async (ids, tenantId, documents = []) => {
-  tenantId = window.location.href.includes("/obps/") || window.location.href.includes("/pt/") ? Digit.ULBService.getStateId() : tenantId;
+  tenantId = window.location.href.includes("/obpsv2/") || window.location.href.includes("/pt/") ? Digit.ULBService.getStateId() : tenantId;
   
-  if (window.location.href.includes("/obps/")) {
+  if (window.location.href.includes("/obpsv2/")) {
     if (documents?.length > 0) {
       let workflowsDocs = [];
       documents?.map(doc => {
@@ -35,11 +35,11 @@ const getThumbnails = async (ids, tenantId, documents = []) => {
 
 const makeCommentsSubsidariesOfPreviousActions = async (wf) => {
   const TimelineMap = new Map();
-  const tenantId = window.location.href.includes("/obps/") ? Digit.ULBService.getStateId() : wf?.[0]?.tenantId;
+  const tenantId = window.location.href.includes("/obpsv2/") ? Digit.ULBService.getStateId() : wf?.[0]?.tenantId;
   let fileStoreIdsList = [];
   let res = {};
 
-  if (window.location.href.includes("/obps/")) {
+  if (window.location.href.includes("/obpsv2/")) {
     wf?.map(wfData => {
       wfData?.documents?.map(wfDoc => {
         if (wfDoc?.fileStoreId) fileStoreIdsList.push(wfDoc?.fileStoreId);
@@ -112,7 +112,7 @@ export const WorkflowService = {
   getDetailsById: async ({ tenantId, id, moduleCode, role, getTripData }) => {
     const workflow = await Digit.WorkflowService.getByBusinessId(tenantId, id); 
     const applicationProcessInstance = cloneDeep(workflow?.ProcessInstances);
-    const getLocationDetails = window.location.href.includes("/obps/") || window.location.href.includes("noc/inbox");
+    const getLocationDetails = window.location.href.includes("/obpsv2/") || window.location.href.includes("noc/inbox");
     const moduleCodeData = getLocationDetails ? applicationProcessInstance?.[0]?.businessService : moduleCode;
     const businessServiceResponse = (await Digit.WorkflowService.init(tenantId, moduleCodeData))?.BusinessServices[0]?.states;
     if (workflow && workflow.ProcessInstances) {

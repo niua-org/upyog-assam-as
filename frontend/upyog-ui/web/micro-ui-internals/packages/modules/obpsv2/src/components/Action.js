@@ -419,7 +419,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
                   <CardLabelDesc>{t("CS_UPLOAD_RESTRICTIONS")}</CardLabelDesc>
                   <UploadFile
                     id="approve-doc"
-                    accept=".jpg"
+                    accept=".pdf, .jpeg, .jpg, .png"
                     onUpload={selectFile}
                     onDelete={() => setUploadedFile(null)}
                     message={

@@ -7,7 +7,6 @@ import BillSumary from "./bill-summary";
 import { stringReplaceAll } from "./utils";
 import TimerServices from "../../../timer-Services/timerServices";
 import { timerEnabledForBusinessService } from "./utils";
-import useEstimateDetails from "../../../../../../../../libraries/src/hooks/obpsv2/useEstimateDetails";
 import { OBPSV2Services } from "../../../../../../../../libraries/src/services/elements/OBPSV2";
 const BillDetails = ({ paymentRules, businessService }) => {
   const { t } = useTranslation();
@@ -57,12 +56,20 @@ const BillDetails = ({ paymentRules, businessService }) => {
           fetchBpaData();
         }
       }, [bill]); 
+      const getFeeTypeFromPathname = (pathname) => {
+        if (pathname.includes("BUILDING_PERMIT_FEE")) {
+          return "BUILDING_PERMIT_FEE";
+        }
+        // Add more conditions as needed
+        return "PLANNING_PERMIT_FEE"; 
+      };
+      
       const filters = {
         "CalulationCriteria": [
         {
             "tenantId": "as",
             "applicationNo": consumerCode,
-            "feeType": "PLANNING_PERMIT_FEE",
+            "feeType": getFeeTypeFromPathname(pathname),
             "applicationType": "RESIDENTIAL_RCC",
             "BPA": {
                 "edcrNumber": edcr,

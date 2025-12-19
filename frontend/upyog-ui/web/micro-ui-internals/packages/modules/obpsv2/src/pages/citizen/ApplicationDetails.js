@@ -516,7 +516,7 @@ import {
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
           {
-            Bpa: [{...application, edcrDetail, gisResponse}] 
+            Bpa: [{...application, edcrDetail: [{ ...edcrDetail }], gisResponse}] 
           },
           "bpaBuildingPermit"
         );
@@ -551,7 +551,7 @@ import {
       const application = data?.bpa?.[0];
       let fileStoreId = application?.ppFileStoreId;
       const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.bpa?.[0]?.edcrNumber });
-        let edcrDetail = edcrResponse?.edcrDetail;
+        let edcrDetail = edcrResponse?.edcrDetail?.[0];
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
           GisSearchCriteria: {
             applicationNo: acknowledgementIds,
@@ -562,7 +562,7 @@ import {
       if (!fileStoreId) {
         const response = await Digit.PaymentService.generatePdf(
           tenantId,
-          {Bpa : [{...application, edcrDetail, gisResponse}]},
+          {Bpa : [{...application, edcrDetail: [{ ...edcrDetail }], gisResponse}]},
           "bpaPlanningPermit"
         );
   
