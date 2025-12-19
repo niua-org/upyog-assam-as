@@ -241,9 +241,6 @@ public class BPAService {
                 bpas = getBPAFromCriteria(criteria, requestInfo, edcrNos);
                 ArrayList<String> landIds = new ArrayList<>();
                 if (!bpas.isEmpty()) {
-                   /* for (int i = 0; i < bpas.size(); i++) {
-                        landIds.add(bpas.get(i).getLandId());
-                    }*/
 
                     /*
                      * Filter landids that are not null*/
@@ -251,13 +248,20 @@ public class BPAService {
                             filter(Objects::nonNull).distinct().
                             collect(java.util.stream.Collectors.toCollection(ArrayList::new));
                     log.info("land ids for bpa application : {}", landIds);
-                    //In case of landId is not present in BPA then try to fetch from additional details
                     if(landIds.isEmpty()){
                         return bpas;
                     }
 
                     landcriteria.setIds(landIds);
-                    landcriteria.setTenantId(bpas.get(0).getTenantId());
+                    if(requestInfo != null && requestInfo.getUserInfo() != null) {
+                        boolean isRTP = requestInfo.getUserInfo().getRoles().stream()
+                                .anyMatch(role -> role.getCode().equalsIgnoreCase(BPAConstants.BPA_ARCHITECT_ROLE));
+                        if(isRTP) {
+                            landcriteria.setTenantId(requestInfo.getUserInfo().getTenantId());
+                        }else {
+                            landcriteria.setTenantId(bpas.get(0).getTenantId());
+                        }
+                    }
                     log.debug("Call with tenantId to Land::" + landcriteria.getTenantId());
                     ArrayList<LandInfo> landInfos = landService.searchLandInfoToBPA(requestInfo, landcriteria);
 

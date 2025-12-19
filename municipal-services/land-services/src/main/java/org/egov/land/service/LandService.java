@@ -158,7 +158,7 @@ public class LandService {
 			for(int i=0; i<userDetailResponse.getUser().size();i++){
 				ids.add(userDetailResponse.getUser().get(i).getUuid());
 			}
-			System.out.println(ids);
+			log.info("User IDs fetched from user service: {}", ids);
 			criteria.setUserIds(ids);
 		}
 
