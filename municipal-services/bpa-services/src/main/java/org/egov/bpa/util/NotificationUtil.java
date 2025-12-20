@@ -323,10 +323,10 @@ public class NotificationUtil {
 	 */
 	public List<SMSRequest> createSMSRequest(BPARequest bpaRequest,String message, Map<String, String> mobileNumberToOwner) {
 		List<SMSRequest> smsRequest = new LinkedList<>();
-		String salutation = "Dear {1},";
+		
 
 		for (Map.Entry<String, String> entryset : mobileNumberToOwner.entrySet()) {
-			String customizedMsg = salutation.replace("{1}", entryset.getValue())+message;
+			String customizedMsg = message;
 			if (customizedMsg.contains("{RECEIPT_LINK}")) {
 				String linkToReplace = getApplicationDetailsPageLink(bpaRequest, entryset.getKey());
 				customizedMsg = customizedMsg.replace("{RECEIPT_LINK}",linkToReplace);
