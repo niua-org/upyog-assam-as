@@ -20,7 +20,7 @@ public class NOCEvaluator {
 		conditionChecks.put("G_PLUS_3_BUILDINGS", edcr -> "G+3".equalsIgnoreCase(edcr.get("BUILDING_CATEGORY")));
 		conditionChecks.put("SPECIAL_STRUCTURES", edcr -> "SPECIAL".equalsIgnoreCase(edcr.get("BUILDING_TYPE")));
 		conditionChecks.put("BUILDING_HEIGHT_GREATER_THAN_12M", edcr -> getDouble(edcr, "BUILDING_HEIGHT") > 12);
-		conditionChecks.put("BUILDING_HEIGHT_GREATER_THAN_15.8M", edcr -> getDouble(edcr, "BUILDING_HEIGHT") > 10); //TODO: Change to 15
+		conditionChecks.put("BUILDING_HEIGHT_GREATER_THAN_15.8M", edcr -> getDouble(edcr, "BUILDING_HEIGHT") > 15);
 		conditionChecks.put("HAZARDOUS_INDUSTRIES", edcr -> "HAZARDOUS".equalsIgnoreCase(edcr.get("INDUSTRY_TYPE")));
 		conditionChecks.put("LARGE_COMMERCIAL_OR_HOSPITALS_OR_HOTELS", edcr -> {
 			String occupancy = edcr.get("OCCUPANCY");
@@ -42,6 +42,7 @@ public class NOCEvaluator {
 	}
 
 	public static boolean isAllConditionsTrue(Map<String, String> edcrResponse, List<String> conditions) {
+		log.info("Evaluating conditions: {} on EDCR response: {}", conditions, edcrResponse);
 		return conditions.stream().allMatch(cond -> conditionChecks.getOrDefault(cond, e -> false).apply(edcrResponse));
 	}
 
@@ -54,6 +55,7 @@ public class NOCEvaluator {
 			String type = entry.getKey();
 			List<String> conditions = entry.getValue();
 			if (isAllConditionsTrue(edcrResponse, conditions)) {
+				log.info("NOC Type: {} is applicable as all conditions: {} are met.", type, conditions);
 				applicable.add(type);
 			}
 		}

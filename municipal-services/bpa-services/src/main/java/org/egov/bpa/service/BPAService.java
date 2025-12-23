@@ -218,7 +218,6 @@ public class BPAService {
      */
     public List<BPA> search(BPASearchCriteria criteria, RequestInfo requestInfo) {
         List<BPA> bpas = new LinkedList<>();
-        //TODO: remove this comment after bpaValidator is fixed and master data is added
         bpaValidator.validateSearch(requestInfo, criteria);
         LandSearchCriteria landcriteria = new LandSearchCriteria();
         landcriteria.setTenantId(criteria.getTenantId());
