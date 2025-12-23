@@ -17,7 +17,7 @@ const OBPSEmployeeHomeCard = () => {
     const stateCode = Digit.ULBService.getStateId();
   
     const stakeholderEmployeeRoles = [ { code: "BPAREG_DOC_VERIFIER", tenantId: stateCode }, { code: "BPAREG_APPROVER", tenantId: stateCode }];
-    const bpaEmployeeRoles = [ "BPA_FIELD_INSPECTOR", "BPA_NOC_VERIFIER", "BPA_APPROVER", "BPA_VERIFIER", "CEMP", "BPA_ENGINEER", "BPA_TOWNPLANNER"];
+    const bpaEmployeeRoles = [ "BPA_FIELD_INSPECTOR", "BPA_NOC_VERIFIER", "BPA_APPROVER", "BPA_VERIFIER", "CEMP", "BPA_ENGINEER", "BPA_TOWNPLANNER","BPA_CEO", "BPA_COMMISSIONER", "BPA_ZONALOFFICER_GMC", "BPA_ASSOCIATE_PLANNER", "BPA_ENGINEER_GMDA"];
 
     const checkingForStakeholderRoles = showHidingLinksForStakeholder(stakeholderEmployeeRoles);
     const checkingForBPARoles = showHidingLinksForBPA(bpaEmployeeRoles);
