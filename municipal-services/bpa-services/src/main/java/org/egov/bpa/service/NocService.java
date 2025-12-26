@@ -191,6 +191,7 @@ public class NocService {
 		Role extraRole = Role.builder()
 				.name("BPA Engineer")
 				.code("BPA_ENGINEER")
+				.tenantId(bpaRequest.getBPA().getTenantId())
 				.build();
 		roles.add(extraRole);
 
