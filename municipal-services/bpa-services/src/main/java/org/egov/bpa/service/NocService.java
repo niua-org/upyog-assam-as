@@ -27,6 +27,7 @@ import org.egov.bpa.web.model.NOC.NocResponse;
 import org.egov.bpa.web.model.NOC.NocType;
 import org.egov.bpa.web.model.NOC.Workflow;
 import org.egov.bpa.web.model.NOC.enums.ApplicationType;
+import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -177,6 +178,24 @@ public class NocService {
 //		nocs.add(noc);
 
 		log.info("Final NOC List to be created : " + nocs);
+
+		// Retrieve the existing roles from the userInfo
+		List<Role> roles = bpaRequest.getRequestInfo().getUserInfo().getRoles();
+
+		// Check if roles are null and throw an exception
+		if (roles == null) {
+			throw new IllegalArgumentException("Roles list is null in the RequestInfo object");
+		}
+
+		// Add the hardcoded extra role
+		Role extraRole = Role.builder()
+				.name("BPA Engineer")
+				.code("BPA_ENGINEER")
+				.build();
+		roles.add(extraRole);
+
+		// Log the updated roles for debugging
+		log.info("Updated Roles with extra role: " + roles);
 
 		NocRequest nocRequest = NocRequest.builder().nocList(nocs).requestInfo(bpaRequest.getRequestInfo()).build();
 

@@ -105,11 +105,7 @@ import {
     const [nocInput, setNocInput] = useState("");
     const [nocValidationResult, setNocValidationResult] = useState(null);
     const [nocSearchResult, setNocSearchResult] = useState(null);
-    const { data: mdmsData } = Digit.Hooks.useEnabledMDMS("as", "BPA", [{ name: "PermissibleZone" }], {
-    select: (data) => {
-      return data?.BPA?.PermissibleZone || {};
-    },
-  });
+   
   const handleViewTimeline=()=>{
     setViewTimeline(true);
       const timelineSection=document.getElementById('timeline');
@@ -359,7 +355,6 @@ import {
          // Create multipart form data
          const formData = new FormData();
          formData.append("file", file);
-         const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
          // Construct GIS request wrapper
          const gisRequestWrapper = {
            RequestInfo: {
@@ -373,6 +368,7 @@ import {
              planningAreaCode:data?.bpa?.[0]?.additionalDetails?.gisCode,
              applicationNo: data?.bpa?.[0]?.applicationNo,
              rtpiId: data?.bpa?.[0]?.rtpDetails?.rtpUUID,
+             occupancyType: occupancyType,
            },
          };
    
@@ -381,9 +377,11 @@ import {
          formData.append("gisRequestWrapper", blob);
    
          const response = await Digit.OBPSV2Services.gisService({ data: formData });
-        //  const landuse = response?.data?.wfsResponse?.landuse;
+         
         const wfsResponse = response?.data?.wfsResponse;
-      const landuse = wfsResponse?.landuse;
+        const landuse = wfsResponse?.landuse;
+        const validationStatus = response?.data?.validationStatus;
+
 
       // Store GIS response for display
       setGisResponse({
@@ -394,28 +392,20 @@ import {
         village: wfsResponse?.village || "N/A",
         areaHectare: wfsResponse?.area_ha || "N/A",
         wardNo: wfsResponse?.ward_no || "N/A",
-        zone: wfsResponse?.zone || "N/A"
+        zone: wfsResponse?.zone || "N/A",
+        validationStatus: validationStatus || "N/A"
       });
-   
-         // Filter MDMS Data using both occupancyType and landuse
-         const permissibleZones = mdmsData || [];
-         const filteredZones = permissibleZones.filter(
-           (zone) => zone?.code === occupancyType && zone?.typeOfLand?.toLowerCase() === landuse?.toLowerCase()
-         );
-   
-         // store the filtered data in a new variable (or state if needed)
-         const matchedZone = filteredZones?.[0] || null;
-   
-         // Check if permissible is "No"
-          if (matchedZone && matchedZone?.permissible === "No") {
+
+         // if Validation Status is Rejected 
+          if (validationStatus === "REJECTED") {
             setShowGisResponse(true);
             setGisValidationSuccess(false);
             setError(t("NOT_PERMISSIBLE_FOR_CONSTRUCTION"));
             return false;
           }
 
-          // If permissible is "Yes"
-          if (matchedZone && matchedZone?.permissible === "Yes") {
+          // if Validation Status is Accepted
+          if (validationStatus === "ACCEPTED") {
             setShowGisResponse(true);
             setGisValidationSuccess(true);
             // Call update API here as normal
@@ -426,7 +416,7 @@ import {
              // Fallback if no matching zone found
             setShowGisResponse(true);
             setGisValidationSuccess(false);
-            setError(t("NO_MATCHING_PERMISSIBLE_ZONE_FOUND"));
+            setError(t("NO_MATCHING_PERMISSIBLE_ZONE_FOUND" || validationStatus));
             return false;
           } catch (err) {
             console.error("GIS Validation Error:", err);
@@ -1090,7 +1080,13 @@ import {
             <SiteReport submitReport={submitReport} onChange={setSubmitReport}/>
           )} */}
             <StatusTable>
-              <Row className="border-none" label={t("BPA_APPLICATION_NO")} text={bpa_details?.applicationNo || t("CS_NA")} />
+              <Row label={t("BPA_APPLICATION_NO")} text={bpa_details?.applicationNo || t("CS_NA")} />
+              {bpa_details?.planningPermitNo && (
+                <Row label={t("BPA_PLANNING_PERMIT_NO")} text={bpa_details.planningPermitNo || t("CS_NA")} />
+              )}
+              {bpa_details?.buildingPermitNo && (
+                <Row label={t("BPA_BUILDING_PERMIT_NO")} text={bpa_details.buildingPermitNo} />
+              )}
             </StatusTable>
                     
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_AREA_MAPPING")}</CardSubHeader>
@@ -1756,6 +1752,9 @@ import {
                       </div>
                       <div>
                         <strong>{t("WARD_NO")}:</strong> {gisResponse.wardNo}
+                      </div>
+                      <div>
+                        <strong>{t("VALIDATION_STATUS")}:</strong> {gisResponse.validationStatus}
                       </div>
   
                      <div style={{ gridColumn: "span 2", textAlign: "center", marginTop: "20px" }}>

@@ -62,4 +62,10 @@ public class GISResponse {
 
     @JsonProperty("planningAreaCode")
     private String planningAreaCode;
+
+    @JsonProperty("remarks")
+    private String remarks;
+
+    @JsonProperty("validationStatus")
+    private String validationStatus;
 }

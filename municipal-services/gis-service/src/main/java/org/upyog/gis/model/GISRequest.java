@@ -37,4 +37,7 @@ public class GISRequest {
 
     @JsonProperty("planningAreaCode")
     private String planningAreaCode;
+
+    @JsonProperty("occupancyType")
+    private String occupancyType;
 }
