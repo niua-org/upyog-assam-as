@@ -77,53 +77,53 @@ const CheckPage = ({ onSubmit, value = {} }) => {
     textAlign: "left",
     fontSize: "14px",
   };
-// const handleDownloadPdf = async (formType) => {
-//   try {
-//     let formData = null;
-//     let tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
-//     const tenantInfo  = tenants.find((tenant) => tenant.code === tenantId);
-//     const applicationNumber = window.location.href.split("editApplication/")[1].split("/")[0];
-//     switch (formType) {
-//       case "FORM_22":
-//         formData = value?.form||form22;
-//         break;
-//       case "FORM_23A":
-//         formData = value?.form23A || form23A;
-//         break;
-//       case "FORM_23B":
-//         formData = value?.form23B||form23B;
-//         break;
-//       default:
-//         formData = null;
-//     }
+  // const handleDownloadPdf = async (formType) => {
+  //   try {
+  //     let formData = null;
+  //     let tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+  //     const tenantInfo  = tenants.find((tenant) => tenant.code === tenantId);
+  //     const applicationNumber = window.location.href.split("editApplication/")[1].split("/")[0];
+  //     switch (formType) {
+  //       case "FORM_22":
+  //         formData = value?.form||form22;
+  //         break;
+  //       case "FORM_23A":
+  //         formData = value?.form23A || form23A;
+  //         break;
+  //       case "FORM_23B":
+  //         formData = value?.form23B||form23B;
+  //         break;
+  //       default:
+  //         formData = null;
+  //     }
 
-//     if (!formData) {
-//       console.error("No data found for", formType);
-//       return;
-//     }
+  //     if (!formData) {
+  //       console.error("No data found for", formType);
+  //       return;
+  //     }
 
-//     const acknowledgementData = await FormAcknowledgement(
-//       { formType, formData },
-//       tenantInfo,
-//       t,
-//       applicationNumber
-//     );
+  //     const acknowledgementData = await FormAcknowledgement(
+  //       { formType, formData },
+  //       tenantInfo,
+  //       t,
+  //       applicationNumber
+  //     );
 
-//     Digit.Utils.pdf.generate(acknowledgementData);
-//   } catch (err) {
-//     console.error("PDF download failed for", formType, err);
-//   }
-// };
+  //     Digit.Utils.pdf.generate(acknowledgementData);
+  //   } catch (err) {
+  //     console.error("PDF download failed for", formType, err);
+  //   }
+  // };
 
 
-  
+
   let routeLink = window.location.href.includes("editApplication") ? `/upyog-ui/citizen/obpsv2/editApplication`:"";
-  
+
   function routeTo(jumpTo) {
     location.href=jumpTo;
   }
   let improvedDoc = [];
-  
+
   documents?.documents?.map((appDoc) => {
     improvedDoc.push({ ...appDoc, module: "BPA" });
   });
@@ -144,18 +144,18 @@ const CheckPage = ({ onSubmit, value = {} }) => {
 
   const getDetailsRow = (formDetails) => {
     if (!formDetails) return null;
-  
+
     const renderValue = (val) => {
       if (val === null || val === undefined) return "NA";
       if (typeof val === "string" && val.trim() === "") return "NA";
       return val?.toString().trim() || "NA";
     };
-  
+
     const renderTable = (data, key) => {
       if (!Array.isArray(data) || data.length === 0) return null;
-  
+
       const headers = Object.keys(data[0] || {});
-  
+
       return (
         <div key={key} style={{ marginTop: "20px" }}>
           <h4>{t(key.toUpperCase())}</h4>
@@ -215,18 +215,18 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                   />
                 );
               }
-  
+
               if (Array.isArray(value)) {
                 return renderTable(value, key);
               }
-  
+
               return null;
             })}
         </StatusTable>
       </div>
     );
   };
-  
+
 
   return (
     <React.Fragment>
@@ -288,10 +288,18 @@ const CheckPage = ({ onSubmit, value = {} }) => {
               text={checkForNA(t(areaMapping?.villageName?.code))}
             />
           )}
+          {areaMapping?.bpAuthority?.code === "MUNICIPAL_CORPORATION" && (
+          <Row
+            label={t("MOUZA")}
+            text={checkForNA(areaMapping?.mouza?.code)}
+          />
+           )}
+          {areaMapping?.bpAuthority?.code !=="MUNICIPAL_CORPORATION" && (
           <Row
             label={t("MOUZA")}
             text={checkForNA(areaMapping?.mouza)}
           />
+           )}
         </StatusTable>
         <div
           style={{
@@ -319,7 +327,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
               text={value || "NA"}
             />
           ))}
-          </StatusTable>
+        </StatusTable>
         <div
           style={{
             display: "flex",
@@ -360,7 +368,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             label={t("BPA_GUARDIAN")}
             text={checkForNA(applicant?.fatherName)}
           />
-           <Row
+          <Row
             label={t("BPA_RELATIONSHIP")}
             text={checkForNA(t(applicant?.relationship?.code))}
           />
@@ -674,22 +682,22 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                 onClick={() => routeTo(`${routeLink}/document-details`)}
               />
               {
-              <DocumentsPreview
-              documents={getOrderDocuments(applicationDocs)}
-              svgStyles={{}}
-              isSendBackFlow={false}
-              isHrLine={true}
-              hideTitle={true}
-              titleStyles={{
-                fontSize: "18px",
-                lineHeight: "24px",
-                fontWeight: 700,
-                marginBottom: "10px",
-              }}
-            />
+                <DocumentsPreview
+                  documents={getOrderDocuments(applicationDocs)}
+                  svgStyles={{}}
+                  isSendBackFlow={false}
+                  isHrLine={true}
+                  hideTitle={true}
+                  titleStyles={{
+                    fontSize: "18px",
+                    lineHeight: "24px",
+                    fontWeight: 700,
+                    marginBottom: "10px",
+                  }}
+                />
               }
             </StatusTable>
-            
+
             {/* <StatusTable>
               <Accordion
                 title={t("FORM_22_DETAILS")}
@@ -731,9 +739,9 @@ const CheckPage = ({ onSubmit, value = {} }) => {
         >
           <CheckBox
             label={
-              userInfo?.info?.name && 
-              applicant?.applicantName && 
-              userInfo?.info?.name !== applicant?.applicantName
+              userInfo?.info?.name &&
+                applicant?.applicantName &&
+                userInfo?.info?.name !== applicant?.applicantName
                 ? t("BPA_DECLARATION_MESSAGE_RTP").replace("{rtpName}", userInfo.info.name).replace("{applicantName}", applicant.applicantName)
                 : t("BPA_DECLARATION_MESSAGE").replace("{applicantName}", applicant?.applicantName || t("CS_APPLICANT"))
             }
