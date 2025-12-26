@@ -2,6 +2,7 @@ package org.egov.bpa.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DateFormat;
@@ -1034,9 +1035,13 @@ public class BPAService {
 			List<Floor> floors = (List<Floor>) edcrDetails.get(BPAConstants.FLOOR);
 			String wallType = (String) edcrDetails.get(BPAConstants.WALLTYPE);
 			String occupancy = (String) edcrDetails.get(BPAConstants.APPLICATIONTYPE);
-			obj.setFloors(floors);
+			BigDecimal premiumFarArea =  (BigDecimal) edcrDetails.get(BPAConstants.PREMIUMFARAREA);
 			obj.setWallType(wallType);
+            obj.setFloors(floors);
 			obj.setApplicationType(occupancy);
+			obj.setPremiumBuiltUpArea(premiumFarArea);
+			obj.setSubOccupancy(
+	                (String) edcrDetails.get(BPAConstants.SUB_OCCUPANCY));
 		}
 
 		return calculationService.callBpaCalculatorEstimate(calcRequest);

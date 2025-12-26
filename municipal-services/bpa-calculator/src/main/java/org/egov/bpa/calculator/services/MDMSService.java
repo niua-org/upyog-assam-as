@@ -218,6 +218,7 @@ public class MDMSService {
 		String applicationType = calulationCriteria.getApplicationType();
 		String wallType = calulationCriteria.getWallType();
 		String floorLevel = calulationCriteria.getFloorLevel();
+		String subOccupancy = calulationCriteria.getSubOccupancy();
 		
 		log.info(String.format("TenantID: %s, FeeType: %s, ApplicationType: %s, WallType: %s", bpa.getTenantId(),
 				feeType, applicationType, wallType));
@@ -233,8 +234,19 @@ public class MDMSService {
 			// 2. Filter by applicationType 
 			filterExp = "$.[?(@.applicationType == '" + applicationType + "' || @.applicationType == 'ALL')]";
 			calTypes = JsonPath.read(calTypes, filterExp);
+			
+			// 3. Filter by subOccupancy 
+			if (StringUtils.isNotBlank(subOccupancy)) {
 
-			// 3. Filter by wallType/floorLevel 
+	            filterExp = "$.[?(@.subOccupancy == '" + subOccupancy + "')]";
+	            List<Object> subOccMatched = JsonPath.read(calTypes, filterExp);
+
+	            if (!subOccMatched.isEmpty()) {
+	                calTypes = subOccMatched;
+	            }
+	        }
+
+			// 4. Filter by wallType/floorLevel 
 			if (StringUtils.isNotBlank(wallType)) {
 
 				filterExp = "$.[?(@.wallType == '" + wallType + "' || @.wallType == 'ALL')]";
@@ -251,6 +263,7 @@ public class MDMSService {
 				calculationType.put("unitType", calculationType.getOrDefault("unitType", "FIXED"));
 				calculationType.put("rate", calculationType.getOrDefault("rate", "0"));
 				calculationType.put("additionalFee", calculationType.getOrDefault("additionalFee", "0"));
+				calculationType.put("multiplier", calculationType.getOrDefault("multiplier", "1"));
 				finalList.add(calculationType);
 			}
 

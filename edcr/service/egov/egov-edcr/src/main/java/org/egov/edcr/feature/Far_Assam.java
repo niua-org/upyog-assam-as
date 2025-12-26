@@ -495,6 +495,79 @@ public class Far_Assam extends Far {
 
         return totalAreaToDeduct;
     }
+    
+    /**
+     * Computes and stores the built-up area split between Base FAR and Premium FAR
+     * when the provided FAR exceeds the base permissible FAR.
+     *
+     * <p>
+     * This method follows the Assam DCR interpretation where FAR values are expressed
+     * in <b>ratio form</b> (e.g. 1.50, 1.75) and <b>not</b> as percentage values.
+     * Hence, the built-up area is calculated directly as:
+     * </p>
+     *
+     * <pre>
+     * Base FAR Built-up     = Plot Area × Base FAR
+     * Premium FAR Built-up  = Plot Area × (Maximum FAR − Base FAR)
+     * </pre>
+     *
+     * <p>
+     * The computation is performed <b>only when Premium FAR is actually utilized</b>,
+     * i.e., when the provided FAR is greater than the base FAR. If the provided FAR
+     * is within base FAR limits, no values are calculated or stored.
+     * </p>
+     *
+     * <p>
+     * The computed values are stored in {@link FarDetails} for downstream usage such as
+     * scrutiny reports, premium FAR fee calculation, and audit validation.
+     * </p>
+     *
+     * @param pl           the {@link Plan} being processed
+     * @param plotArea     the total plot area in square meters
+     * @param baseFar      the base permissible FAR (ratio form, e.g. 1.50)
+     * @param maxFar       the maximum permissible FAR including premium FAR (ratio form, e.g. 1.75)
+     * @param providedFar  the FAR actually provided by the proposal (ratio form)
+     */
+    private void computeBaseAndPremiumFarAreas(
+            Plan pl,
+            BigDecimal plotArea,
+            BigDecimal baseFar,      
+            BigDecimal maxFar,       
+            BigDecimal providedFar) {
+
+        // Execute only when provided far is greater than base far
+        if (providedFar.compareTo(baseFar) <= 0) {
+            return;
+        }
+
+        BigDecimal premiumFar = maxFar.subtract(baseFar);
+        if (premiumFar.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        
+        BigDecimal baseBuiltUp =
+                plotArea.multiply(baseFar)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal premiumBuiltUp =
+                plotArea.multiply(premiumFar)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+        if (pl.getFarDetails() == null) {
+            pl.setFarDetails(new FarDetails());
+        }
+
+        pl.getFarDetails().setBuitUpAreaUnderBaseFar(baseBuiltUp);
+        pl.getFarDetails().setBuitUpAreaUnderPremiumFar(premiumBuiltUp);
+
+        LOG.info(
+            "FAR Split Calculated | Base FAR BuiltUp: {}, Premium FAR BuiltUp: {}",
+            baseBuiltUp, premiumBuiltUp
+        );
+    }
+
+
 
     private BigDecimal farFloorWiseDeduction(Plan pl, Block blk, Floor floor, BigDecimal parkingAndServiceFloorArea,
                                        BigDecimal farEntranceLobbyArea, BigDecimal farMaxBalconyExemption, BigDecimal farCorridorArea,
@@ -1850,6 +1923,8 @@ public class Far_Assam extends Far {
         Optional<FarRequirement> matchedRule = findMatchedFarRule(pl, mostRestrictiveOccupancyType, plotArea,
                 roadWidth);
         
+    
+      
         if (roadWidth != null && roadWidth.compareTo(new BigDecimal("2.4")) < 0) {
             permissibleFar = new BigDecimal("0.75");
             LOG.info("Road width < 2.4m, permissible FAR restricted to 0.75 (G+1 buildings only)");
@@ -1862,6 +1937,14 @@ public class Far_Assam extends Far {
             permissibleFar = rule.getPermissible();
             baseFar = rule.getBaseFar();
             tdr = rule.getMaxTDRLoading();
+            
+            computeBaseAndPremiumFarAreas(
+                    pl,
+                    plotArea,
+                    baseFar,  
+                    permissibleFar,
+                    far);
+            
             LOG.info("Permissible FAR from matched rule: {}", permissibleFar);
 
             // TOD FAR CALCULATION ---
@@ -1926,6 +2009,7 @@ public class Far_Assam extends Far {
 
         List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.FAR.getValue(), false);
 
+        
         if (occupancy == null || occupancy.getType() == null) {
             LOG.warn("Occupancy or occupancy type is null, cannot find matched FAR rule.");
             return Optional.empty();
@@ -2049,23 +2133,47 @@ public class Far_Assam extends Far {
 
         if (matchedRule.isPresent()) {
             FarRequirement mdmsRule = matchedRule.get();
-
+         
             if (G_SI.equalsIgnoreCase(subtypeCode)) {
                 permissibleFar = mdmsRule.getPermissibleLight();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             } else if (G_LI.equalsIgnoreCase(subtypeCode)) {
                 permissibleFar = mdmsRule.getPermissibleMedium();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             } else if (G_PHI.equalsIgnoreCase(subtypeCode)) {
                 permissibleFar = mdmsRule.getPermissibleFlattered();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             } else {
                 permissibleFar = mdmsRule.getPermissible();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             }
             LOG.info("Permissible FAR for industrial subtype '{}': {}", subtypeCode, permissibleFar);
         } else {

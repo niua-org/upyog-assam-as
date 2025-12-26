@@ -434,9 +434,15 @@ public class BPAConstants {
 	
 	public static final String FLOOR = "floor";
 	
+	public static final String PREMIUMFARAREA = "premiumFarArea";
+	
 	public static final String WALLTYPE = "walltype";
 	
+	public static final String SUB_OCCUPANCY = "subOccupancy";
+	
 	public static final String APPLICATIONTYPE = "applicationType";
+	
+	public static final String PLANDETAIL = "planDetail";
 	
 	public static final String PERMIT_NO = "permitNumber";
 
