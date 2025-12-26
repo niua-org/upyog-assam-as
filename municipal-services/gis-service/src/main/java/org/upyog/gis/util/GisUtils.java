@@ -107,4 +107,21 @@ public class GisUtils {
         Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
         return result;
     }
+
+
+    /**
+     * Extracts the state part from a tenantId. If the input does not contain a dot
+     * or is blank, the method returns the input as-is.
+     *
+     * @param tenantId
+     * @return the extracted state
+     **/
+    public String extractState(String tenantId) {
+
+        if (tenantId == null || tenantId.trim().isEmpty()) {
+            return tenantId;
+        }
+        int dotIndex = tenantId.indexOf('.');
+        return dotIndex > 0 ? tenantId.substring(0, dotIndex) : tenantId;
+    }
 }

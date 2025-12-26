@@ -53,11 +53,12 @@ public class GisController {
     ) {
 
         try {
-            log.info("Finding zone from polygon file: {} (tenant: {}, applicationNo: {}, rtpiId: {}, occupancyType:{})",
-                    file.getOriginalFilename(), gisRequestWrapper.getGisRequest().getTenantId(),
-                    gisRequestWrapper.getGisRequest().getPlanningAreaCode(),
+            log.info("Finding zone from polygon file: {} (tenant: {}, applicationNo: {}, rtpiId: {}, planningAreaCode: {}, occupancyType:{})",
+                    file.getOriginalFilename(),
+                    gisRequestWrapper.getGisRequest().getTenantId(),
                     gisRequestWrapper.getGisRequest().getApplicationNo(),
                     gisRequestWrapper.getGisRequest().getRtpiId(),
+                    gisRequestWrapper.getGisRequest().getPlanningAreaCode(),
                     gisRequestWrapper.getGisRequest().getOccupancyType());
 
             GISResponse response = gisService.findZoneFromGeometry(file, gisRequestWrapper);

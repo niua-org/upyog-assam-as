@@ -35,11 +35,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
   ];
 
   const [assignResponse, setAssignResponse] = useState(null);
-  const { data: mdmsData, isLoading } = Digit.Hooks.useEnabledMDMS("as", "BPA", [{ name: "PermissibleZone" }], {
-    select: (data) => {
-      return data?.BPA?.PermissibleZone || {};
-    },
-  });
+  
   useEffect(() => {
     if (toast || error) {
       const timer = setTimeout(() => {
@@ -272,7 +268,6 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
       filters: { applicationNo },
       config: { staleTime: Infinity, cacheTime: Infinity },
     });
-    const occupancyType = bpaDetails?.bpa?.[0]?.landInfo?.units?.[0]?.occupancyType;
 
     if (!file) {
       setError(t("CS_FILE_REQUIRED"));
@@ -284,7 +279,6 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
       // Create multipart form data
       const formData = new FormData();
       formData.append("file", file);
-      const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
 
       // Construct GIS request wrapper
       const gisRequestWrapper = {
@@ -299,7 +293,7 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           planningAreaCode:bpaDetails?.bpa?.[0]?.additionalDetails?.gisCode,
           applicationNo,
           rtpiId: bpaDetails?.bpa?.[0]?.rtpDetails?.rtpUUID,
-          occupancyType:occupancyType
+          occupancyType:bpaDetails?.bpa?.[0]?.landInfo?.units?.[0]?.occupancyType
         },
       };
 

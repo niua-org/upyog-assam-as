@@ -51,7 +51,15 @@ public class GisServiceImpl implements GisService {
     @Autowired
     private GisUtils gisUtils;
 
-
+    /**
+     * Determines permission status by matching land use type with occupancy type from MDMS data.
+     * Checks if the given occupancy type is allowed for the detected land use (RESIDENTIAL/COMMERCIAL).
+     *
+     * @param landUse the land use type detected from GISTCP API
+     * @param occupancyType the occupancy type from the request
+     * @param mdmsData the MDMS master data containing permissible zones
+     * @return "YES" if allowed, "NO" if not allowed, "Land Type is Not Matching" if no match found
+     */
     private String determinePermissionStatus(String landUse, String occupancyType, Object mdmsData) {
         try {
             log.info("Validation Status - landUse: {}, occupancyType: {}", landUse, occupancyType);
@@ -63,13 +71,16 @@ public class GisServiceImpl implements GisService {
                     log.info("Found matching occupancy type: {}", occupancyType);
                     JsonNode typeOfLand = zone.path("typeOfLand").get(0);
                     String normalizedLandUse = landUse.toUpperCase().replace(" ", "_");
+                    log.info("Normalized land use: {}", normalizedLandUse);
 
                     if (normalizedLandUse.contains("RESIDENTIAL") && typeOfLand.has("RESIDENTIAL")) {
                         String result = typeOfLand.path("RESIDENTIAL").asText();
+                        log.info("Result for residential: {}", result);
                         return result;
                     }
                     if (normalizedLandUse.contains("COMMERCIAL") && typeOfLand.has("COMMERCIAL")) {
                         String result = typeOfLand.path("COMMERCIAL").asText();
+                        log.info("Result for commercial: {}", result);
                         return result;
                     }
                 }
@@ -98,7 +109,8 @@ public class GisServiceImpl implements GisService {
     public GISResponse findZoneFromGeometry(MultipartFile file, GISRequestWrapper gisRequestWrapper) throws Exception {
         GISRequest gisRequest = gisRequestWrapper.getGisRequest();
         gisRequest.setTenantId(gisRequest.getTenantId());
-        Object mdmsData = gisUtils.mDMSCall(gisRequestWrapper.getRequestInfo(), ServiceConstants.TENANT_ID);
+        String stateId = gisUtils.extractState(gisRequestWrapper.getGisRequest().getTenantId()); // will extract only part before "." (stateID)
+        Object mdmsData = gisUtils.mDMSCall(gisRequestWrapper.getRequestInfo(), stateId);
         log.info("MDMS data: {}", mdmsData);
         // Ensure planningAreaCode is set from tenantId if not provided
         String planningAreaCode = extractUlbName(gisRequest.getPlanningAreaCode());
@@ -140,7 +152,7 @@ public class GisServiceImpl implements GisService {
             String landuse = gistcpResponse.getLanduse();
             String village = gistcpResponse.getVillage();
             log.info("Extracted district: {}, ward: {}, landuse: {}, village: {}", district, ward, landuse, village);
-            String remarks = gistcpResponse.getLanduse();
+            String remarks = landuse;
             String validationResult = determinePermissionStatus(landuse, gisRequest.getOccupancyType(), mdmsData);
             String validationStatus = "YES".equals(validationResult) ? "ACCEPTED" : "NO".equals(validationResult) ? "REJECTED" : "LAND TYPE NOT MATCHED";
             log.info("ValidationResult: {}, ValidationStatus: {}", validationResult, validationStatus);
