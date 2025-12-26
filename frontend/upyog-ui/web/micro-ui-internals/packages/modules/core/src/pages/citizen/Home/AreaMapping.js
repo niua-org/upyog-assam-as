@@ -1,8 +1,8 @@
-import { BackButton, CardHeader, CardLabelError, CardLabel, Dropdown, TextInput,SubmitBar } from "@upyog/digit-ui-react-components";
+import { BackButton, CardHeader, CardLabelError, LinkButton } from "@upyog/digit-ui-react-components";
 import CommonAreaMapping from "../../../../../../react-components/src/atoms/AreaMapping.js";
 import React, { useMemo, useState, useEffect, Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, Link } from "react-router-dom";
 import PageBasedInput from "../../../../../../react-components/src/molecules/PageBasedInput";
 
 const AreaMapping = () => {
@@ -11,9 +11,6 @@ const AreaMapping = () => {
   const location = useLocation();
   
   const [showError, setShowError] = useState(false);
-  const redirectToRTPLogin = () => {
-    history.push("/upyog-ui/citizen/select-location");
-  };
 
   // State for all dropdown values
   const [district, setDistrict] = useState("");
@@ -81,17 +78,23 @@ const AreaMapping = () => {
     <div className="selection-card-wrapper">
       <BackButton />
       <PageBasedInput texts={texts} onSubmit={onSubmit}>
-        <CardHeader style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span>{t("BPA_AREA_MAPPING")}</span>
-          <SubmitBar 
-            label={t("BPA_RTP_LOGIN")}
-            onSubmit={redirectToRTPLogin}
+        <div style={{ position: "relative" }}>
+          <CardHeader>
+            <span>{t("BPA_AREA_MAPPING")}</span>
+          </CardHeader>
+          
+          <Link 
+            to={`/upyog-ui/citizen/select-location`}
             style={{
-              width: "auto",
-              marginLeft: "50%",
+              position: "absolute",
+              top: "0",
+              right: "0",
+              zIndex: 10
             }}
-          />
-        </CardHeader>
+          >
+            <LinkButton label={t("BPA_RTP_LOGIN")} />
+          </Link>
+        </div>
         
         <CommonAreaMapping
           t={t}
