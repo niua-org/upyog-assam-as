@@ -15,10 +15,28 @@ const OBPSEmployeeHomeCard = () => {
   
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateCode = Digit.ULBService.getStateId();
-  
-    const stakeholderEmployeeRoles = [ { code: "BPAREG_DOC_VERIFIER", tenantId: stateCode }, { code: "BPAREG_APPROVER", tenantId: stateCode }];
-    const bpaEmployeeRoles = [ "BPA_FIELD_INSPECTOR", "BPA_NOC_VERIFIER", "BPA_APPROVER", "BPA_VERIFIER", "CEMP", "BPA_ENGINEER", "BPA_TOWNPLANNER","BPA_CEO", "BPA_COMMISSIONER", "BPA_ZONALOFFICER_GMC", "BPA_ASSOCIATE_PLANNER", "BPA_ENGINEER_GMDA","BPA_DD_AD_DEVELOPMENT_AUTHORITY","BPA_TECHNICAL_ENGINEER_MB","BPA_DD_AD_TCP","BPA_CHAIRMAN_PRESIDENT_MB","BPA_ENGINEER_DA","BPA_CHAIRMAN_DA","BPA_TECHNICAL_ENGINEER_GP","BPA_CHAIRMAN_PRESIDENT_GP"];
 
+    const { data: employeeRole = [] } = Digit.Hooks.useEnabledMDMS(
+      stateCode,
+      "BPA",
+      [{ name: "BPAAppicationMapping" }],
+      {
+        select: (data) => data?.BPA?.BPAAppicationMapping || [],
+      }
+    );
+
+    const bpaEmployeeRoles = employeeRole
+      ?.find(item => item.code === "NEW_CONSTRUCTION")
+      ?.roles || [];
+
+    const stakeholderEmployeeRoles =
+      employeeRole
+        ?.find(item => item.code === "RTP")
+        ?.roles
+        ?.map(role => ({
+          code: role,
+          tenantId: stateCode
+        })) || [];
     const checkingForStakeholderRoles = showHidingLinksForStakeholder(stakeholderEmployeeRoles);
     const checkingForBPARoles = showHidingLinksForBPA(bpaEmployeeRoles);
 

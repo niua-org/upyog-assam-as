@@ -328,7 +328,9 @@ const BPAEmployeeDetails = () => {
           
       <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         </div>
-        {(data?.applicationData?.status === "PENDING_DA_ENGINEER") && (userInfo?.info?.roles.filter(role => role.code === "BPA_ENGINEER")).length>0 && <FormComposer
+        {(data?.applicationData?.status === "PENDING_DA_ENGINEER") && 
+        (userInfo?.info?.roles.some(role => ["BPA_ENGINEER", "BPA_ENGINEER_DA"].includes(role.code)) && 
+        <FormComposer
         heading={t("")}
         isDisabled={!canSubmit}
         config={configs.map((config) => {
@@ -350,7 +352,9 @@ const BPAEmployeeDetails = () => {
         breaklineStyle={{ border: "0px" }}
         className={"employeeCard-override"}
         cardClassName={"employeeCard-override"}
-      />}
+      />
+          )
+        }
         <ApplicationDetailsTemplate
           applicationDetails={data}
           isLoading={isLoading}

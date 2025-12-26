@@ -32,7 +32,7 @@ const siteReport = ({submitReport, onChange, data}) => {
     }
   );
   //const { isLoading: nocDocsLoading, data: nocDocs } = useMDMS("as", "NOC", ["OldNocType"]);
-  const nocChecklist = nocLists?.NocTypeMapping?.[0]?.nocs || [];
+  const nocChecklist = nocLists?.NocTypeMapping?.[0]?.nocs?.filter(item => item.isActive === true) || [];
   const nocDocuments = nocLists?.DocumentTypeMapping
   const civilAviationDocList =
   nocDocuments?.filter(doc => doc.nocType === "CIVIL_AVIATION")
@@ -162,9 +162,7 @@ const siteReport = ({submitReport, onChange, data}) => {
 
   const getAAIObject = () => {
     const list = nocDetails?.AAI_NOC_DETAILS;
-    return Array.isArray(list) && list.length > 0
-      ? list[0]
-      : {
+    return list || {
           nocType: "CIVIL_AVIATION",
           siteElevation: "",
           documents: {}
@@ -200,7 +198,7 @@ const siteReport = ({submitReport, onChange, data}) => {
   
     const updated = {
       ...nocDetails,
-      AAI_NOC_DETAILS: [updatedAAI]
+      AAI_NOC_DETAILS: updatedAAI
     };
   
     setNocDetails(updated);
@@ -242,7 +240,7 @@ const siteReport = ({submitReport, onChange, data}) => {
   
       const updated = {
         ...nocDetails,
-        AAI_NOC_DETAILS: [updatedAAI]
+        AAI_NOC_DETAILS: updatedAAI
       };
       setNocDetails(updated);
       saveSession(updated);
@@ -272,7 +270,7 @@ const siteReport = ({submitReport, onChange, data}) => {
   
     const updated = {
       ...nocDetails,
-      AAI_NOC_DETAILS: [updatedAAI]
+      AAI_NOC_DETAILS: updatedAAI
     };
   
     setNocDetails(updated);
@@ -291,9 +289,7 @@ const siteReport = ({submitReport, onChange, data}) => {
     }));
 
     setNocDetails(prev => {
-      const prevAAI = Array.isArray(prev?.AAI_NOC_DETAILS)
-        ? prev.AAI_NOC_DETAILS[0]
-        : { nocType: "CIVIL_AVIATION", documents: [] };
+      const prevAAI = prev?.AAI_NOC_DETAILS || { nocType: "CIVIL_AVIATION", documents: [] };
     
       const prevDocs = Array.isArray(prevAAI.documents) ? prevAAI.documents : [];
       const filtered = prevDocs.filter(d => d.documentType !== docType);
@@ -307,7 +303,7 @@ const siteReport = ({submitReport, onChange, data}) => {
     
       const updated = {
         ...prev,
-        AAI_NOC_DETAILS: [updatedAAI]
+        AAI_NOC_DETAILS: updatedAAI
       };
     
       setCivilAviationDocs(merged);
@@ -632,7 +628,7 @@ const siteReport = ({submitReport, onChange, data}) => {
                     <CardLabel style={labelStyle}>Site Elevation (in sq meters)</CardLabel>
                     <TextInput
                       placeholder="Enter Site Elevation"
-                      value={nocDetails?.AAI_NOC_DETAILS?.[0]?.siteElevation || ""}
+                      value={nocDetails?.AAI_NOC_DETAILS?.siteElevation || ""}
                       onChange={(e) =>
                         handleNocFieldChange("AAI_NOC_DETAILS", "siteElevation", e.target.value)
                       }
@@ -665,7 +661,7 @@ const siteReport = ({submitReport, onChange, data}) => {
 
                               <TextInput
                                 placeholder="Enter Latitude"
-                                value={nocDetails?.AAI_NOC_DETAILS?.[0]?.[dir]?.latitude || ""}
+                                value={nocDetails?.AAI_NOC_DETAILS?.[dir]?.latitude || ""}
                                 onChange={(e) =>
                                   handleNocFieldChange(
                                     "AAI_NOC_DETAILS",
@@ -678,7 +674,7 @@ const siteReport = ({submitReport, onChange, data}) => {
 
                               <TextInput
                                 placeholder="Enter Longitude"
-                                value={nocDetails?.AAI_NOC_DETAILS?.[0]?.[dir]?.longitude || ""}
+                                value={nocDetails?.AAI_NOC_DETAILS?.[dir]?.longitude || ""}
                                 onChange={(e) =>
                                   handleNocFieldChange(
                                     "AAI_NOC_DETAILS",
@@ -707,7 +703,7 @@ const siteReport = ({submitReport, onChange, data}) => {
                             <span style={{ width: "60px" }}>Latitude</span>
                             <TextInput
                               value={
-                                nocDetails?.AAI_NOC_DETAILS?.[0]?.CENTER?.latitude || "" 
+                                nocDetails?.AAI_NOC_DETAILS?.CENTER?.latitude || "" 
                               }
                               onChange={(e) =>
                                 handleNocFieldChange(
@@ -721,7 +717,7 @@ const siteReport = ({submitReport, onChange, data}) => {
                             <span style={{ width: "70px" }}>Longitude</span>
                             <TextInput
                               value={
-                                nocDetails?.AAI_NOC_DETAILS?.[0]?.CENTER?.longitude || ""
+                                nocDetails?.AAI_NOC_DETAILS?.CENTER?.longitude || ""
                               }
                               onChange={(e) =>
                                 handleNocFieldChange(
@@ -767,9 +763,9 @@ const siteReport = ({submitReport, onChange, data}) => {
                           {t("CS_FILE_SIZE_RESTRICTIONS")}
                         </div>
 
-                        {(nocDetails?.AAI_NOC_DETAILS?.[0]?.documents || []).filter(d => d.documentType === doc.documentType).length > 0 && (
+                        {(nocDetails?.AAI_NOC_DETAILS?.documents || []).filter(d => d.documentType === doc.documentType).length > 0 && (
                           <DocumentsPreview
-                            documents={(nocDetails?.AAI_NOC_DETAILS?.[0]?.documents || []).filter(d => d.documentType === doc.documentType).map((d) => ({
+                            documents={(nocDetails?.AAI_NOC_DETAILS?.documents || []).filter(d => d.documentType === doc.documentType).map((d) => ({
                               title: doc.documentType,
                               fileStoreId: d.fileStoreId,
 
