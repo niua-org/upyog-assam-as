@@ -1,34 +1,5 @@
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
-import {
-  Card,
-  CardSubHeader,
-  Header,
-  Loader,
-  Row,
-  StatusTable,
-  MultiLink,
-  Toast,
-  CheckBox,
-  PopUp,
-  HeaderBar,
-  ActionBar,
-  Menu,
-  Modal,
-  SubmitBar,
-  CardLabel,
-  TextInput,
-  TextArea,
-  CardLabelDesc,
-  UploadFile,
-} from "@upyog/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
-import get from "lodash/get";
-import { isError, useQueryClient } from "react-query";
-import WFApplicationTimeline from "../../../../modules/obpsv2/src/pageComponents/WFApplicationTimeline";
-import DocumentsPreview from "../../../../modules/templates/ApplicationDetails/components/DocumentsPreview";
 import { UploadServices } from "../atoms/UploadServices";
 
 export const ScrutinyFormService = {

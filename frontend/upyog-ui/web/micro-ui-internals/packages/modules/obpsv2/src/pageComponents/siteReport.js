@@ -32,7 +32,7 @@ const siteReport = ({submitReport, onChange, data}) => {
     }
   );
   //const { isLoading: nocDocsLoading, data: nocDocs } = useMDMS("as", "NOC", ["OldNocType"]);
-  const nocChecklist = nocLists?.NocTypeMapping?.[0]?.nocs || [];
+  const nocChecklist = nocLists?.NocTypeMapping?.[0]?.nocs?.filter(item => item.isActive === true) || [];
   const nocDocuments = nocLists?.DocumentTypeMapping
   const civilAviationDocList =
   nocDocuments?.filter(doc => doc.nocType === "CIVIL_AVIATION")

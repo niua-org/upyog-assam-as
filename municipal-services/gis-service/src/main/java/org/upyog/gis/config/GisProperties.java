@@ -38,6 +38,12 @@ public class GisProperties {
     private String filestoreHost;
     
     private String filestoreEndpoint;
+
+    @Value("${egov.mdms.host}")
+    private String mdmsHost;
+
+    @Value("${egov.mdms.search.endpoint}")
+    private String mdmsEndPoint;
     
     /**
      * Gets the complete filestore URL by combining host and endpoint
