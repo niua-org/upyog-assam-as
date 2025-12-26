@@ -216,8 +216,9 @@ console.log("citizenServicesObjcitizenServicesObj",citizenServicesObj)
             <StandaloneSearchBar placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER")} />
           </div> */}
           <div className="ServicesSection">
-          <CardBasedOptions style={{marginTop:"-30px"}} {...allCitizenServicesProps} />
-          <CardBasedOptions style={isMobile ? {marginTop:"-30px"} : {marginTop:"-30px"}} {...allInfoAndUpdatesProps} />
+            
+          <CardBasedOptions  style={ {width: "100%"}}  {...allCitizenServicesProps} />
+          {/* <CardBasedOptions style={isMobile ? {marginTop:"-30px"} : {marginTop:"-30px"}} {...allInfoAndUpdatesProps} /> */}
         </div>
         </div>}
 

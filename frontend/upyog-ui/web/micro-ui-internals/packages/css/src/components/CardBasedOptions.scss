@@ -14,15 +14,16 @@
   }
 
   .mainContent{
-      @apply flex justify-evenly;
+      @apply flex justify-start;
       
       .CardBasedOptionsMainChildOption{
           width: 25%;
-          
           @apply text-center;
-          margin: auto;
+          margin: 0;
+          margin-top: 17px;
+
           .ChildOptionImageWrapper{
-              margin: auto !important;
+              margin: 0;
               background: rgba(244, 119, 56, 0.12);
               mix-blend-mode: normal;
               padding-top: 14px;
