@@ -288,10 +288,18 @@ const CheckPage = ({ onSubmit, value = {} }) => {
               text={checkForNA(t(areaMapping?.villageName?.code))}
             />
           )}
+          {areaMapping?.bpAuthority?.code === "MUNICIPAL_CORPORATION" && (
+          <Row
+            label={t("MOUZA")}
+            text={checkForNA(areaMapping?.mouza?.code)}
+          />
+           )}
+          {areaMapping?.bpAuthority?.code !=="MUNICIPAL_CORPORATION" && (
           <Row
             label={t("MOUZA")}
             text={checkForNA(areaMapping?.mouza)}
           />
+           )}
         </StatusTable>
         <div
           style={{
