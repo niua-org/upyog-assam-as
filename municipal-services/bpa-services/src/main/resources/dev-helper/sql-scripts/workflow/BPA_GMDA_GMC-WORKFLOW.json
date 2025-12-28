@@ -66,7 +66,7 @@ curl --location --request POST 'http://localhost:8280/egov-workflow-v2/egov-wf/b
                                 "BPA_RTP",
                                 "BPA_ARCHITECT"
                             ],
-                            "action": "APPROVE",
+                            "action": "ACCEPT",
                             "active": true,
                             "nextState": "EDIT_APPLICATION"
                         },
@@ -134,29 +134,10 @@ curl --location --request POST 'http://localhost:8280/egov-workflow-v2/egov-wf/b
                             ],
                             "action": "APPLY_FOR_SCRUTINY",
                             "active": true,
-                            "nextState": "SEND_TO_CITIZEN"
-                        }
-                    ],
-                    "applicationStatus": "PENDING_FOR_SCRUTINY",
-                    "isStartState": false,
-                    "isStateUpdatable": true,
-                    "isTerminateState": false,
-                    "docUploadRequired": false
-                },
-                {
-                    "state": "SEND_TO_CITIZEN",
-                    "actions": [
-                        {
-                            "roles": [
-                                "BPA_RTP",
-                                "BPA_ARCHITECT"
-                            ],
-                            "action": "SEND",
-                            "active": true,
                             "nextState": "CITIZEN_APPROVAL"
                         }
                     ],
-                    "applicationStatus": "SEND_TO_CITIZEN",
+                    "applicationStatus": "PENDING_FOR_SCRUTINY",
                     "isStartState": false,
                     "isStateUpdatable": true,
                     "isTerminateState": false,

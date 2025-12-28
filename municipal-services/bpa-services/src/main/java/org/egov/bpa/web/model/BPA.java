@@ -157,4 +157,8 @@ public class BPA {
     }
     this.documents.add(documentsItem);
   }
+  
+  private String signedOcFileStoreId;
+  private String signedPpFileStoreId;
+  private String signedBpFileStoreId;
 }
