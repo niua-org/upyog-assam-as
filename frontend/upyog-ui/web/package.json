@@ -10,9 +10,8 @@
     "micro-ui-internals/packages/modules/common",
     "micro-ui-internals/packages/modules/hrms",
     "micro-ui-internals/packages/modules/obpsv2",
-    "micro-ui-internals/packages/modules/noc",
-    "micro-ui-internals/packages/css"
-  ],
+    "micro-ui-internals/packages/modules/noc"
+    ],
   "engines": {
     "node": ">=14"
   },
