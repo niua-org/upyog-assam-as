@@ -29,13 +29,13 @@ public class GisProperties {
     private String wfsZoneAttribute = "STATE_ABBR";
     
     // HTTP timeout configuration
-    @Value("${gis.connection-timeout-seconds")
+    @Value("${gis.connection-timeout-seconds}")
     private int connectionTimeoutSeconds;
 
-    @Value("${gis.read-timeout-seconds")
+    @Value("${gis.read-timeout-seconds}")
     private int readTimeoutSeconds;
 
-    @Value("${gis.max-retries")
+    @Value("${gis.max-retries}")
     private int maxRetries;
     
     // Filestore configuration from different property sources
