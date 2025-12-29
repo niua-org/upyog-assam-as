@@ -359,6 +359,8 @@ public class NOCService {
 			criteria.setApplicationStatus(NOCConstants.APPLICATION_STATUS_INPROGRESS);
 			criteria.setNocType(NOCConstants.CIVIL_AVIATION_NOC_TYPE);
 			criteria.setTenantId(tenantId);
+			criteria.setLimit(config.getMaxSearchLimit());
+			criteria.setOffset(0);
 			return nocRepository.getNocDatav2(criteria);
 		}
 

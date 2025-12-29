@@ -50,12 +50,16 @@ public class BPAQueryBuilder {
                     "       bpa.property_vendor," +
                     "       bpa.pp_fee_receipt_filestore_id, " +
                     "       bpa.bp_fee_receipt_filestore_id, " +
+                    "       bpa.signed_bp_filestore_id, " +
+                    "       bpa.signed_pp_filestore_id, " +
+                    "       bpa.signed_oc_filestore_id, " +
                     
                     "       bpadoc.id AS bpa_doc_id, " +
                     "       bpadoc.additional_details AS doc_details, " +
                     "       bpadoc.document_type AS bpa_doc_document_type, " +
                     "       bpadoc.filestore_id AS bpa_doc_filestore, " +
-
+                    
+                    
                     "       rtp.id AS id, " +
                     "       rtp.buildingplan_id AS buildingplan_id, " +
                     "       rtp.rtp_id AS rtp_id, " +
