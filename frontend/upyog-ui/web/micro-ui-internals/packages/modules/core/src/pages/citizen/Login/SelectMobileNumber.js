@@ -10,13 +10,13 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
   const [error, setError]=useState("");
   const { isLoading, data } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "common-masters", [{ name: "CitizenConsentForm" }]);
   const [showToast, setShowToast] = useState(null);
-  function setTermsAndPolicyDetails(e) {
-    setIsCheckBox(e.target.checked)
-  }
+  // function setTermsAndPolicyDetails(e) {
+  //   setIsCheckBox(e.target.checked)
+  // }
 
   const checkDisbaled = () => {
     if (isCCFEnabled?.isCitizenConsentFormEnabled) {
-      return !(mobileNumber.length === 10 && canSubmit && isCheckBox)
+      return !(mobileNumber.length === 10 && canSubmit)
     } else {
       return !(mobileNumber.length === 10 && canSubmit)
     }
@@ -126,7 +126,7 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
       {error && <p style={{color:"red"}}>{error}</p>}
       {isCCFEnabled?.isCitizenConsentFormEnabled && (
       <div>
-        <CheckBox
+        {/* <CheckBox
           className="form-field"
           label={checkLabels()}
           value={isCheckBox}
@@ -134,12 +134,12 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
           style={{ marginTop: "5px", marginLeft: "55px" }}
           styles={{marginBottom: "30px"}}
           onChange={setTermsAndPolicyDetails}
-        />
+        /> */}
 
         <CitizenConsentForm
           styles={{}}
           t={t}
-          isCheckBoxChecked={setTermsAndPolicyDetails}
+          // isCheckBoxChecked={setTermsAndPolicyDetails}
           labels={isCCFEnabled?.checkBoxLabels}
           mdmsConfig={mdmsConfig}
           setMdmsConfig={setMdmsConfig}
