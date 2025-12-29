@@ -1,359 +1,395 @@
-curl --location 'http://localhost:8280/egov-workflow-v2/egov-wf/businessservice/_create' \
+curl --location --request POST 'http://localhost:8280/egov-workflow-v2/egov-wf/businessservice/_create' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-"RequestInfo": {
-"apiId": "Rainmaker",
-"action": "",
-"did": 1,
-"key": "",
-"msgId": "20230910130900|en_IN",
-"requesterId": "",
-"ts": 1513579888772,
-"ver": ".01",
-"authToken": "{{devAuth}}",
-"userInfo": {
-"id": 2130,
-"uuid": "f9517ac8-a630-4b4a-adbf-717a7d99fa5c",
-"userName": "9999009999",
-"name": "KS",
-"mobileNumber": "9999009999",
-"emailId": "test@test.com",
-"locale": null,
-"type": "CITIZEN",
-"roles": [
-{
-"name": "Citizen",
-"code": "CITIZEN",
-"tenantId": "pg"
-}
-],
-"active": true,
-"tenantId": "pg",
-"permanentCity": null
-}
-},
-"BusinessServices": [
-{
-"tenantId": "as",
-"businessService": "BPA_GMDA_GMC",
-"business": "bpa-services",
-"businessServiceSla": "",
-"states": [
-{
-"state": null,
-"actions": [
-{
-"roles": [
-"CITIZEN",
-"BPA_RTP",
-"BPA_ARCHITECT"
-],
-"action": "APPLY",
-"active": true,
-"nextState": "PENDING_RTP_APPROVAL"
-}
-],
-"isStartState": true,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "PENDING_RTP_APPROVAL",
-"actions": [
-{
-"roles": [
-"BPA_RTP",
-"BPA_ARCHITECT"
-],
-"action": "ACCEPT",
-"active": true,
-"nextState": "EDIT_APPLICATION"
-},
-{
-"roles": [
-"BPA_RTP",
-"BPA_ARCHITECT"
-],
-"action": "REJECT",
-"active": true,
-"nextState": "REJECTED"
-}
-],
-"applicationStatus": "PENDING_RTP_APPROVAL",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "EDIT_APPLICATION",
-"actions": [
-{
-"roles": [
-"BPA_RTP",
-"BPA_ARCHITECT"
-],
-"action": "EDIT",
-"active": true,
-"nextState": "GIS_VALIDATION"
-}
-],
-"applicationStatus": "EDIT_APPLICATION",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "GIS_VALIDATION",
-"actions": [
-{
-"roles": [
-"BPA_RTP",
-"BPA_ARCHITECT"
-],
-"action": "VALIDATE_GIS",
-"active": true,
-"nextState": "PENDING_FOR_SCRUTINY"
-}
-],
-"applicationStatus": "GIS_VALIDATION",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "PENDING_FOR_SCRUTINY",
-"actions": [
-{
-"roles": [
-"BPA_RTP",
-"BPA_ARCHITECT"
-],
-"action": "APPLY_FOR_SCRUTINY",
-"active": true,
-"nextState": "CITIZEN_APPROVAL"
-}
-],
-"applicationStatus": "PENDING_FOR_SCRUTINY",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "CITIZEN_APPROVAL",
-"actions": [
-{
-"roles": [
-"CITIZEN"
-],
-"action": "APPROVE",
-"active": true,
-"nextState": "PENDING_GMDA_ENGINEER"
-},
-{
-"roles": [
-"CITIZEN"
-],
-"action": "SEND_BACK_TO_RTP",
-"active": true,
-"nextState": "PENDING_RTP_APPROVAL"
-}
-],
-"applicationStatus": "CITIZEN_APPROVAL",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "PENDING_GMDA_ENGINEER",
-"actions": [
-{
-"roles": [
-"BPA_ENGINEER_GMDA"
-],
-"action": "SUBMIT_REPORT",
-"active": true,
-"nextState": "PENDING_TOWNPLANNER"
-},
-{
-"roles": [
-"BPA_ENGINEER_GMDA"
-],
-"action": "REJECT",
-"active": true,
-"nextState": "PENDING_RTP_APPROVAL"
-}
-],
-"applicationStatus": "PENDING_GMDA_ENGINEER",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "PENDING_TOWNPLANNER",
-"actions": [
-{
-"roles": [
-"BPA_TOWNPLANNER"
-],
-"action": "RECOMMEND_TO_CEO",
-"active": true,
-"nextState": "PENDING_CEO"
-},
-{
-"roles": [
-"BPA_TOWNPLANNER"
-],
-"action": "SEND_BACK_TO_GMDA",
-"active": true,
-"nextState": "PENDING_GMDA_ENGINEER"
-}
-],
-"applicationStatus": "PENDING_TOWNPLANNER",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "PENDING_CEO",
-"actions": [
-{
-"roles": [
-"BPA_CEO"
-],
-"action": "APPROVE",
-"active": true,
-"nextState": "PAYMENT_PENDING"
-}
-],
-"applicationStatus": "PENDING_CEO",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "PAYMENT_PENDING",
-"actions": [
-{
-"roles": [
-"CITIZEN"
-],
-"action": "PAY",
-"active": true,
-"nextState": "FORWARDED_TO_ZONAL_OFFICER"
-}
-],
-"applicationStatus": "PAYMENT_PENDING",
-"isStartState": false,
-"isStateUpdatable": false,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "FORWARDED_TO_ZONAL_OFFICER",
-"actions": [
-{
-"roles": [
-"BPA_ZONALOFFICER_GMC"
-],
-"action": "FORWARD",
-"active": true,
-"nextState": "FORWARDED_TO_ASSOCIATE_PLANNER"
-}
-],
-"applicationStatus": "FORWARDED_TO_ZONAL_OFFICER",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "FORWARDED_TO_ASSOCIATE_PLANNER",
-"actions": [
-{
-"roles": [
-"BPA_ASSOCIATE_PLANNER"
-],
-"action": "FORWARD",
-"active": true,
-"nextState": "PENDING_COMMISSIONER"
-}
-],
-"applicationStatus": "FORWARDED_TO_ASSOCIATE_PLANNER",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "PENDING_COMMISSIONER",
-"actions": [
-{
-"roles": [
-"BPA_COMMISSIONER"
-],
-"action": "APPROVE",
-"active": true,
-"nextState": "CITIZEN_FINAL_PAYMENT"
-},
-{
-"roles": [
-"BPA_COMMISSIONER"
-],
-"action": "REJECT",
-"active": true,
-"nextState": "FORWARDED_TO_ZONAL_OFFICER"
-}
-],
-"applicationStatus": "PENDING_COMMISSIONER",
-"isStartState": false,
-"isStateUpdatable": true,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "CITIZEN_FINAL_PAYMENT",
-"actions": [
-{
-"roles": [
-"CITIZEN"
-],
-"action": "PAY",
-"active": true,
-"nextState": "APPLICATION_COMPLETED"
-}
-],
-"applicationStatus": "CITIZEN_FINAL_PAYMENT",
-"isStartState": false,
-"isStateUpdatable": false,
-"isTerminateState": false,
-"docUploadRequired": false
-},
-{
-"state": "APPLICATION_COMPLETED",
-"isStartState": false,
-"isStateUpdatable": false,
-"isTerminateState": true,
-"applicationStatus": "APPLICATION_COMPLETED",
-"docUploadRequired": false
-},
-{
-"state": "REJECTED",
-"isStartState": false,
-"isStateUpdatable": false,
-"isTerminateState": true,
-"applicationStatus": "REJECTED",
-"docUploadRequired": false
-}
-]
-}
-]
+    "RequestInfo": {
+        "apiId": "Rainmaker",
+        "action": "",
+        "did": 1,
+        "key": "",
+        "msgId": "20230910130900|en_IN",
+        "requesterId": "",
+        "ts": 1513579888772,
+        "ver": ".01",
+        "authToken": "{{devAuth}}",
+        "userInfo": {
+            "id": 2130,
+            "uuid": "f9517ac8-a630-4b4a-adbf-717a7d99fa5c",
+            "userName": "9999009999",
+            "name": "KS",
+            "mobileNumber": "9999009999",
+            "emailId": "test@test.com",
+            "locale": null,
+            "type": "CITIZEN",
+            "roles": [
+                {
+                    "name": "Citizen",
+                    "code": "CITIZEN",
+                    "tenantId": "pg"
+                }
+            ],
+            "active": true,
+            "tenantId": "pg",
+            "permanentCity": null
+        }
+    },
+    "BusinessServices": [
+        {
+            "tenantId": "as",
+            "businessService": "BPA_GMDA_GMC",
+            "business": "bpa-services",
+            "businessServiceSla": "",
+            "states": [
+                {
+                    "state": null,
+                    "actions": [
+                        {
+                            "roles": [
+                                "CITIZEN",
+                                "BPA_RTP",
+                                "BPA_ARCHITECT"
+                            ],
+                            "action": "APPLY",
+                            "active": true,
+                            "nextState": "PENDING_RTP_APPROVAL"
+                        }
+                    ],
+                    "isStartState": true,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_RTP_APPROVAL",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_RTP",
+                                "BPA_ARCHITECT"
+                            ],
+                            "action": "ACCEPT",
+                            "active": true,
+                            "nextState": "EDIT_APPLICATION"
+                        },
+                        {
+                            "roles": [
+                                "BPA_RTP",
+                                "BPA_ARCHITECT"
+                            ],
+                            "action": "REJECT",
+                            "active": true,
+                            "nextState": "REJECTED"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_RTP_APPROVAL",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "EDIT_APPLICATION",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_RTP",
+                                "BPA_ARCHITECT"
+                            ],
+                            "action": "EDIT",
+                            "active": true,
+                            "nextState": "GIS_VALIDATION"
+                        }
+                    ],
+                    "applicationStatus": "EDIT_APPLICATION",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "GIS_VALIDATION",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_RTP",
+                                "BPA_ARCHITECT"
+                            ],
+                            "action": "VALIDATE_GIS",
+                            "active": true,
+                            "nextState": "PENDING_FOR_SCRUTINY"
+                        }
+                    ],
+                    "applicationStatus": "GIS_VALIDATION",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_FOR_SCRUTINY",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_RTP",
+                                "BPA_ARCHITECT"
+                            ],
+                            "action": "APPLY_FOR_SCRUTINY",
+                            "active": true,
+                            "nextState": "CITIZEN_APPROVAL"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_FOR_SCRUTINY",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "CITIZEN_APPROVAL",
+                    "actions": [
+                        {
+                            "roles": [
+                                "CITIZEN"
+                            ],
+                            "action": "APPROVE",
+                            "active": true,
+                            "nextState": "PENDING_GMDA_ENGINEER"
+                        },
+                        {
+                            "roles": [
+                                "CITIZEN"
+                            ],
+                            "action": "SEND_BACK_TO_RTP",
+                            "active": true,
+                            "nextState": "PENDING_RTP_APPROVAL"
+                        }
+                    ],
+                    "applicationStatus": "CITIZEN_APPROVAL",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_GMDA_ENGINEER",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_ENGINEER_GMDA"
+                            ],
+                            "action": "SUBMIT_REPORT",
+                            "active": true,
+                            "nextState": "PENDING_TOWNPLANNER"
+                        },
+                        {
+                            "roles": [
+                                "BPA_ENGINEER_GMDA"
+                            ],
+                            "action": "REJECT",
+                            "active": true,
+                            "nextState": "PENDING_RTP_APPROVAL"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_GMDA_ENGINEER",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_TOWNPLANNER",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_TOWNPLANNER"
+                            ],
+                            "action": "RECOMMEND_TO_CEO",
+                            "active": true,
+                            "nextState": "PENDING_CEO"
+                        },
+                        {
+                            "roles": [
+                                "BPA_TOWNPLANNER"
+                            ],
+                            "action": "SEND_BACK_TO_GMDA",
+                            "active": true,
+                            "nextState": "PENDING_GMDA_ENGINEER"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_TOWNPLANNER",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_CEO",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_CEO"
+                            ],
+                            "action": "APPROVE",
+                            "active": true,
+                            "nextState": "PENDING_DSC"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_CEO",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_DSC",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_CEO"
+                            ],
+                            "action": "DSC",
+                            "active": true,
+                            "nextState": "PAYMENT_PENDING"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_DSC",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PAYMENT_PENDING",
+                    "actions": [
+                        {
+                            "roles": [
+                                "CITIZEN"
+                            ],
+                            "action": "PAY",
+                            "active": true,
+                            "nextState": "FORWARDED_TO_ZONAL_OFFICER"
+                        }
+                    ],
+                    "applicationStatus": "PAYMENT_PENDING",
+                    "isStartState": false,
+                    "isStateUpdatable": false,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "FORWARDED_TO_ZONAL_OFFICER",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_ZONALOFFICER_GMC"
+                            ],
+                            "action": "FORWARD",
+                            "active": true,
+                            "nextState": "FORWARDED_TO_ASSOCIATE_PLANNER"
+                        }
+                    ],
+                    "applicationStatus": "FORWARDED_TO_ZONAL_OFFICER",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "FORWARDED_TO_ASSOCIATE_PLANNER",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_ASSOCIATE_PLANNER"
+                            ],
+                            "action": "FORWARD",
+                            "active": true,
+                            "nextState": "PENDING_COMMISSIONER"
+                        }
+                    ],
+                    "applicationStatus": "FORWARDED_TO_ASSOCIATE_PLANNER",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_COMMISSIONER",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_COMMISSIONER"
+                            ],
+                            "action": "APPROVE",
+                            "active": true,
+                            "nextState": "PENDING_FINAL_DSC"
+                        },
+                        {
+                            "roles": [
+                                "BPA_COMMISSIONER"
+                            ],
+                            "action": "REJECT",
+                            "active": true,
+                            "nextState": "FORWARDED_TO_ZONAL_OFFICER"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_COMMISSIONER",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "PENDING_FINAL_DSC",
+                    "actions": [
+                        {
+                            "roles": [
+                                "BPA_COMMISSIONER"
+                            ],
+                            "action": "DSC",
+                            "active": true,
+                            "nextState": "CITIZEN_FINAL_PAYMENT"
+                        }
+                    ],
+                    "applicationStatus": "PENDING_FINAL_DSC",
+                    "isStartState": false,
+                    "isStateUpdatable": true,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "CITIZEN_FINAL_PAYMENT",
+                    "actions": [
+                        {
+                            "roles": [
+                                "CITIZEN"
+                            ],
+                            "action": "PAY",
+                            "active": true,
+                            "nextState": "APPLICATION_COMPLETED"
+                        }
+                    ],
+                    "applicationStatus": "CITIZEN_FINAL_PAYMENT",
+                    "isStartState": false,
+                    "isStateUpdatable": false,
+                    "isTerminateState": false,
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "APPLICATION_COMPLETED",
+                    "isStartState": false,
+                    "isStateUpdatable": false,
+                    "isTerminateState": true,
+                    "applicationStatus": "APPLICATION_COMPLETED",
+                    "docUploadRequired": false
+                },
+                {
+                    "state": "REJECTED",
+                    "isStartState": false,
+                    "isStateUpdatable": false,
+                    "isTerminateState": true,
+                    "applicationStatus": "REJECTED",
+                    "docUploadRequired": false
+                }
+            ]
+        }
+    ]
 }'

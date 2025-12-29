@@ -436,6 +436,11 @@ public class EnrichmentService {
 		updateFileStoreId(existingBPA::setOcFileStoreId, existingBPA.getOcFileStoreId(), bpa.getOcFileStoreId());
 		updateFileStoreId(existingBPA::setPpFeeReceiptFileStoreId, existingBPA.getPpFeeReceiptFileStoreId(),bpa.getPpFeeReceiptFileStoreId());
 		updateFileStoreId(existingBPA::setBpFeeReceiptFileStoreId, existingBPA.getBpFeeReceiptFileStoreId(),bpa.getBpFeeReceiptFileStoreId());
+		
+		//update signed file store ids
+		updateFileStoreId(existingBPA::setSignedOcFileStoreId, existingBPA.getSignedOcFileStoreId(), bpa.getSignedOcFileStoreId());
+		updateFileStoreId(existingBPA::setSignedPpFileStoreId, existingBPA.getSignedPpFileStoreId(),bpa.getSignedPpFileStoreId());
+		updateFileStoreId(existingBPA::setSignedBpFileStoreId, existingBPA.getSignedBpFileStoreId(),bpa.getSignedBpFileStoreId());
 
 		return true;
 	}
