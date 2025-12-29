@@ -1,14 +1,14 @@
-package org.egov.noc.service;
+package org.egov.noc.util;
 
 import org.egov.noc.web.model.Noc;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Arrays;
 import java.util.List;
 
-@Service
-public class CoordinateService {
+@Component
+public class CoordinateUtil {
 
     // List of direction keys to process
     private static final List<String> DIRECTIONS = Arrays.asList("EAST", "WEST", "NORTH", "SOUTH", "CENTER");

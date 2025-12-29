@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.repository.IdGenRepository;
+import org.egov.noc.util.CoordinateUtil;
 import org.egov.noc.util.NOCConstants;
 import org.egov.noc.util.NOCUtil;
 import org.egov.noc.web.model.AuditDetails;
@@ -44,7 +45,7 @@ public class EnrichmentService {
 	private WorkflowService workflowService;
 
 	@Autowired
-	private CoordinateService coordinateService;
+	private CoordinateUtil coordinateUtil;
 
 	/**
 	 * Enriches the nocReuqest object with puplating the id field with the uuids and
@@ -73,7 +74,7 @@ public class EnrichmentService {
 		}
 		// For Civil Aviation NOCs, convert coordinates to AAI format
 		if (NOCConstants.CIVIL_AVIATION_NOC_TYPE.equals(nocRequest.getNoc().getNocType())) {
-			coordinateService.convertCoordinatesForAAI(nocRequest.getNoc());
+			coordinateUtil.convertCoordinatesForAAI(nocRequest.getNoc());
 		}
 	}
 
