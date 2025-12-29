@@ -43,6 +43,9 @@ public class EnrichmentService {
 	@Autowired
 	private WorkflowService workflowService;
 
+	@Autowired
+	private CoordinateService coordinateService;
+
 	/**
 	 * Enriches the nocReuqest object with puplating the id field with the uuids and
 	 * the auditDetails
@@ -67,6 +70,10 @@ public class EnrichmentService {
 				&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())
 				&& nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE)) {
 
+		}
+		// For Civil Aviation NOCs, convert coordinates to AAI format
+		if (NOCConstants.CIVIL_AVIATION_NOC_TYPE.equals(nocRequest.getNoc().getNocType())) {
+			coordinateService.convertCoordinatesForAAI(nocRequest.getNoc());
 		}
 	}
 
