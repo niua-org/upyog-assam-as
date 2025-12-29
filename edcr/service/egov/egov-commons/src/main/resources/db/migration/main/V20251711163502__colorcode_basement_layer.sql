@@ -1,4 +1,4 @@
-UPDATE assam.egbpa_occupancy
+UPDATE egbpa_occupancy
 SET colorcode = 40
 WHERE name = 'Factories'
   AND code = 'K'
