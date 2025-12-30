@@ -2,12 +2,14 @@ package org.egov.land.repository.querybuilder;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.land.config.LandConfiguration;
 import org.egov.land.web.models.LandSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+@Slf4j
 @Component
 public class LandQueryBuilder {
 
@@ -79,8 +81,9 @@ public class LandQueryBuilder {
 
 		StringBuilder builder = new StringBuilder(QUERY);
 
+		// Inbox search does not require tenant filter for Development Authority User
 		// Tenant filter
-		if (criteria.getTenantId() != null) {
+		if (criteria.getTenantId() != null && !Boolean.TRUE.equals(criteria.getIsInboxSearch())) {
 			if (criteria.getTenantId().split("\\.").length == 1) {
 				addClauseIfRequired(preparedStmtList, builder);
 				builder.append(" landInfo.tenant_id LIKE ? ");
@@ -91,7 +94,9 @@ public class LandQueryBuilder {
 				preparedStmtList.add(criteria.getTenantId());
 			}
 		}
-
+		else {
+			log.info("Skipping tenant filter for inbox search"+ criteria.getIsInboxSearch() + " : "+ criteria.getTenantId());
+		}
 		// IDs filter
 		List<String> ids = criteria.getIds();
 		if (!CollectionUtils.isEmpty(ids)) {
