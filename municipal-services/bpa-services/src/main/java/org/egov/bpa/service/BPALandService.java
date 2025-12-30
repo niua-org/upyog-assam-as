@@ -157,6 +157,11 @@ public class BPALandService {
                     uri.append("&").append("&locality=");
                     uri.append(landcriteria.getLocality());
 		}
+		if (Boolean.TRUE.equals(landcriteria.getIsInboxSearch())) {
+			landSearchCriteria.setIsInboxSearch(landcriteria.getIsInboxSearch());
+			uri.append("&isInboxSearch=");
+			uri.append(landcriteria.getIsInboxSearch());
+		}
 		return uri;
 	}
 	
