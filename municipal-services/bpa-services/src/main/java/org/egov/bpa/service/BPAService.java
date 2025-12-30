@@ -262,6 +262,7 @@ public class BPAService {
                         }
                     }
                     log.debug("Call with tenantId to Land::" + landcriteria.getTenantId());
+                    landcriteria.setIsInboxSearch(criteria.getIsInboxSearch());
                     ArrayList<LandInfo> landInfos = landService.searchLandInfoToBPA(requestInfo, landcriteria);
 
                     this.populateLandToBPA(bpas, landInfos, requestInfo);
