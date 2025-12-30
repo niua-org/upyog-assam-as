@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.utils.MultiStateInstanceUtil;
-import org.egov.inbox.web.model.InboxRequest;
 import org.egov.inbox.web.model.V2.InboxQueryConfiguration;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
@@ -89,5 +88,78 @@ public class MDMSUtil {
 
         return mdmsCriteriaReq;
     }
+
+    /**
+     * Fetches list of tenant IDs from MDMS based on planning area code filter
+     * 
+     * @param requestInfo RequestInfo object
+     * @param tenantId State level tenant ID
+     * @param planningAreaCode Planning area code to filter tenants
+     * @return List of tenant IDs matching the planning area code
+     */
+    public List<String> getTenantIdsByPlanningAreaCode(RequestInfo requestInfo, String tenantId, String planningAreaCode) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(mdmsHost).append(mdmsUrl);
+        
+        MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestForTenantsByPlanningAreaCode(
+                multiStateInstanceUtil.getStateLevelTenant(tenantId), planningAreaCode, requestInfo);
+        
+        List<String> tenantIds = new ArrayList<>();
+        
+        try {
+            Object response = restTemplate.postForObject(uri.toString(), mdmsCriteriaReq, Map.class);
+            if (response != null) {
+                // Extract tenant codes from response: $.MdmsRes.tenant.tenants[*].code
+                tenantIds = JsonPath.read(response, "$.MdmsRes.tenant.tenants[*].code");
+            }
+        } catch (Exception e) {
+            throw new CustomException("MDMS_TENANT_FETCH_ERROR", 
+                    "Error in fetching tenant IDs from MDMS for planning area code: " + planningAreaCode + " - " + e.getMessage());
+        }
+        
+        return tenantIds;
+    }
+
+    /**
+     * Prepares MDMS request to fetch tenants filtered by planning area code
+     * 
+     * @param tenantId State level tenant ID
+     * @param planningAreaCode Planning area code to filter
+     * @param requestInfo RequestInfo object
+     * @return MdmsCriteriaReq object
+     */
+    private MdmsCriteriaReq getMdmsRequestForTenantsByPlanningAreaCode(String tenantId, String planningAreaCode, RequestInfo requestInfo) {
+        // Build filter expression: [?(@.city.planningAreaCode == 'PLANNING_AREA_CODE')]
+        String filter = "[?(@.city.planningAreaCode == '" + planningAreaCode + "')]";
+        
+        MasterDetail masterDetail = MasterDetail.builder()
+                .name("tenants")
+                .filter(filter)
+                .build();
+        
+        List<MasterDetail> masterDetailList = new ArrayList<>();
+        masterDetailList.add(masterDetail);
+        
+        ModuleDetail moduleDetail = ModuleDetail.builder()
+                .moduleName("tenant")
+                .masterDetails(masterDetailList)
+                .build();
+        
+        List<ModuleDetail> moduleDetailList = new ArrayList<>();
+        moduleDetailList.add(moduleDetail);
+        
+        MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+                .tenantId(tenantId)
+                .moduleDetails(moduleDetailList)
+                .build();
+        
+        MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder()
+                .requestInfo(requestInfo)
+                .mdmsCriteria(mdmsCriteria)
+                .build();
+        
+        return mdmsCriteriaReq;
+    }
+
 }
 

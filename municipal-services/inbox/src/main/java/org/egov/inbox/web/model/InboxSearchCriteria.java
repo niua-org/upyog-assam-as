@@ -1,7 +1,6 @@
 package org.egov.inbox.web.model;
 
 import java.util.HashMap;
-import java.util.List;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
@@ -20,6 +19,9 @@ public class InboxSearchCriteria {
     @NotNull
     @JsonProperty("tenantId")
     private String tenantId;
+
+    @JsonProperty("planningAreaCode")
+    private String planningAreaCode;
     
     @JsonProperty("processSearchCriteria")
     private ProcessInstanceSearchCriteria processSearchCriteria;

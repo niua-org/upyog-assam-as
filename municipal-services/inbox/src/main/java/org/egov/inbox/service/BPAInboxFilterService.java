@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.inbox.repository.ServiceRequestRepository;
+import org.egov.inbox.util.MDMSUtil;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,14 @@ public class BPAInboxFilterService {
     @Value("${egov.searcher.bpa.count.path}")
     private String bpaInboxSearcherCountEndpoint;
 
+    // bpaInbox endpoints for multiple tenantIds
+    @Value("${egov.searcher.bpa.search.tenants.path}")
+    private String bpaInboxSearcherTenantIdsEndpoint;
+
+    @Value("${egov.searcher.bpa.count.tenants.path}")
+    private String bpaInboxSearcherCountTenantIdsEndpoint;
+
+
     @Value("${egov.searcher.bpa.citizen.search.path}")
     private String bpaCitizenInboxSearcherEndpoint;
 
@@ -70,6 +79,9 @@ public class BPAInboxFilterService {
 
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
+
+    @Autowired
+    private MDMSUtil mdmsUtil;
 
     public List<String> fetchApplicationNumbersFromSearcher(InboxSearchCriteria criteria,
             HashMap<String, String> StatusIdNameMap, RequestInfo requestInfo) {
@@ -112,30 +124,34 @@ public class BPAInboxFilterService {
             searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
             searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
             moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
-
             searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
             searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
 
             if (citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
                 StringBuilder uri = new StringBuilder();
                 if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
-                        && moduleSearchCriteria.get(SORT_ORDER_PARAM).equals(DESC_PARAM))
+                        && moduleSearchCriteria.get(SORT_ORDER_PARAM).equals(DESC_PARAM)) {
                     uri.append(searcherHost).append(bpaInboxSearcherDescEndpoint);
-                else
+                }
+                else {
                     uri.append(searcherHost).append(bpaInboxSearcherEndpoint);
-
+                }
                 result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
 
                 applicationNumbers = JsonPath.read(result, "$.BPAs.*.application_no");
             } else {
                 StringBuilder citizenUri = new StringBuilder();
-
-                if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
-                        && moduleSearchCriteria.get(SORT_ORDER_PARAM).equals(DESC_PARAM))
-                    citizenUri.append(searcherHost).append(bpaCitizenInboxSearcherDescEndpoint);
-                else
-                    citizenUri.append(searcherHost).append(bpaCitizenInboxSearcherEndpoint);
-
+                if (criteria.getPlanningAreaCode()!= null && !criteria.getPlanningAreaCode().isEmpty()) {
+                    log.info("Fetching citizen inbox applications for multiple tenantIds from searcher");
+                    citizenUri.append(searcherHost).append(bpaInboxSearcherTenantIdsEndpoint);
+                }
+                else {
+                    if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
+                            && moduleSearchCriteria.get(SORT_ORDER_PARAM).equals(DESC_PARAM))
+                        citizenUri.append(searcherHost).append(bpaCitizenInboxSearcherDescEndpoint);
+                    else
+                        citizenUri.append(searcherHost).append(bpaCitizenInboxSearcherEndpoint);
+                }
                 result = restTemplate.postForObject(citizenUri.toString(), searcherRequest, Map.class);
 
                 List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.BPAs.*.application_no");
@@ -153,6 +169,18 @@ public class BPAInboxFilterService {
         Map<String, Object> searchCriteria = new HashMap<>();
 
         searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
+        if (criteria.getPlanningAreaCode() != null && !criteria.getPlanningAreaCode().isEmpty()) {
+            // call mdms to get tenantIds for planning area code
+            try {
+                List<String> tenantIds = mdmsUtil.getTenantIdsByPlanningAreaCode(
+                        requestInfo, criteria.getTenantId(), criteria.getPlanningAreaCode());
+                if (tenantIds != null && !tenantIds.isEmpty()) {
+                    searchCriteria.put(TENANT_IDS_PARAM, tenantIds);
+                }
+            } catch (Exception e) {
+                log.error("Error fetching tenant IDs for planning area code: " + criteria.getPlanningAreaCode(), e);
+            }
+        }
         searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
 
         // Accommodating module search criteria in searcher request
@@ -235,15 +263,18 @@ public class BPAInboxFilterService {
             if (citizenHasStakeholderRoles(requestInfo, citizenRoles)) {
                 StringBuilder uri = new StringBuilder();
                 uri.append(searcherHost).append(bpaInboxSearcherCountEndpoint);
-
                 result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
 
                 double count = JsonPath.read(result, "$.TotalCount[0].count");
                 totalCount = (int) count;
             } else {
                 StringBuilder citizenUri = new StringBuilder();
-                citizenUri.append(searcherHost).append(bpaCitizenInboxSearcherCountEndpoint);
-
+                if (criteria.getPlanningAreaCode() != null && !criteria.getPlanningAreaCode().isEmpty()) {
+                    log.info("Fetching inbox count for multiple tenantIds from searcher");
+                    citizenUri.append(searcherHost).append(bpaInboxSearcherCountTenantIdsEndpoint);
+                } else {
+                    citizenUri.append(searcherHost).append(bpaCitizenInboxSearcherCountEndpoint);
+                }
                 Object citizenResult = restTemplate.postForObject(citizenUri.toString(), searcherRequest, Map.class);
 
                 double citizenCount = JsonPath.read(citizenResult, "$.TotalCount[0].count");
