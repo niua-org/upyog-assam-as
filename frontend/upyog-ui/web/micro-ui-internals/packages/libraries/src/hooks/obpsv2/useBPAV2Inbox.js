@@ -7,6 +7,21 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
     const { mobileNumber, applicationNo, name } = searchForm;
     console.log("first", name);
     const { sortBy, limit, offset, sortOrder } = tableForm;
+    const stateId = Digit.ULBService.getStateId();
+
+     const { data:tenantData } = Digit.Hooks.useEnabledMDMS(
+          stateId,
+          "tenant",
+          [{ name: "tenants" }],
+          {
+            select: (data) => {
+              const tenants = data?.tenant?.tenants || [];
+              return tenants.filter(
+                (tenant) => tenant?.code === tenantId
+              );
+            },
+          }
+        );
     let _filters = {
         tenantId,
         processSearchCriteria: {
@@ -27,6 +42,13 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
         limit
     }
 
+    // Add planningAreaCode only if tenantId ends with "da"
+    if (tenantId.endsWith("da") && user.info.type=="EMPLOYEE") {
+      _filters = {
+        ..._filters,
+        planningAreaCode: tenantData?.[0]?.city?.planningAreaCode,
+      };
+    }
     if (!applicationNo) {
       _filters = { ..._filters, offset}
     }
