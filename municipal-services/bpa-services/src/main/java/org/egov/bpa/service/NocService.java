@@ -172,10 +172,10 @@ public class NocService {
 		}
 
 		//TODO: Added this FIRE NOC for testing will remove once testing is done
-//		Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
-//				.nocType("FIRE_SAFETY").source(source).workflow(workflow).documents(new ArrayList<>())
-//				.additionalDetails(nocAdditionalDetails).build();
-//		nocs.add(noc);
+		Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
+				.nocType("FIRE_SAFETY").source(source).workflow(workflow).documents(new ArrayList<>())
+				.additionalDetails(nocAdditionalDetails).build();
+		nocs.add(noc);
 
 		log.info("Final NOC List to be created : " + nocs);
 
