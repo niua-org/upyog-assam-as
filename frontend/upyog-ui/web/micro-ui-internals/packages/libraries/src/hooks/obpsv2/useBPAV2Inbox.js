@@ -43,7 +43,7 @@ const useBPAV2Inbox = ({ tenantId, filters, config={} }) => {
     }
 
     // Add planningAreaCode only if tenantId ends with "da"
-    if (tenantId.endsWith("da") && user.info.type=="EMPLOYEE") {
+    if (tenantId.endsWith("da") && user.info.roles.some((role) => role.code.endsWith("_DA")) && user.info.type=="EMPLOYEE") {
       _filters = {
         ..._filters,
         planningAreaCode: tenantData?.[0]?.city?.planningAreaCode,
