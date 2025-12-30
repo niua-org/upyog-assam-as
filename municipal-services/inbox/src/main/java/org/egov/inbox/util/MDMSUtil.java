@@ -21,10 +21,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.egov.inbox.util.InboxConstants.*;
 
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 public class MDMSUtil {
     @Autowired
@@ -41,6 +44,14 @@ public class MDMSUtil {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    /**
+     * Cache for tenant IDs mapped by planning area code.
+     * Key: planningAreaCode (String)
+     * Value: List of tenant IDs (List<String>)
+     * Uses ConcurrentHashMap for thread-safe operations in concurrent web requests.
+     */
+    private final ConcurrentHashMap<String, List<String>> tenantIdsCache = new ConcurrentHashMap<>();
 
     @Cacheable(value="inboxConfiguration")
     public InboxQueryConfiguration getConfigFromMDMS(String tenantId, String moduleName) {
@@ -90,7 +101,8 @@ public class MDMSUtil {
     }
 
     /**
-     * Fetches list of tenant IDs from MDMS based on planning area code filter
+     * Fetches list of tenant IDs from MDMS based on planning area code filter.
+     * Results are cached to avoid repeated MDMS calls for the same planning area code.
      * 
      * @param requestInfo RequestInfo object
      * @param tenantId State level tenant ID
@@ -98,11 +110,43 @@ public class MDMSUtil {
      * @return List of tenant IDs matching the planning area code
      */
     public List<String> getTenantIdsByPlanningAreaCode(RequestInfo requestInfo, String tenantId, String planningAreaCode) {
+        String stateLevelTenantId = multiStateInstanceUtil.getStateLevelTenant(tenantId);
+        
+        // Return from cache if available (key is just planningAreaCode)
+        List<String> cachedTenantIds = tenantIdsCache.get(planningAreaCode);
+        if (cachedTenantIds != null) {
+            log.debug("Cache hit for planning area code: {}", planningAreaCode);
+            return new ArrayList<>(cachedTenantIds); // Return a copy to prevent external modification
+        }
+        
+        // Cache miss - fetch from MDMS
+        log.info("Cache miss for planning area code: {}. Fetching from MDMS...", planningAreaCode);
+        List<String> tenantIds = fetchTenantIdsFromMDMS(requestInfo, stateLevelTenantId, planningAreaCode);
+        
+        // Store in cache (only if not empty to avoid caching empty results)
+        if (tenantIds != null && !tenantIds.isEmpty()) {
+            tenantIdsCache.put(planningAreaCode, new ArrayList<>(tenantIds)); // Store a copy
+            log.info("Cached {} tenant IDs for planning area code: {}", 
+                    tenantIds.size(), planningAreaCode);
+        }
+        
+        return tenantIds;
+    }
+
+    /**
+     * Fetches tenant IDs from MDMS service
+     * 
+     * @param requestInfo RequestInfo object
+     * @param stateLevelTenantId State level tenant ID
+     * @param planningAreaCode Planning area code to filter tenants
+     * @return List of tenant IDs matching the planning area code
+     */
+    private List<String> fetchTenantIdsFromMDMS(RequestInfo requestInfo, String stateLevelTenantId, String planningAreaCode) {
         StringBuilder uri = new StringBuilder();
         uri.append(mdmsHost).append(mdmsUrl);
         
         MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestForTenantsByPlanningAreaCode(
-                multiStateInstanceUtil.getStateLevelTenant(tenantId), planningAreaCode, requestInfo);
+                stateLevelTenantId, planningAreaCode, requestInfo);
         
         List<String> tenantIds = new ArrayList<>();
         
@@ -113,10 +157,12 @@ public class MDMSUtil {
                 tenantIds = JsonPath.read(response, "$.MdmsRes.tenant.tenants[*].code");
             }
         } catch (Exception e) {
+            log.error("Error fetching tenant IDs from MDMS for planning area code: {} with tenantId: {}", 
+                    planningAreaCode, stateLevelTenantId, e);
             throw new CustomException("MDMS_TENANT_FETCH_ERROR", 
                     "Error in fetching tenant IDs from MDMS for planning area code: " + planningAreaCode + " - " + e.getMessage());
         }
-        
+
         return tenantIds;
     }
 
