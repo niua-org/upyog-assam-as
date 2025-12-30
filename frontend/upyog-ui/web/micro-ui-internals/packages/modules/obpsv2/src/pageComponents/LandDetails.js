@@ -313,7 +313,16 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             name="oldDagNumber"
             placeholder={t("BPA_ENTER_OLD_DAG_NUMBER")}
             value={oldDagNumber}
-            onChange={(e) => setOldDagNumber(e.target.value)}
+            // onChange={(e) => setOldDagNumber(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Only allow numbers and max 6 digits
+              if (/^\d{0,6}$/.test(value)) {
+                setOldDagNumber(value);
+              }
+            }}
+            maxlength="6"
+            pattern="\d{6}"
           />
 
           {/* New Dag Number */}
@@ -324,8 +333,16 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             name="newDagNumber"
             placeholder={t("BPA_ENTER_NEW_DAG_NUMBER")}
             value={newDagNumber}
-            onChange={(e) => setNewDagNumber(e.target.value)}
-            ValidationRequired={true}
+            // onChange={(e) => setNewDagNumber(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Only allow numbers and max 6 digits
+              if (/^\d{0,6}$/.test(value)) {
+                setNewDagNumber(value);
+              }
+            }}
+            maxlength="6"
+            pattern="\d{6}"
           />
 
           {/* Old Patta Number */}
@@ -336,7 +353,16 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             name="oldPattaNumber"
             placeholder={t("BPA_ENTER_OLD_PATTA_NUMBER")}
             value={oldPattaNumber}
-            onChange={(e) => setOldPattaNumber(e.target.value)}
+            // onChange={(e) => setOldPattaNumber(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Only allow numbers and max 6 digits
+              if (/^\d{0,6}$/.test(value)) {
+                setOldPattaNumber(value);
+              }
+            }}
+            maxlength="6"
+            pattern="\d{6}"
           />
 
           {/* New Patta Number */}
@@ -347,8 +373,16 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             name="newPattaNumber"
             placeholder={t("BPA_ENTER_NEW_PATTA_NUMBER")}
             value={newPattaNumber}
-            onChange={(e) => setNewPattaNumber(e.target.value)}
-            ValidationRequired={true}
+            // onChange={(e) => setNewPattaNumber(e.target.value)}
+             onChange={(e) => {
+              const value = e.target.value;
+              // Only allow numbers and max 6 digits
+              if (/^\d{0,6}$/.test(value)) {
+                setNewPattaNumber(value);
+              }
+            }}
+            maxlength="6"
+            pattern="\d{6}"
           />
 
           {/* Total Plot Area */}
@@ -362,8 +396,16 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             name="totalPlotArea"
             placeholder={t("BPA_ENTER_TOTAL_PLOT_AREA")}
             value={totalPlotArea}
-            onChange={(e) => setTotalPlotArea(e.target.value.replace(/[^0-9]/g, ""))}
-            ValidationRequired={true}
+            // onChange={(e) => setTotalPlotArea(e.target.value.replace(/[^0-5]/g, ""))}
+            onChange={(e) => {
+              const value = e.target.value;
+              // Only allow numbers and max 6 digits
+              if (/^\d{0,6}$/.test(value)) {
+                setTotalPlotArea(value);
+              }
+            }}
+            maxlength="6"
+            pattern="\d{6}"
           />
 
           {/* Name of owners of adjoining land */}
