@@ -67,6 +67,10 @@ public class BPASearchCriteria {
 
     private String district;
 
+    @JsonIgnore
+    @Builder.Default
+    private Boolean isInboxSearch = false;
+
     public boolean isEmpty() {
         return (this.tenantId == null && this.status == null && this.ids == null && this.applicationNo == null
                 && this.mobileNumber == null && this.name == null && this.landId == null && this.edcrNumber == null && this.approvalNo == null

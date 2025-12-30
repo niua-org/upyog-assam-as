@@ -100,7 +100,9 @@ public class BPAQueryBuilder {
 
         StringBuilder builder = new StringBuilder(QUERY);
 
-        if (criteria.getTenantId() != null) {
+        // Tenant ID clause will be implemented when tenantId is present in the search criteria and isInboxSearch is false
+        // Skip tenant ID clause if this is an inbox search (isInboxSearch == true)
+        if (criteria.getTenantId() != null && !Boolean.TRUE.equals(criteria.getIsInboxSearch())) {
             if (criteria.getTenantId().split("\\.").length == 1) {
                 addClauseIfRequired(preparedStmtList, builder);
                 builder.append(" bpa.tenant_id LIKE ?");
@@ -245,9 +247,9 @@ public class BPAQueryBuilder {
 
         StringBuilder builder = new StringBuilder(QUERY);
 
-        if (criteria.getTenantId() != null) {
+        // Skip tenant ID clause if this is an inbox search (isInboxSearch == true)
+        if (criteria.getTenantId() != null && !Boolean.TRUE.equals(criteria.getIsInboxSearch())) {
             if (centralInstanceUtil.isTenantIdStateLevel(criteria.getTenantId())) {
-
                 addClauseIfRequired(preparedStmtList, builder);
                 builder.append(" bpa.tenantid like ?");
                 preparedStmtList.add('%' + criteria.getTenantId() + '%');

@@ -808,7 +808,7 @@ public class InboxService {
 			if (!isSearchResultEmpty
 					&& !(processCriteria.getModuleName().equals(SW) || processCriteria.getModuleName().equals(WS))) {
 				businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
-						requestInfo, srvMap);
+						requestInfo, srvMap, processCriteria.getModuleName(), criteria);
 			}
 			Map<String, Object> businessMap = new HashMap<>();
 // Added below if condition to handle PGR response business object as the structure of response is different from others
@@ -1000,7 +1000,7 @@ public class InboxService {
 			// moduleSearchCriteria.put("offset", criteria.getOffset());
 			moduleSearchCriteria.put("limit", -1);
 			businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
-					requestInfo, srvMap);
+					requestInfo, srvMap, processCriteria.getModuleName(), criteria);
 			Map<String, Object> businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
 					.collect(Collectors.toMap(s1 -> ((JSONObject) s1).get(businessIdParam).toString(), s1 -> s1));
 
@@ -1349,6 +1349,11 @@ public class InboxService {
 
 	private JSONArray fetchModuleObjects(HashMap moduleSearchCriteria, List<String> businessServiceName,
 										 String tenantId, RequestInfo requestInfo, Map<String, String> srvMap) {
+		return fetchModuleObjects(moduleSearchCriteria, businessServiceName, tenantId, requestInfo, srvMap, null, null);
+	}
+
+	private JSONArray fetchModuleObjects(HashMap moduleSearchCriteria, List<String> businessServiceName,
+										 String tenantId, RequestInfo requestInfo, Map<String, String> srvMap, String moduleName, InboxSearchCriteria criteria) {
 		JSONArray resutls = null;
 
 		if (CollectionUtils.isEmpty(srvMap) || StringUtils.isEmpty(srvMap.get("searchPath"))) {
@@ -1357,6 +1362,12 @@ public class InboxService {
 		}
 		StringBuilder url = new StringBuilder(srvMap.get("searchPath"));
 		url.append("?tenantId=").append(tenantId);
+		
+		// Add isInboxSearch flag for BPA module only when planningAreaCode is present
+		if (BPA.equals(moduleName) && criteria != null 
+				&& criteria.getPlanningAreaCode() != null && !criteria.getPlanningAreaCode().isEmpty()) {
+			url.append("&isInboxSearch=true");
+		}
 
 		if (moduleSearchCriteria.containsKey("status")) { // for pet-service
 			if (businessServiceName.contains("ptr")) {
