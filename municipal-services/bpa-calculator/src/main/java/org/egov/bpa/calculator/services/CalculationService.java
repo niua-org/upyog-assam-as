@@ -359,42 +359,14 @@ public class CalculationService {
 		return amount;
 	}
 
-//	public List<Calculation> calculateFee(RequestInfo requestInfo, List<CalulationCriteria> criterias,
-//			Object mdmsData) {
-//
-//
-//
-//		List<Calculation> calculations = new LinkedList<>();
-//
-//		for (CalulationCriteria criteria : criterias) {
-//
-//			EstimatesAndSlabs estimatesAndSlabs = fetchRates(criteria, requestInfo, mdmsData);
-//			List<TaxHeadEstimate> taxHeadEstimates = estimatesAndSlabs.getEstimates();
-//
-//			Calculation calculation = new Calculation();
-//			calculation.setBpa(criteria.getBpa());
-//			calculation.setTenantId(criteria.getTenantId());
-//			calculation.setTaxHeadEstimates(taxHeadEstimates);
-//			calculation.setFeeType(criteria.getFeeType());
-//			calculations.add(calculation);
-//		}
-//
-//		return calculations;
-//	}
-
 	public List<Calculation> calculateFee(RequestInfo requestInfo, List<CalulationCriteria> criterias,
-										  Object mdmsData) {
+			Object mdmsData) {
+
+
 
 		List<Calculation> calculations = new LinkedList<>();
 
 		for (CalulationCriteria criteria : criterias) {
-
-			// Add BPA fetching logic
-			if (criteria.getBpa() == null && criteria.getApplicationNo() != null) {
-				BPA bpa = bpaService.getBuildingPlan(requestInfo, criteria.getTenantId(),
-						criteria.getApplicationNo(), null);
-				criteria.setBpa(bpa);
-			}
 
 			EstimatesAndSlabs estimatesAndSlabs = fetchRates(criteria, requestInfo, mdmsData);
 			List<TaxHeadEstimate> taxHeadEstimates = estimatesAndSlabs.getEstimates();
