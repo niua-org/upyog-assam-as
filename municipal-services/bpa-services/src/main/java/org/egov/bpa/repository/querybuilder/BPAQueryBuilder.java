@@ -1,5 +1,6 @@
 package org.egov.bpa.repository.querybuilder;
 
+import lombok.extern.slf4j.Slf4j;
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.web.model.BPASearchCriteria;
 import org.egov.common.utils.MultiStateInstanceUtil;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+@Slf4j
 @Component
 public class BPAQueryBuilder {
 
@@ -112,6 +114,8 @@ public class BPAQueryBuilder {
                 builder.append(" bpa.tenant_id = ? ");
                 preparedStmtList.add(criteria.getTenantId());
             }
+        }else {
+            log.info("Skipping tenantId clause for inbox search or tenantId is null"+ criteria.getTenantId() + " : "+ criteria.getIsInboxSearch());
         }
 
         List<String> ids = criteria.getIds();

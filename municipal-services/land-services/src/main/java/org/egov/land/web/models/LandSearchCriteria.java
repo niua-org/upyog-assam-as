@@ -48,6 +48,9 @@ public class LandSearchCriteria {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("isInboxSearch")
+    @Builder.Default
+    private Boolean isInboxSearch = false;
 
     public boolean isEmpty() {
         return (this.tenantId == null && this.ids == null && this.landUId == null && this.mobileNumber == null && this.name == null && locality == null);
