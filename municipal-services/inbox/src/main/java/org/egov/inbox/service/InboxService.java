@@ -978,6 +978,14 @@ public class InboxService {
 					}
 				}
 			}
+			// This is to handle the case when Bpa applications are fetched without process instances for Development Authoritiy users for all tenants under a single planning area
+			else if(processInstances.isEmpty() && moduleName.equals(BPA) && !criteria.getPlanningAreaCode().isEmpty()) {
+				businessMap.keySet().forEach(businessKey -> {
+					Inbox inbox = new Inbox();
+					inbox.setBusinessObject(toMap((JSONObject) finalBusinessMap.get(businessKey)));
+					inboxes.add(inbox);
+				});
+			}
 		} else {
 			processCriteria.setOffset(criteria.getOffset());
 			processCriteria.setLimit(criteria.getLimit());
