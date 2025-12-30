@@ -27,5 +27,6 @@ public class BpaConstants {
 	public static final String SERVICE_TYPE = "serviceType";
 	public static final String  COUNT = "count";
 	public static final String  STATUS_ID = "statusid";
+	public static final String TENANT_IDS_PARAM = "tenantIds";
 
 }
