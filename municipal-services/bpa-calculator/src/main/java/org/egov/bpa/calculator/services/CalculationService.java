@@ -81,7 +81,9 @@ public class CalculationService {
 	public List<Calculation> calculate(CalculationReq calculationReq) {
 		String tenantId = calculationReq.getCalulationCriteria().get(0)
 				.getTenantId();
-		Object mdmsData = mdmsService.mDMSCall(calculationReq, tenantId);
+		String stateId = utils.extractState(tenantId); // will extract only part before "." (stateID)
+
+		Object mdmsData = mdmsService.mDMSCall(calculationReq, stateId);
 		List<Calculation> calculations = calculateFee(calculationReq.getRequestInfo(),calculationReq.getCalulationCriteria(), mdmsData);
 		demandService.generateDemand(calculationReq.getRequestInfo(),calculations, mdmsData);
 		CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
@@ -360,6 +362,8 @@ public class CalculationService {
 	public List<Calculation> calculateFee(RequestInfo requestInfo, List<CalulationCriteria> criterias,
 			Object mdmsData) {
 
+
+
 		List<Calculation> calculations = new LinkedList<>();
 
 		for (CalulationCriteria criteria : criterias) {
@@ -374,9 +378,10 @@ public class CalculationService {
 			calculation.setFeeType(criteria.getFeeType());
 			calculations.add(calculation);
 		}
-		
+
 		return calculations;
 	}
+
 
 	private EstimatesAndSlabs fetchRates(CalulationCriteria calulationCriteria, RequestInfo requestInfo,
 			Object mdmsData) {
