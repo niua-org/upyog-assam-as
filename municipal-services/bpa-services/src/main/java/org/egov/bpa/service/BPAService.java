@@ -539,7 +539,7 @@ public class BPAService {
 			bpaRequest.getBPA().setPlanningPermitDate(util.getCurrentTimestampMillis());
 			log.info("Planning Permit No. generated : " + bpaRequest.getBPA().getPlanningPermitNo());
 
-//			nocService.createNocRequest(bpaRequest, mdmsStateData);
+			nocService.createNocRequest(bpaRequest, mdmsStateData);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
             calculationService.addCalculation(bpaRequest, "PLANNING_PERMIT_FEE");
 			wfIntegrator.callWorkFlow(bpaRequest);
