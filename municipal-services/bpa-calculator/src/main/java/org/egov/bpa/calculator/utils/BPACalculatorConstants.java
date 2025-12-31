@@ -60,6 +60,10 @@ public class BPACalculatorConstants {
 	
 	public static final String INVALID_ERROR = "INVALID ERROR";
 	
+	public static final String BUILDING_PERMIT_FEE = "BUILDING_PERMIT_FEE";
+	
+	public static final String PLANNING_PERMIT_FEE = "PLANNING_PERMIT_FEE";
+	
 	public static final String INVALID_APPLICATION_NUMBER = "INVALID APPLICATION NUMBER";
 	
 	public static final String EDCR_ERROR = "EDCR_ERROR";

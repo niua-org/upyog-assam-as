@@ -430,9 +430,28 @@ public class EDCRService {
 			materialType.add("");
 		}
 
+		List<BigDecimal> premiumFarArea =
+		        context.read("edcrDetail.*.planDetail.farDetails.buitUpAreaUnderPremiumFar");
+		
+		List<String> subOccupancy =
+	            context.read("edcrDetail.*.planDetail.virtualBuilding.occupancyTypes.*.subtype.name");
+
+		    BigDecimal premiumBuiltUpArea =
+		        (premiumFarArea != null && !premiumFarArea.isEmpty())
+		            ? premiumFarArea.get(0)
+		            : BigDecimal.ZERO;
+		    
+		    String subOccupancyType =
+		            (subOccupancy != null && !subOccupancy.isEmpty())
+		                    ? subOccupancy.get(0).toUpperCase()
+		                    : "";
+
+
+		edcrDetails.put(BPAConstants.PREMIUMFARAREA, premiumBuiltUpArea);
 		edcrDetails.put(BPAConstants.FLOOR, floors);
 		edcrDetails.put(BPAConstants.APPLICATIONTYPE, occupancy.get(0).toString().toUpperCase());
 		edcrDetails.put(BPAConstants.WALLTYPE, materialType.get(0).toString().toUpperCase());
+		edcrDetails.put(BPAConstants.SUB_OCCUPANCY, subOccupancyType);
 		
 		return edcrDetails;
 	}

@@ -48,6 +48,7 @@
 package org.egov.common.entity.edcr;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 
@@ -58,6 +59,25 @@ public class FarDetails implements Serializable {
 
 	private Double permissableFar;
 	private Double providedFar;
+	private BigDecimal buitUpAreaUnderBaseFar;
+	    
+	    private BigDecimal buitUpAreaUnderPremiumFar;
+	    
+	    public BigDecimal getBuitUpAreaUnderBaseFar() {
+			return buitUpAreaUnderBaseFar;
+		}
+
+		public void setBuitUpAreaUnderBaseFar(BigDecimal buitUpAreaUnderBaseFar) {
+			this.buitUpAreaUnderBaseFar = buitUpAreaUnderBaseFar;
+		}
+
+		public BigDecimal getBuitUpAreaUnderPremiumFar() {
+			return buitUpAreaUnderPremiumFar;
+		}
+
+		public void setBuitUpAreaUnderPremiumFar(BigDecimal buitUpAreaUnderPremiumFar) {
+			this.buitUpAreaUnderPremiumFar = buitUpAreaUnderPremiumFar;
+		}
 
 	public Double getPermissableFar() {
 		return permissableFar;
