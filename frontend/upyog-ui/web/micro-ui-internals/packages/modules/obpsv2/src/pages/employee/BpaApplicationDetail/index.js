@@ -56,7 +56,7 @@ const BPAEmployeeDetails = () => {
 
   const handlePlanningPermitOrder = async () => {
     const application = data?.applicationData;
-    let fileStoreId = application?.ppFileStoreId;
+    let fileStoreId =application?.signedPpFileStoreId || application?.ppFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.applicationData?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail;
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -103,7 +103,7 @@ const BPAEmployeeDetails = () => {
 
   const handleBuildingPermitOrder = async () => {
     const application = data?.applicationData;
-    let fileStoreId = application?.bpFileStoreId;
+    let fileStoreId = application?.signedBpFileStoreId || application?.bpFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.applicationData?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail;
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -149,7 +149,7 @@ const BPAEmployeeDetails = () => {
   // Occupancy Certificate Download
   async function getBuildingOccupancy(mode="download") {
     const application = data?.applicationData;
-    let fileStoreId = application?.ocFileStoreId;
+    let fileStoreId =application?.signedOcFileStoreId || application?.ocFileStoreId;
       if (!fileStoreId) {
       let currentDate = new Date();
       let applicationNo = data?.bpa?.[0]?.applicationNo;

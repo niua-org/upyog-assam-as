@@ -316,13 +316,13 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             // onChange={(e) => setOldDagNumber(e.target.value)}
             onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
-              if (/^\d{0,6}$/.test(value)) {
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
+              if (/^\d{1,6}$/.test(value)) {
                 setOldDagNumber(value);
               }
             }}
             maxlength="6"
-            pattern="\d{6}"
+            pattern="\d{1,6}"
           />
 
           {/* New Dag Number */}
@@ -336,13 +336,13 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             // onChange={(e) => setNewDagNumber(e.target.value)}
             onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
-              if (/^\d{0,6}$/.test(value)) {
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
+              if (/^\d{1,6}$/.test(value)) {
                 setNewDagNumber(value);
               }
             }}
             maxlength="6"
-            pattern="\d{6}"
+            pattern="\d{1,6}"
           />
 
           {/* Old Patta Number */}
@@ -356,13 +356,13 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             // onChange={(e) => setOldPattaNumber(e.target.value)}
             onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
-              if (/^\d{0,6}$/.test(value)) {
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
+              if (/^\d{1,6}$/.test(value)) {
                 setOldPattaNumber(value);
               }
             }}
             maxlength="6"
-            pattern="\d{6}"
+            pattern="\d{1,6}"
           />
 
           {/* New Patta Number */}
@@ -376,13 +376,13 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             // onChange={(e) => setNewPattaNumber(e.target.value)}
              onChange={(e) => {
               const value = e.target.value;
-              // Only allow numbers and max 6 digits
-              if (/^\d{0,6}$/.test(value)) {
+              // Allow numbers between 0 and 999999 (1 to 6 digits)
+              if (/^\d{1,6}$/.test(value)) {
                 setNewPattaNumber(value);
               }
             }}
             maxlength="6"
-            pattern="\d{6}"
+            pattern="\d{1,6}"
           />
 
           {/* Total Plot Area */}

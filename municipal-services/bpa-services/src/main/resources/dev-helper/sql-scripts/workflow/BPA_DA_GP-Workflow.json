@@ -198,7 +198,7 @@
           "actions": [
             {
               "roles": [
-                "BPA_DD_AD_DEVELOPMENT_AUTHORITY"
+                "BPA_DD_AD_DA"
               ],
               "action": "RECOMMEND_TO_CHAIRMAN_DA",
               "active": true,
@@ -206,7 +206,7 @@
             },
             {
               "roles": [
-                "BPA_DD_AD_DEVELOPMENT_AUTHORITY"
+                "BPA_DD_AD_DA"
               ],
               "action": "SEND_BACK_TO_DA",
               "active": true,
