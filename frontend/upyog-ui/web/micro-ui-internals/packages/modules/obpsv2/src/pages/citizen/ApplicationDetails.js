@@ -507,7 +507,7 @@ import {
     };
     const handleBuildingPermitOrder = async () => {
       const application = data?.bpa?.[0];
-      let fileStoreId = application?.bpFileStoreId;
+      let fileStoreId =application?.signedBpFileStoreId || application?.bpFileStoreId;
       const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.bpa?.[0]?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail?.[0];
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -554,7 +554,7 @@ import {
 
     const handlePlanningPermitOrder = async () => {
       const application = data?.bpa?.[0];
-      let fileStoreId = application?.ppFileStoreId;
+      let fileStoreId = application?.signedPpFileStoreId || application?.ppFileStoreId;
       const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: data?.bpa?.[0]?.edcrNumber });
         let edcrDetail = edcrResponse?.edcrDetail?.[0];
         const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -599,7 +599,7 @@ import {
     // Occupancy Certificate Download
     const getBuildingOccupancy = async (mode="download") => {
       const application = data?.bpa?.[0];
-      let fileStoreId = application?.ocFileStoreId;
+      let fileStoreId =application?.signedOcFileStoreId || application?.ocFileStoreId;
       if (!fileStoreId) {
         let currentDate = new Date();
         let applicationNo = data?.bpa?.[0]?.applicationNo;
@@ -1479,7 +1479,9 @@ import {
               </div>
               </>
             )}
-            {nocSearchResult?.Noc?.some(noc => noc.applicationStatus === "INPROGRESS") && (
+            {nocSearchResult?.Noc?.some(
+              (noc) => noc.applicationStatus === "INPROGRESS" && noc.nocType === "FIRE_SAFETY"
+            ) && (
              <StatusTable style={{ marginTop: "16px" }}>
               <Accordion
                 title={t("NOC_VALIDATION")}

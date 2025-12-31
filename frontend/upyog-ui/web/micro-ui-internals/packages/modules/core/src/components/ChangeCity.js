@@ -42,10 +42,12 @@ const ChangeCity = (prop) => {
     userloggedValues?.info?.roles?.forEach(role => teantsArray.push(role.tenantId));
     let unique = teantsArray.filter((item, i, ar) => ar.indexOf(item) === i);
     unique?.forEach(uniCode => {
+      if (uniCode !== "as") { // Exclude "as" tenant
       filteredArray.push({
         label: prop?.t(`TENANT_TENANTS_${stringReplaceAll(uniCode, ".", "_")?.toUpperCase()}`),
         value: uniCode
-      })
+      });
+      }
     });
     selectedCities = filteredArray?.filter(select => select.value == Digit.SessionStorage.get("Employee.tenantId"));
     setSelectCityData(filteredArray);
