@@ -7,10 +7,10 @@ const ApplicantDetails = ({ t, config, onSelect, formData, searchResult }) => {
   const flow = window.location.href.includes("editApplication") ? "editApplication" : "buildingPermit"
 
   // Applicant Fields
-  const [applicantName, setApplicantName] = useState(formData?.applicant?.applicantName || searchResult?.landInfo?.owners?.[0]?.name || "");
-  const [emailId, setEmail] = useState(formData?.applicant?.emailId || searchResult?.landInfo?.owners?.[0]?.emailId || "");
+  const [applicantName, setApplicantName] = useState(formData?.applicant?.applicantName || searchResult?.landInfo?.owners?.[0]?.name || user?.name|| "");
+  const [emailId, setEmail] = useState(formData?.applicant?.emailId || searchResult?.landInfo?.owners?.[0]?.emailId || user?.emailId || "");
   const [mobileNumber, setMobileNumber] = useState(formData?.applicant?.mobileNumber ||  searchResult?.landInfo?.owners?.[0]?.mobileNumber || user?.mobileNumber);
-  const [alternateNumber, setAltMobileNumber] = useState(formData?.applicant?.alternateNumber || searchResult?.landInfo?.owners?.[0]?.altContactNumber || "");
+  const [alternateNumber, setAltMobileNumber] = useState(formData?.applicant?.alternateNumber || searchResult?.landInfo?.owners?.[0]?.altContactNumber || user?.altContactNumber || "");
   const [fatherName, setFatherName] = useState(formData?.applicant?.fatherName || searchResult?.landInfo?.owners?.[0]?.fatherOrHusbandName || "");
   const [motherName, setMotherName] = useState(formData?.applicant?.motherName || searchResult?.landInfo?.owners?.[0]?.motherName ||"");
   const [panCardNumber, setPanCardNumber] = useState(formData?.applicant?.panCardNumber || searchResult?.landInfo?.owners?.[0]?.pan || "");
