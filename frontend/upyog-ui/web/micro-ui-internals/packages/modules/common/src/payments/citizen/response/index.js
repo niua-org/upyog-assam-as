@@ -326,7 +326,7 @@ export const convertEpochToDate = (dateEpoch) => {
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];
-    let fileStoreId = application?.bpFileStoreId;
+    let fileStoreId =application?.signedBpFileStoreId ||  application?.bpFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: application?.edcrNumber });
     let edcrDetail = edcrResponse?.edcrDetail?.[0];
     const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -366,7 +366,7 @@ export const convertEpochToDate = (dateEpoch) => {
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];
-    let fileStoreId = application?.ppFileStoreId;
+    let fileStoreId =application?.signedPpFileStoreId || application?.ppFileStoreId;
     const edcrResponse = await Digit.OBPSService.scrutinyDetails("assam", { edcrNumber: application?.edcrNumber });
     let edcrDetail = edcrResponse?.edcrDetail?.[0];
     const gisResponse = await Digit.OBPSV2Services.gisSearch({
@@ -401,7 +401,7 @@ export const convertEpochToDate = (dateEpoch) => {
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];
-    let fileStoreId = application?.ocFileStoreId;
+    let fileStoreId =application?.signedOcFileStoreId || application?.ocFileStoreId;
     if (!fileStoreId) {
       let currentDate = new Date();
       let bpaResponse = await Digit.OBPSV2Services.search({

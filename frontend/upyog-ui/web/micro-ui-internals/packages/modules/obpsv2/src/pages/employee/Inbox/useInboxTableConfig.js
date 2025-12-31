@@ -15,6 +15,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     const [selectedAction, setSelectedAction] = useState(null);
     const [applicationNo, setApplicationNo] = useState();
     const [showActionMenu, setShowActionMenu] = useState(null);
+    const user = Digit.UserService.getUser(); 
     
     useEffect(() => {
         if (showToast || error) {
@@ -38,7 +39,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
     
-    const tableColumnConfig = useMemo(() => {
+    const tableColumnConfigWithAction = useMemo(() => {
         return [
         {
             Header: t("BPA_APPLICATION_NUMBER_LABEL"),
@@ -206,6 +207,51 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         }
         ]
     })
+
+    const tableColumnConfigWithoutAction = useMemo(() => {
+        return [
+        {
+            Header: t("BPA_APPLICATION_NUMBER_LABEL"),
+            accessor: "applicationNo",
+            disableSortBy: true,
+            Cell: ({ row }) => {
+            return (
+                <div>
+                <Link to={window.location.href.includes("/employee") ? `${parentRoute}/application/${row?.original["applicationId"]}/${row?.original["tenantId"]}` : `${parentRoute}/inbox/bpa/${row.original["applicationId"]}`}>
+                    <span className="link">{row?.original["applicationId"]||"NA"}</span>
+                </Link>
+                </div>
+            );
+            },
+        },
+        {
+            Header: t("APPLICANT_NAME"),
+            accessor: "name",
+            Cell: ({row}) => row?.original?.name || "NA"
+        },
+        {
+            Header: t("DISTRICT"),
+            accessor: "district",
+            Cell: ({row}) => t(row?.original?.areaMapping?.district) || "NA"
+        },
+        {
+            Header: t("MOBILE_NUMBER"),
+            accessor: "mobileNumber",
+            Cell: ({row}) => row?.original?.mobileNumber || "NA"
+        },
+        {
+            Header: t("STATUS"),
+            accessor: "status",
+            Cell: ({row}) => t(row?.original?.status) || t("CS_NA")
+        }
+        ]
+    })
+
+    // Conditionally use the appropriate tableColumnConfig
+    const tableColumnConfig = user?.info?.roles.some((role) => role.code.endsWith("_DA")) &&
+    user?.info?.tenantId?.endsWith("da")
+    ? tableColumnConfigWithoutAction
+    : tableColumnConfigWithAction;
 
     return {
         getCellProps: (cellInfo) => {
