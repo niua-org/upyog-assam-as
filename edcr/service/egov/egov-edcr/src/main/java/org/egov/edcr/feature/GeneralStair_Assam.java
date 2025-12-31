@@ -152,7 +152,7 @@ public class GeneralStair_Assam extends FeatureProcess {
 	    ScrutinyDetail scrutinyDetailLanding = createScrutinyDetail(block, GENERAL_STAIR_MID_LANDING);
 	    ScrutinyDetail scrutinyDetail4 = createScrutinyDetail(block, GENERAL_STAIR_RISER_HEIGHT);
 
-	    OccupancyTypeHelper mostRestrictiveOccupancyType = block.getBuilding().getMostRestrictiveFarHelper();
+	    OccupancyTypeHelper mostRestrictiveOccupancyType = plan.getVirtualBuilding().getMostRestrictiveFarHelper();
 	    LOG.info("Most restrictive occupancy type for Block {}: {}", block.getNumber(), mostRestrictiveOccupancyType);
 	    
 	    if (requiresTwoStaircases(plan, block, mostRestrictiveOccupancyType) && generalStairCount < 2) {
@@ -564,43 +564,54 @@ public class GeneralStair_Assam extends FeatureProcess {
 	 *         {@code false} otherwise.
 	 */
 	
-	private boolean requiresTwoStaircases(Plan pl, Block block, OccupancyTypeHelper mostRestrictiveOccupancyType) {
+	private boolean requiresTwoStaircases(Plan pl, Block block,
+	        OccupancyTypeHelper mostRestrictiveOccupancyType) {
+
 	    BigDecimal buildingHeight = block.getBuilding().getBuildingHeight();
+	    BigDecimal plotArea = pl.getPlot() != null ? pl.getPlot().getArea() : null;
+
 	    LOG.info("Building height for Block {}: {}", block.getNumber(), buildingHeight);
+	    LOG.info("Plot area for Block {}: {}", block.getNumber(), plotArea);
 
-	    // Condition 1: Height > 15.8m
-	    if (buildingHeight != null && buildingHeight.compareTo(BigDecimal.valueOf(15.8)) > 0) {
-	        LOG.info("Block {} requires two staircases because height is greater than 15.8m", block.getNumber());
-	        return true;
-	    }
+	    // ----- Condition 1: Height > 15.8m -----
+	    boolean isHeightConditionSatisfied =
+	            buildingHeight != null
+	            && buildingHeight.compareTo(BigDecimal.valueOf(15.8)) > 0;
 
-	    // Condition 2: Occupancy categories with floor area > 500 sqm
-	    if (mostRestrictiveOccupancyType != null 
-	            && mostRestrictiveOccupancyType.getType() != null 
-	            && mostRestrictiveOccupancyType.getType().getCode() != null) {
+	    // ----- Condition 2: Occupancy + Area -----
+	    boolean isOccupancyConditionSatisfied = false;
+
+	    if (mostRestrictiveOccupancyType != null
+	            && mostRestrictiveOccupancyType.getType() != null
+	            && mostRestrictiveOccupancyType.getType().getCode() != null
+	            && plotArea != null
+	            && plotArea.compareTo(BigDecimal.valueOf(500)) > 0) {
 
 	        String occCode = mostRestrictiveOccupancyType.getType().getCode();
 
-	        if (B.equalsIgnoreCase(occCode)  // Educational
-	                || D.equalsIgnoreCase(occCode)  // Assembly
-	                || C.equalsIgnoreCase(occCode)  // Medical / Institutional
-	                || G.equalsIgnoreCase(occCode)  // Industrial
-	                || H.equalsIgnoreCase(occCode)  // Storage
+	        if (B.equalsIgnoreCase(occCode)   // Educational
+	                || C.equalsIgnoreCase(occCode)   // Medical / Institutional
+	                || D.equalsIgnoreCase(occCode)   // Assembly
+	                || G.equalsIgnoreCase(occCode)   // Industrial
+	                || H.equalsIgnoreCase(occCode)   // Storage
 	                || I.equalsIgnoreCase(occCode))  // Hazardous
-	                
 	        {
-	           BigDecimal plotArea =  pl.getPlot().getArea();	
-	            if (plotArea != null && plotArea.compareTo(BigDecimal.valueOf(500)) > 0) {
-	                    LOG.info("Block {} requires two staircases because occupancy {} has area {}", 
-	                             block.getNumber(), occCode, plotArea);
-	                    return true;
-	                
-	            }
+	            isOccupancyConditionSatisfied = true;
 	        }
+	    }
+
+	    // ----- FINAL DECISION (AND condition) -----
+	    if (isHeightConditionSatisfied && isOccupancyConditionSatisfied) {
+	        LOG.info(
+	            "Block {} requires two staircases (Height > 15.8m AND Occupancy condition satisfied)",
+	            block.getNumber()
+	        );
+	        return true;
 	    }
 
 	    return false;
 	}
+
 
 	
 	/**
