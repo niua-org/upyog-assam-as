@@ -62,6 +62,10 @@ public class BPACalculatorConstants {
 	
 	public static final String BUILDING_PERMIT_FEE = "BUILDING_PERMIT_FEE";
 	
+	public static final String LABOUR_CESS = "LABOUR_CESS";
+	
+	public static final String FLOOR = "floor";
+	
 	public static final String PLANNING_PERMIT_FEE = "PLANNING_PERMIT_FEE";
 	
 	public static final String INVALID_APPLICATION_NUMBER = "INVALID APPLICATION NUMBER";

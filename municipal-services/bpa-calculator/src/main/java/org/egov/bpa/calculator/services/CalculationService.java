@@ -425,7 +425,11 @@ public class CalculationService {
 		    TaxHeadEstimate labourCessEstimate = new TaxHeadEstimate();
 		    labourCessEstimate.setEstimateAmount(labourCessAmount);
 		    labourCessEstimate.setCategory(Category.FEE);
-		    labourCessEstimate.setTaxHeadCode("LABOUR_CESS");
+		    labourCessEstimate.setTaxHeadCode(BPACalculatorConstants.LABOUR_CESS);
+		    
+		    Map<String, Object> additional = new HashMap<>();
+		    additional.put(BPACalculatorConstants.FLOOR, BPACalculatorConstants.LABOUR_CESS);
+		    labourCessEstimate.setAdditionalDetails(additional);
 
 		    estimates.add(labourCessEstimate);
 
@@ -470,8 +474,6 @@ public class CalculationService {
 
 	public List<Calculation> calculateFee(RequestInfo requestInfo, List<CalulationCriteria> criterias,
 			Object mdmsData) {
-
-
 
 		List<Calculation> calculations = new LinkedList<>();
 
