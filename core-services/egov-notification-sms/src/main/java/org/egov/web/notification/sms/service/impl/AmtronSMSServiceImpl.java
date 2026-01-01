@@ -99,7 +99,7 @@ public class AmtronSMSServiceImpl extends BaseSMSService {
             URI finalUri = URI.create(
                     UriComponentsBuilder.fromHttpUrl(baseUrl)
                             .queryParams(queryParams)
-                            .build(true)
+                            .build(false)
                             .toUriString()
             );
 
