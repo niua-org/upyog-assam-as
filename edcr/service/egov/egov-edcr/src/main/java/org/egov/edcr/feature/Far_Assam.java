@@ -1277,6 +1277,40 @@ public class Far_Assam extends Far {
             blk.setResidentialBuilding(allResidentialOccTypes == 1);
             LOG.info("Block {} classified as Residential Building: {}", blk.getNumber());
 
+            LOG.info(
+            	    "Starting floors above ground calculation | Block: {} | Floors received: {}",
+            	    blk.getNumber(),
+            	    blk.getBuilding().getFloors().size()
+            	);
+
+            if (blk.getBuilding().getFloors() != null && !blk.getBuilding().getFloors().isEmpty()) {
+            	LOG.info("Calculating floors for Block: {}", blk.getNumber());
+                BigDecimal noOfFloorsAboveGround = BigDecimal.ZERO;
+                for (Floor floor : blk.getBuilding().getFloors()) {
+                    if (floor.getNumber() != null && floor.getNumber() >= 0) {
+                        noOfFloorsAboveGround = noOfFloorsAboveGround.add(BigDecimal.valueOf(1));
+                    }
+                }
+
+                boolean hasTerrace = blk.getBuilding().getFloors().stream()
+                        .anyMatch(floor -> floor.getTerrace().equals(Boolean.TRUE));
+
+                noOfFloorsAboveGround = hasTerrace ? noOfFloorsAboveGround.subtract(BigDecimal.ONE)
+                        : noOfFloorsAboveGround;
+
+                blk.getBuilding().setMaxFloor(noOfFloorsAboveGround);
+                blk.getBuilding().setFloorsAboveGround(noOfFloorsAboveGround);
+                blk.getBuilding().setTotalFloors(BigDecimal.valueOf(blk.getBuilding().getFloors().size()));
+                LOG.info(
+                        "Final Floor Details for Block {} → Total Floors: {}, Floors Above Ground: {}, Max Floor: {}",
+                        blk.getNumber(),
+                        blk.getBuilding().getTotalFloors(),
+                        blk.getBuilding().getFloorsAboveGround(),
+                        blk.getBuilding().getMaxFloor()
+                    );
+            }
+
+          
             for (Occupancy occupancy : listOfOccupancies) {
                 if (occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() != null) {
                     int residentialOrCommercialOccupancyType = 0;

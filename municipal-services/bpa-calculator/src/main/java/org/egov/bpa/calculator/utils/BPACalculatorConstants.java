@@ -64,6 +64,8 @@ public class BPACalculatorConstants {
 	
 	public static final String LABOUR_CESS = "LABOUR_CESS";
 	
+	public static final String LABOURCESS = "Labour cess";
+	
 	public static final String FLOOR = "floor";
 	
 	public static final String PLANNING_PERMIT_FEE = "PLANNING_PERMIT_FEE";

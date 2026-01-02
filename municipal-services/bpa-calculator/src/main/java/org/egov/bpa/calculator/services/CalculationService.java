@@ -428,7 +428,7 @@ public class CalculationService {
 		    labourCessEstimate.setTaxHeadCode(BPACalculatorConstants.LABOUR_CESS);
 		    
 		    Map<String, Object> additional = new HashMap<>();
-		    additional.put(BPACalculatorConstants.FLOOR, BPACalculatorConstants.LABOUR_CESS);
+		    additional.put(BPACalculatorConstants.FLOOR, BPACalculatorConstants.LABOURCESS);
 		    labourCessEstimate.setAdditionalDetails(additional);
 
 		    estimates.add(labourCessEstimate);
