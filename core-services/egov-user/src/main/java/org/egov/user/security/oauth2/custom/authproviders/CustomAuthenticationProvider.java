@@ -77,6 +77,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         String tenantId = details.get("tenantId");
         String userType = details.get("userType");
+        
+        log.info("OAuth token request received for username: {}, tenantId: {}, userType: {}", userName, tenantId, userType);
 
         if (isEmpty(tenantId)) {
             throw new OAuth2Exception("TenantId is mandatory");
@@ -152,6 +154,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_" + user.getType()));
             final SecureUser secureUser = new SecureUser(getUser(user));
             userService.resetFailedLoginAttempts(user);
+            log.info("OAuth token authentication successful for username: {}, tenantId: {}, userType: {}", userName, tenantId, userType);
             return new UsernamePasswordAuthenticationToken(secureUser,
                     password, grantedAuths);
         } else {
