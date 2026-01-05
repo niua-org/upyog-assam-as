@@ -1,5 +1,5 @@
 serviceMaps:
-  serviceName: bpa-service
+  serviceName: bpa-services
   mappings:
 
     - version: 1.0
@@ -17,9 +17,10 @@ serviceMaps:
              planning_permit_no, planning_permit_date, pp_filestore_id,
              building_permit_no, building_permit_date, bp_filestore_id,
              occupancy_certificate_no, occupancy_certificate_date, oc_filestore_id,
-             property_no, property_details, property_vendor)
+             pp_fee_receipt_filestore_id, bp_fee_receipt_filestore_id,
+             property_no, property_details, property_vendor, signed_bp_filestore_id, signed_pp_filestore_id, signed_oc_filestore_id)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB,
-             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB, ?);
+             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::JSONB, ?, ?, ?, ?);
           basePath: BPA
           jsonMaps:
             - jsonPath: $.BPA.id
@@ -51,8 +52,13 @@ serviceMaps:
             - jsonPath: $.BPA.occupancyCertificateNo
             - jsonPath: $.BPA.occupancyCertificateDate
             - jsonPath: $.BPA.ocFileStoreId
+            - jsonPath: $.BPA.ppFeeReceiptFileStoreId
+            - jsonPath: $.BPA.bpFeeReceiptFileStoreId
             - jsonPath: $.BPA.propertyNo
             - jsonPath: $.BPA.propertyDetails
+            - jsonPath: $.BPA.signedBpFileStoreId
+            - jsonPath: $.BPA.signedPpFileStoreId
+            - jsonPath: $.BPA.signedOcFileStoreId
               type: JSON
               dbType: JSONB
             - jsonPath: $.BPA.propertyVendor
@@ -142,7 +148,7 @@ serviceMaps:
           jsonMaps:
             - jsonPath: $.BPA.id
 
-        - query: > 
+        - query: >
             UPDATE public.ug_bpa_rtp_detail
             SET rtp_category = ?, rtp_id = ?, rtp_name = ?, assignment_status = ?,
                 assignment_date = ?, changed_date = ?, remarks = ?, 
@@ -180,7 +186,7 @@ serviceMaps:
 
         - query: >
             UPDATE public.ug_bpa_buildingplans
-            SET status = ?, approval_no = ?, approval_date = ?, risk_type = ?,
+            SET status = ?, approval_no = ?, approval_date = ?, risk_type = ?, edcr_number = ?,
                 last_modified_by = ?, last_modified_time = ?, additional_details = ?::JSONB,
               planning_permit_no = ?, 
               planning_permit_date = ?, 
@@ -190,7 +196,12 @@ serviceMaps:
               bp_filestore_id = ?, 
               occupancy_certificate_no = ?, 
               occupancy_certificate_date = ?, 
-              oc_filestore_id = ?
+              oc_filestore_id = ?,
+              pp_fee_receipt_filestore_id = ?, 
+              bp_fee_receipt_filestore_id = ?, 
+              signed_bp_filestore_id = ?,
+              signed_pp_filestore_id = ?,
+              signed_oc_filestore_id = ?
             WHERE id = ?;
           basePath: BPA
           jsonMaps:
@@ -198,6 +209,7 @@ serviceMaps:
             - jsonPath: $.BPA.approvalNo
             - jsonPath: $.BPA.approvalDate
             - jsonPath: $.BPA.riskType
+            - jsonPath: $.BPA.edcrNumber
             - jsonPath: $.BPA.auditDetails.lastModifiedBy
             - jsonPath: $.BPA.auditDetails.lastModifiedTime
             - jsonPath: $.BPA.additionalDetails
@@ -212,6 +224,11 @@ serviceMaps:
             - jsonPath: $.BPA.occupancyCertificateNo
             - jsonPath: $.BPA.occupancyCertificateDate
             - jsonPath: $.BPA.ocFileStoreId
+            - jsonPath: $.BPA.ppFeeReceiptFileStoreId
+            - jsonPath: $.BPA.bpFeeReceiptFileStoreId
+            - jsonPath: $.BPA.signedBpFileStoreId
+            - jsonPath: $.BPA.signedPpFileStoreId
+            - jsonPath: $.BPA.signedOcFileStoreId
             - jsonPath: $.BPA.id
 
     - version: 1.0
@@ -276,9 +293,14 @@ serviceMaps:
               occupancy_certificate_no = ?, 
               occupancy_certificate_date = ?, 
               oc_filestore_id = ?, 
+              pp_fee_receipt_filestore_id = ?, 
+              bp_fee_receipt_filestore_id = ?,
               property_no = ?, 
               property_details = ?::JSONB, 
-              property_vendor = ?
+              property_vendor = ?,
+              signed_bp_filestore_id = ?,
+              signed_pp_filestore_id = ?,
+              signed_oc_filestore_id = ?
             WHERE id = ?;
           basePath: BPA
           jsonMaps:
@@ -308,11 +330,16 @@ serviceMaps:
             - jsonPath: $.BPA.occupancyCertificateNo
             - jsonPath: $.BPA.occupancyCertificateDate
             - jsonPath: $.BPA.ocFileStoreId
+            - jsonPath: $.BPA.ppFeeReceiptFileStoreId
+            - jsonPath: $.BPA.bpFeeReceiptFileStoreId
             - jsonPath: $.BPA.propertyNo
             - jsonPath: $.BPA.propertyDetails
               type: JSON
               dbType: JSONB
             - jsonPath: $.BPA.propertyVendor
+            - jsonPath: $.BPA.signedBpFileStoreId
+            - jsonPath: $.BPA.signedPpFileStoreId
+            - jsonPath: $.BPA.signedOcFileStoreId
             - jsonPath: $.BPA.id  # WHERE condition
 
         # UPDATE Area Mapping table (using UPDATE command)
