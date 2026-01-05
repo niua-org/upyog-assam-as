@@ -161,7 +161,9 @@ public class BPANotificationService {
 		if (configuredChannelNames.contains(CHANNEL_NAME_EVENT)) {
 			if (null != config.getIsUserEventsNotificationEnabled()) {
 				if (config.getIsUserEventsNotificationEnabled()) {
-					EventRequest eventRequest = getEventNotification(bpaRequest, smsRequests);
+					 List<SMSRequest> eventSmsRequests =
+							 prepareSmsRequestsForEvent(smsRequests);
+					EventRequest eventRequest = getEventNotification(bpaRequest, eventSmsRequests);
 					log.info("Event Requests :"+eventRequest.toString());
 					if (null != eventRequest) {
 						util.sendEventNotification(eventRequest, tenantId);
@@ -231,6 +233,63 @@ public class BPANotificationService {
 			return null;
 		}
 
+	}
+
+	/**
+	 * Prepares SMSRequest objects specifically for EVENT notifications.
+	 *
+	 * <p>
+	 * In UPYOG notification flow, the same {@link SMSRequest} list is reused
+	 * for multiple channels such as SMS and EVENT. Event notifications append
+	 * an internal event identifier to the message in the format <code>##&lt;eventId&gt;</code>,
+	 * which is required for event processing but should not be exposed in
+	 * user-facing messages.
+	 * </p>
+	 *
+	 * <p>
+	 * This method creates a new list of {@link SMSRequest} objects for the
+	 * EVENT channel by removing the event identifier suffix (if present)
+	 * from the message content, while leaving the original SMS requests
+	 * completely untouched.
+	 * </p>
+	 *
+	 * <p>
+	 * Note:
+	 * <ul>
+	 *   <li>The original {@code smsRequests} list is not mutated.</li>
+	 *   <li>This method should be invoked only before passing SMS requests
+	 *       to the EVENT notification flow.</li>
+	 *   <li>The suffix is identified using the delimiter <code>##</code>.</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param smsRequests the list of SMS requests generated for notification
+	 *                    channels
+	 * @return a new list of {@link SMSRequest} objects with event identifiers
+	 *         removed from the message content
+	 */
+	private List<SMSRequest> prepareSmsRequestsForEvent(List<SMSRequest> smsRequests) {
+
+	    List<SMSRequest> sanitizedRequests = new LinkedList<>();
+
+	    for (SMSRequest smsRequest : smsRequests) {
+
+	        String message = smsRequest.getMessage();
+
+	        if (message != null && message.contains("##")) {
+	            message = message.substring(0, message.indexOf("##"));
+	        }
+
+	        SMSRequest sanitizedRequest =
+	                new SMSRequest(
+	                        smsRequest.getMobileNumber(),
+	                        message
+	                        
+	                );
+
+	        sanitizedRequests.add(sanitizedRequest);
+	    }
+	    return sanitizedRequests;
 	}
 
 	/**
