@@ -69,27 +69,6 @@ public class EPramaanRequestService {
 
     private static Map<String, EPramaanData> stateCodeMap = new HashMap<>();
 
-   /* public static final String SCOPE = "openid";
-    public static final String RESPONSE_TYPE = "code";
-    public static final String CPDE_CHALLENGE_METHOD = "S256";
-    public static final String GRANT_TYPE = "authorization_code";
-    public static final String ISS = "ePramaan";
-
-
-    private static final String CLIENT_ID = "********";
-    private static final String AES_KEY = "*******";
-    //private static final String REDIRECT_URI = "https://assamuat.niua.in/upyog-ui/ePramaan-login/";
-    private static final String REDIRECT_URI = "http://localhost:3000/upyog-ui/citizen";//"http://localhost:8082/Epramaan/ProcessAuthCodeAndGetToken";
-    private static final String SERVICE_LOGOUT_URI = "http://localhost:3000/upyog-ui/citizen";
-    private static final String CERTIFICATE_PATH = "certificates/epramaan_staging.crt";
-    private static final String CUSTOM_PARAMETER = "WhateverValueServiceWant";
-
-    public static final String AUTH_GRANT_REQUEST_URI = "https://epstg.meripehchaan.gov.in/openid/jwt/processJwtAuthGrantRequest.do";
-    public static final String TOKEN_REQUEST_URI = "https://epstg.meripehchaan.gov.in/openid/jwt/processJwtTokenRequest.do";
-    public static final String LOGOUT_URI = "https://epstg.meripehchaan.gov.in/openid/jwt/processOIDCSLORequest.do";*/
-
-
-
 
     public AuthResponse getRedirectionURL(String module) throws Exception
     {
@@ -363,25 +342,6 @@ public class EPramaanRequestService {
             return cer.getPublicKey();
         }
     }
-    
-    /* Old method - reads certificate from file path
-    public PublicKey getPublicKey() throws Exception {
-        CertificateFactory certFac = CertificateFactory.getInstance("X.509");
-        PublicKey publicKey = null;
-        try (InputStream certStream = Thread.currentThread()
-                .getContextClassLoader()
-                .getResourceAsStream(configurations.getEpCertificatePath())) {
-
-            if (certStream == null) {
-                throw new IllegalArgumentException("Certificate not found at: " + configurations.getEpCertificatePath());
-            }
-
-            X509Certificate cer = (X509Certificate) certFac.generateCertificate(certStream);
-            publicKey = cer.getPublicKey();
-        }
-        return publicKey;
-    }
-    */
 
 
     public UserRes getUser(TokenReq tokenReq)
@@ -602,30 +562,4 @@ public class EPramaanRequestService {
             return userOauthResponse;
         }
     }
-
-
-   /* public static void main(String[] args) throws IOException {
-       // get file "/certificates/epramaan_staging.crt" and print content from resource folder
-        // Load file from classpath
-        try (InputStream inputStream = Thread.currentThread()
-                .getContextClassLoader()
-                .getResourceAsStream(CERTIFICATE_PATH)) {
-
-            if (inputStream == null) {
-                throw new IllegalArgumentException("Certificate not found at: " + CERTIFICATE_PATH);
-            }
-
-            // Read and print file content
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
-
-                String line;
-                System.out.println("---- Certificate Content ----");
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
-                System.out.println("---- End of Certificate ----");
-            }
-        }
-    }*/
 }
