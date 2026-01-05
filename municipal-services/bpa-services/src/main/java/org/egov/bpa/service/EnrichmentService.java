@@ -81,7 +81,6 @@ public class EnrichmentService {
 	 * encrich create BPA Reqeust by adding audidetails and uuids
 	 *
 	 * @param bpaRequest
-	 * @param mdmsData
 	 * @param edcrValues
 	 */
 	public void enrichBPACreateRequest(BPARequest bpaRequest, Map<String, String> edcrValues) {
@@ -449,6 +448,71 @@ public class EnrichmentService {
 		if (StringUtils.isNotEmpty(newValue) && StringUtils.isEmpty(existingValue)) {
 			setter.accept(newValue);
 		}
+	}
+
+	public void updatePlanningPermitNo(BPARequest bpaRequest) {
+		bpaRequest.getBPA().setPlanningPermitNo(getPlanningPermitNo(bpaRequest));
+		bpaRequest.getBPA().setPlanningPermitDate(util.getCurrentTimestampMillis());
+		log.info("Planning Permit No. generated : " + bpaRequest.getBPA().getPlanningPermitNo());
+	}
+
+	public void updateBuildingPermitNo(BPARequest bpaRequest) {
+		bpaRequest.getBPA().setBuildingPermitNo(getBuildingPermitNo(bpaRequest));
+		bpaRequest.getBPA().setBuildingPermitDate(util.getCurrentTimestampMillis());
+		log.info("Building Permit No. generated : " + bpaRequest.getBPA().getBuildingPermitNo());
+	}
+
+	public void updateOccupancyCertificateNo(BPARequest bpaRequest) {
+		bpaRequest.getBPA().setOccupancyCertificateNo(getOccupancyCertificateNo(bpaRequest));
+		bpaRequest.getBPA().setOccupancyCertificateDate(util.getCurrentTimestampMillis());
+		log.info("Occupancy Certificate No. generated : " + bpaRequest.getBPA().getOccupancyCertificateNo());
+	}
+
+	// Generate Occupancy Certificate Number
+	private String getOccupancyCertificateNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getOccupancyCertificateIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Occupancy Certificate Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
+	}
+
+	// Generate Occupancy Certificate Number
+	private String getPlanningPermitNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getPlanningPermitIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Planning Permit Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
+	}
+	// Generate Building Permit Number
+	private String getBuildingPermitNo(BPARequest bpaRequest) {
+
+		String tenantId = util.extractState(bpaRequest.getBPA().getTenantId());
+
+		List<IdResponse> idResponses = idGenRepository
+				.getId(bpaRequest.getRequestInfo(), tenantId, config.getBuildingPermitIdgenName(), null, 1)
+				.getIdResponses();
+
+		if (idResponses == null || idResponses.isEmpty()) {
+			throw new CustomException("IDGEN_ERROR", "Building Permit Number could not be generated.");
+		}
+
+		return idResponses.get(0).getId();
 	}
 
 }

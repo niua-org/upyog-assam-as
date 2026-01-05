@@ -16,6 +16,14 @@ public class BPAConstants {
 
 	public static final String BPA_BusinessService = "BPA";
 
+	public static final String FORWARDED_TO_TECHNICAL_ENGINEER_MB= "FORWARDED_TO_TECHNICAL_ENGINEER_MB";
+
+	public static final String FORWARDED_TO_TECHNICAL_ENGINEER_GP= "FORWARDED_TO_TECHNICAL_ENGINEER_GP";
+
+	public static final String FORWARDED_TO_ZONAL_OFFICER= "FORWARDED_TO_ZONAL_OFFICER";
+
+	public static final String APPLICATION_COMPLETED= "APPLICATION_COMPLETED";
+
 	public static final String BPA_MODULE_CODE = "BPA";
 
 	public static final String BPA_ARCHITECT_ROLE = "BPA_ARCHITECT";

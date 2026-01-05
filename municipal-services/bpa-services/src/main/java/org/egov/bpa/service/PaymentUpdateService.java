@@ -120,6 +120,22 @@ public class PaymentUpdateService {
 
 					//TODO: generate aproval no and validity i9n this lateral stage
 				//	enrichmentService.postStatusEnrichment(updateRequest);
+					/*
+					 * Generating permit no if the status is FORWARDED_TO_TECHNICAL_ENGINEER_MB
+					 * or FORWARDED_TO_TECHNICAL_ENGINEER_GP or FORWARDED_TO_ZONAL_OFFICER
+					 * or APPLICATION_COMPLETED
+					 */
+					if (
+						BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB.equals(updateRequest.getBPA().getStatus()) ||
+						BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP.equals(updateRequest.getBPA().getStatus()) ||
+						BPAConstants.FORWARDED_TO_ZONAL_OFFICER.equals(updateRequest.getBPA().getStatus())
+					) {
+						enrichmentService.updatePlanningPermitNo(updateRequest);
+					}
+					if ("APPLICATION_COMPLETED".equals(updateRequest.getBPA().getStatus())) {
+						enrichmentService.updateBuildingPermitNo(updateRequest);
+						enrichmentService.updateOccupancyCertificateNo(updateRequest);
+					}
 
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
