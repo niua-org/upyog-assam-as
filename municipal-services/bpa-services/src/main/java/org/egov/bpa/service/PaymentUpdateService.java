@@ -125,18 +125,7 @@ public class PaymentUpdateService {
 					 * or FORWARDED_TO_TECHNICAL_ENGINEER_GP or FORWARDED_TO_ZONAL_OFFICER
 					 * or APPLICATION_COMPLETED
 					 */
-					if (
-						BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB.equals(updateRequest.getBPA().getStatus()) ||
-						BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP.equals(updateRequest.getBPA().getStatus()) ||
-						BPAConstants.FORWARDED_TO_ZONAL_OFFICER.equals(updateRequest.getBPA().getStatus())
-					) {
-						enrichmentService.updatePlanningPermitNo(updateRequest);
-					}
-					if (BPAConstants.APPLICATION_COMPLETED.equals(updateRequest.getBPA().getStatus())) {
-						enrichmentService.updateBuildingPermitNo(updateRequest);
-						enrichmentService.updateOccupancyCertificateNo(updateRequest);
-					}
-
+					enrichmentService.enrichPermitNumbers(updateRequest);
 					/*
 					 * calling repository to update the object in eg_bpa_buildingpaln tables
 					 */

@@ -510,6 +510,7 @@ public class BPAService {
 			break;
 
 		case "PAY":// CITIZEN_FINAL_PAYMENT
+            enrichmentService.enrichPermitNumbers(bpaRequest);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE);

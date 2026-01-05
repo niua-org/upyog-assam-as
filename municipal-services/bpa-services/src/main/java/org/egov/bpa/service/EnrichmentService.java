@@ -449,6 +449,27 @@ public class EnrichmentService {
 			setter.accept(newValue);
 		}
 	}
+	/**
+	 * Enrich Permit Numbers based on status
+	 *
+	 * @param bpaRequest
+	 */
+	public void enrichPermitNumbers(BPARequest bpaRequest) {
+		List<String> planningPermitStatuses = Arrays.asList(
+				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_MB,
+				BPAConstants.FORWARDED_TO_TECHNICAL_ENGINEER_GP,
+				BPAConstants.FORWARDED_TO_ZONAL_OFFICER
+		);
+
+		if (planningPermitStatuses.contains(bpaRequest.getBPA().getStatus())) {
+			updatePlanningPermitNo(bpaRequest);
+		}
+
+		if (BPAConstants.APPLICATION_COMPLETED.equals(bpaRequest.getBPA().getStatus())) {
+			updateBuildingPermitNo(bpaRequest);
+			updateOccupancyCertificateNo(bpaRequest);
+		}
+	}
 
 	public void updatePlanningPermitNo(BPARequest bpaRequest) {
 		bpaRequest.getBPA().setPlanningPermitNo(getPlanningPermitNo(bpaRequest));
