@@ -175,39 +175,6 @@ public class BPAService {
         return bpaRequest.getBPA();
     }
 
-    /**
-     * applies the required vlaidation for OC on Create
-     *
-     * @param applicationType
-     * @param values
-     * @param requestInfo
-     * @param bpaRequest
-     */
-    private void validateCreateOC(String applicationType, Map<String, String> values, RequestInfo requestInfo, BPARequest bpaRequest) {
-
-        if (applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
-            String approvalNo = values.get(BPAConstants.PERMIT_NO);
-
-            BPASearchCriteria criteria = new BPASearchCriteria();
-            criteria.setTenantId(bpaRequest.getBPA().getTenantId());
-            criteria.setApprovalNo(approvalNo);
-            List<BPA> ocBpas = search(criteria, requestInfo);
-
-            if (ocBpas.size() <= 0 || ocBpas.size() > 1) {
-                throw new CustomException(BPAErrorConstants.CREATE_ERROR,
-                        ((ocBpas.size() <= 0) ? "BPA not found with approval Number :" : "Multiple BPA applications found for approval number :") + approvalNo);
-            } else if (ocBpas.get(0).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REVOCATED)) {
-                throw new CustomException(BPAErrorConstants.CREATE_ERROR, "This permit number is revocated you cannot use this permit number");
-            } else if (!ocBpas.get(0).getStatus().equalsIgnoreCase(BPAConstants.STATUS_APPROVED)) {
-                throw new CustomException(BPAErrorConstants.CREATE_ERROR, "The selected permit number still in workflow approval process, Please apply occupancy after completing approval process.");
-            }
-
-            values.put("landId", ocBpas.get(0).getLandId());
-            criteria.setEdcrNumber(ocBpas.get(0).getEdcrNumber());
-            ocService.validateAdditionalData(bpaRequest, criteria);
-            bpaRequest.getBPA().setLandInfo(ocBpas.get(0).getLandInfo());
-        }
-    }
 
     /**
      * Searches the Bpa for the given criteria if search is on owner paramter
@@ -547,13 +514,17 @@ public class BPAService {
 			break;
 
 		case "PAY":// CITIZEN_FINAL_PAYMENT
-			bpaRequest.getBPA().setBuildingPermitNo(getBuildingPermitNo(bpaRequest));
+            String buildingPermitNo = getBuildingPermitNo(bpaRequest);
+            log.info("Building Permit No. generated : {}", buildingPermitNo);
+			bpaRequest.getBPA().setBuildingPermitNo(buildingPermitNo);
 			bpaRequest.getBPA().setBuildingPermitDate(util.getCurrentTimestampMillis());
-			log.info("Building Permit No. generated : " + bpaRequest.getBPA().getBuildingPermitNo());
+			log.info("Building Permit No. updated in bpa object : " + bpaRequest.getBPA().getBuildingPermitNo());
+            String occupancyCertificateNo = getOccupancyCertificateNo(bpaRequest);
+            log.info("Occupancy Certificate No. generated : {}", occupancyCertificateNo);
 			// TODO: TO_BE_CHANGED and add oc certificate no generation
-			bpaRequest.getBPA().setOccupancyCertificateNo(getOccupancyCertificateNo(bpaRequest));
+			bpaRequest.getBPA().setOccupancyCertificateNo(occupancyCertificateNo);
 			bpaRequest.getBPA().setOccupancyCertificateDate(util.getCurrentTimestampMillis());
-			log.info("Occupancy Certificate No. generated : " + bpaRequest.getBPA().getOccupancyCertificateNo());
+			log.info("Occupancy Certificate No. updated in BPA object : " + bpaRequest.getBPA().getOccupancyCertificateNo());
 
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
 			wfIntegrator.callWorkFlow(bpaRequest);
@@ -573,63 +544,6 @@ public class BPAService {
         }
 		return bpaRequest.getBPA();
 
-      //  Map<String, String> additionalDetails = bpa.getAdditionalDetails() != null ? (Map<String, String>) bpa.getAdditionalDetails()
-     //           : new HashMap<String, String>();
-
-    //    if (bpa.getStatus().equalsIgnoreCase(BPAConstants.FI_STATUS)
-      //          && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
-        //    if (additionalDetails.get(BPAConstants.FI_ADDITIONALDETAILS) != null)
-          //      additionalDetails.remove(BPAConstants.FI_ADDITIONALDETAILS);
-       // }
-    //TODO: check if required as we dont have oc to manage in this current scope of work
-
-    //    this.processOcUpdate(applicationType, edcrResponse.get(BPAConstants.PERMIT_NO), bpaRequest, requestInfo, additionalDetails);
-
-//TODO: check if required as we dont have noc to manage in this current scope of work
-      //  nocService.manageOfflineNocs(bpaRequest, mdmsData);
-        //Validate payments and noc
-       // bpaValidator.validatePreEnrichData(bpaRequest, mdmsData);
-
-       // this.handleRejectSendBackActions(applicationType, bpaRequest, businessService, searchResult, mdmsData, edcrResponse);
-    //    String state = workflowService.getCurrentState(bpa.getStatus(), businessService);
-     //   String businessSrvc = businessService.getBusinessService();
-
-        /*
-         * Before approving the application we need to check sanction fee is applicable
-         * or not for that purpose on PENDING_APPROVAL_STATE the demand is generating.
-         */
-        // Generate the sanction Demand
-       /* if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-                || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE))
-                && state.equalsIgnoreCase(BPAConstants.PENDING_APPROVAL_STATE)) {
-            calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
-        }*/
-
-
-        /*
-         * For Permit medium/high and OC on approval stage, we need to check whether for a
-         * application sanction fee is applicable or not. If sanction fee is not applicable
-         * then we need to skip the payment on APPROVE and need to make it APPROVED instead
-         * of SANCTION FEE PAYMENT PEDNING.
-         */
-       /* if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
-                || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE))
-                && state.equalsIgnoreCase(BPAConstants.PENDING_APPROVAL_STATE) &&
-                bpa.getWorkflow() != null && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_APPROVE)
-                && util.getDemandAmount(bpaRequest).compareTo(BigDecimal.ZERO) <= 0) {
-            Workflow workflow = Workflow.builder().action(BPAConstants.ACTION_SKIP_PAY).build();
-            bpa.setWorkflow(workflow);
-        }*/
-
-        //TODO: uncomment this if it is required in future
-        //Generate approval no if it is in approved state
-      //  enrichmentService.postStatusEnrichment(bpaRequest);
-
-
-        /*
-         * if (Arrays.asList(config.getSkipPaymentStatuses().split(",")).contains(bpa.getStatus())) {
-         * enrichmentService.skipPayment(bpaRequest); enrichmentService.postStatusEnrichment(bpaRequest); }
-         */
 
     }
 
@@ -678,74 +592,6 @@ public class BPAService {
 		return idResponses.get(0).getId();
 	}
 
-    /**
-     * handle the reject and Send Back action of the update
-     *
-     * @param applicationType
-     * @param bpaRequest
-     * @param businessService
-     * @param searchResult
-     * @param mdmsData
-     * @param edcrResponse
-     */
-    private void handleRejectSendBackActions(String applicationType, BPARequest bpaRequest, BusinessService businessService, List<BPA> searchResult, Object mdmsData, Map<String, String> edcrResponse) {
-        BPA bpa = bpaRequest.getBPA();
-        if (bpa.getWorkflow().getAction() != null && (bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_REJECT)
-                || bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_REVOCATE))) {
-
-            if (bpa.getWorkflow().getComments() == null || bpa.getWorkflow().getComments().isEmpty()) {
-                throw new CustomException(BPAErrorConstants.BPA_UPDATE_ERROR_COMMENT_REQUIRED,
-                        "Comment is mandatory, please provide the comments ");
-            }
-            nocService.handleBPARejectedStateForNoc(bpaRequest);
-
-        } else {
-
-            if (!bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
-                actionValidator.validateUpdateRequest(bpaRequest, businessService);
-                bpaValidator.validateUpdate(bpaRequest, searchResult, mdmsData,
-                        workflowService.getCurrentState(bpa.getStatus(), businessService), edcrResponse);
-                if (!applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
-                    landService.updateLandInfo(bpaRequest);
-                }
-                bpaValidator.validateCheckList(mdmsData, bpaRequest,
-                        workflowService.getCurrentState(bpa.getStatus(), businessService));
-            }
-        }
-    }
-
-    /**
-     * for OC application update logic is handled which specific to OC
-     *
-     * @param applicationType
-     * @param approvalNo
-     * @param bpaRequest
-     * @param requestInfo
-     * @param additionalDetails
-     */
-    private void processOcUpdate(String applicationType, String approvalNo, BPARequest bpaRequest, RequestInfo requestInfo, Map<String, String> additionalDetails) {
-        if (applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
-
-            BPASearchCriteria criteria = new BPASearchCriteria();
-            criteria.setTenantId(bpaRequest.getBPA().getTenantId());
-            criteria.setApprovalNo(approvalNo);
-            List<BPA> bpas = search(criteria, requestInfo);
-            if (bpas.size() <= 0 || bpas.size() > 1) {
-                throw new CustomException(BPAErrorConstants.UPDATE_ERROR,
-                        ((bpas.size() <= 0) ? "BPA not found with approval Number :" : "Multiple BPA applications found for approval number :") + approvalNo);
-            } else if (bpas.get(0).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REVOCATED)) {
-                throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "This permit number is revocated you cannot use this permit number");
-            } else if (!bpas.get(0).getStatus().equalsIgnoreCase(BPAConstants.STATUS_APPROVED)) {
-                throw new CustomException(BPAErrorConstants.UPDATE_ERROR, "The selected permit number still in workflow approval process, Please apply occupancy after completing approval process.");
-            }
-
-            additionalDetails.put("landId", bpas.get(0).getLandId());
-            additionalDetails.put("riskType", bpas.get(0).getRiskType());
-            criteria.setEdcrNumber(bpas.get(0).getEdcrNumber());
-            ocService.validateAdditionalData(bpaRequest, criteria);
-            bpaRequest.getBPA().setLandInfo(bpas.get(0).getLandInfo());
-        }
-    }
 
     /**
      * Returns bpa from db for the update request
