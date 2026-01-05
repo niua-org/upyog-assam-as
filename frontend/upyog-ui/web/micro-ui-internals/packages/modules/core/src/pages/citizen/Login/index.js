@@ -7,6 +7,7 @@ import SelectMobileNumber from "./SelectMobileNumber";
 import SelectOtp from "./SelectOtp";
 import SelectName from "./SelectName";
 import { subYears, format } from "date-fns";
+import SelectRtpMobileNumber from "./SelectRtpMobileNumber";
 const TYPE_REGISTER = { type: "register" };
 const TYPE_LOGIN = { type: "login" };
 const DEFAULT_USER = "digit-user";
@@ -46,6 +47,10 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
   const [canSubmitOtp, setCanSubmitOtp] = useState(true);
   const [canSubmitNo, setCanSubmitNo] = useState(true);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+
+   const isRtpLogin = () => {
+    return location.pathname.includes('/rtp-login') || location.pathname.includes('/rtp/');
+  };
 
 
   useEffect(() => {
@@ -122,11 +127,13 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
         return;
       } else {
         setCanSubmitNo(true);
-        if (!(location.state && location.state.role === "FSM_DSO")) {
+          if (isRtpLogin()) {
+          setError("RTP Does Not Exist please contact to Department");
+          return;
+        }
           // Show modal instead of redirecting
           setShowRegistrationModal(true);
           return;
-        }
       }
       if (location.state?.role) {
         setCanSubmitNo(true);
@@ -274,6 +281,17 @@ const ePramaanRegister = async () => {
         <AppContainer>
           <BackButton />
           <Route path={`${path}`} exact>
+            {isRtpLogin() ? (
+              <SelectRtpMobileNumber
+                onSelect={selectMobileNumber}
+                config={stepItems[0]}
+                mobileNumber={params.mobileNumber || ""}
+                onMobileChange={handleMobileChange}
+                canSubmit={canSubmitNo}
+                showRegisterLink={isUserRegistered && !location.state?.role}
+                t={t}
+              />
+            ) : (
             <SelectMobileNumber
               onSelect={selectMobileNumber}
               config={stepItems[0]}
@@ -285,7 +303,7 @@ const ePramaanRegister = async () => {
               setShowRegistrationModal={setShowRegistrationModal}
               ePramaanRegister={ePramaanRegister}
               t={t}
-            />
+            />)}
           </Route>
           <Route path={`${path}/otp`}>
             <SelectOtp

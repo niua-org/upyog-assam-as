@@ -58,15 +58,7 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
     window.location.href = redirectUrl;
   }
 
-  // const ePramaanRegister = async (e) => {
-  //   const data = await Digit.EPramaanService.register({ module: "SSO" });
-  //   e.preventDefault();
-  //   const redirectUrl = data.redirectURL;
-  //   console.log("epramaanData", data);
-  //   localStorage.setItem("epramaanData", JSON.stringify(data?.epramaanData));
-  //   //  debugger;
-  //   window.location.href = redirectUrl;
-  // }
+
 
   const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;

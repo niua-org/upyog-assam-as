@@ -75,8 +75,7 @@ module.exports = function (app) {
     "/gis-service/find-zone",
     "/bpa-services/v1/bpa/_rtpsearch",
     "/gis-service/zone/_search",
-    "/noc-services/v1/noc/_validate",
-    "/requester-services-dx/epramaan/authorization/url"
+    "/noc-services/v1/noc/_validate"
 
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
