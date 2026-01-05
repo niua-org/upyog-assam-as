@@ -132,7 +132,7 @@ public class PaymentUpdateService {
 					) {
 						enrichmentService.updatePlanningPermitNo(updateRequest);
 					}
-					if ("APPLICATION_COMPLETED".equals(updateRequest.getBPA().getStatus())) {
+					if (BPAConstants.APPLICATION_COMPLETED.equals(updateRequest.getBPA().getStatus())) {
 						enrichmentService.updateBuildingPermitNo(updateRequest);
 						enrichmentService.updateOccupancyCertificateNo(updateRequest);
 					}
