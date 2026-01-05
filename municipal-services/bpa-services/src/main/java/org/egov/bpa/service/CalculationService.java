@@ -1,5 +1,6 @@
 package org.egov.bpa.service;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,8 @@ public class CalculationService {
 		List<Floor> floors = (List<Floor>) edcrDetails.get(BPAConstants.FLOOR);
 		String wallType = (String) edcrDetails.get(BPAConstants.WALLTYPE);
 		String occupancy = (String) edcrDetails.get(BPAConstants.APPLICATIONTYPE);
+		String subOccupancy = (String) edcrDetails.get(BPAConstants.SUB_OCCUPANCY);
+		BigDecimal premiumBuiltupFarArea = (BigDecimal) edcrDetails.get(BPAConstants.PREMIUMFARAREA);
 
 		CalculationReq calulcationRequest = new CalculationReq();
 		calulcationRequest.setRequestInfo(bpaRequest.getRequestInfo());
@@ -61,6 +64,8 @@ public class CalculationService {
 		calculationCriteria.setFloors(floors);
 		calculationCriteria.setWallType(wallType);
 		calculationCriteria.setApplicationType(occupancy);
+		calculationCriteria.setSubOccupancy(subOccupancy);
+		calculationCriteria.setPremiumBuiltUpArea(premiumBuiltupFarArea);
 
 		List<CalulationCriteria> criterias = Arrays.asList(calculationCriteria);
 		calulcationRequest.setCalulationCriteria(criterias);

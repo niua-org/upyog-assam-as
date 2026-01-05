@@ -495,6 +495,79 @@ public class Far_Assam extends Far {
 
         return totalAreaToDeduct;
     }
+    
+    /**
+     * Computes and stores the built-up area split between Base FAR and Premium FAR
+     * when the provided FAR exceeds the base permissible FAR.
+     *
+     * <p>
+     * This method follows the Assam DCR interpretation where FAR values are expressed
+     * in <b>ratio form</b> (e.g. 1.50, 1.75) and <b>not</b> as percentage values.
+     * Hence, the built-up area is calculated directly as:
+     * </p>
+     *
+     * <pre>
+     * Base FAR Built-up     = Plot Area × Base FAR
+     * Premium FAR Built-up  = Plot Area × (Maximum FAR − Base FAR)
+     * </pre>
+     *
+     * <p>
+     * The computation is performed <b>only when Premium FAR is actually utilized</b>,
+     * i.e., when the provided FAR is greater than the base FAR. If the provided FAR
+     * is within base FAR limits, no values are calculated or stored.
+     * </p>
+     *
+     * <p>
+     * The computed values are stored in {@link FarDetails} for downstream usage such as
+     * scrutiny reports, premium FAR fee calculation, and audit validation.
+     * </p>
+     *
+     * @param pl           the {@link Plan} being processed
+     * @param plotArea     the total plot area in square meters
+     * @param baseFar      the base permissible FAR (ratio form, e.g. 1.50)
+     * @param maxFar       the maximum permissible FAR including premium FAR (ratio form, e.g. 1.75)
+     * @param providedFar  the FAR actually provided by the proposal (ratio form)
+     */
+    private void computeBaseAndPremiumFarAreas(
+            Plan pl,
+            BigDecimal plotArea,
+            BigDecimal baseFar,      
+            BigDecimal maxFar,       
+            BigDecimal providedFar) {
+
+        // Execute only when provided far is greater than base far
+        if (providedFar.compareTo(baseFar) <= 0) {
+            return;
+        }
+
+        BigDecimal premiumFar = maxFar.subtract(baseFar);
+        if (premiumFar.compareTo(BigDecimal.ZERO) <= 0) {
+            return;
+        }
+
+        
+        BigDecimal baseBuiltUp =
+                plotArea.multiply(baseFar)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal premiumBuiltUp =
+                plotArea.multiply(premiumFar)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+        if (pl.getFarDetails() == null) {
+            pl.setFarDetails(new FarDetails());
+        }
+
+        pl.getFarDetails().setBuitUpAreaUnderBaseFar(baseBuiltUp);
+        pl.getFarDetails().setBuitUpAreaUnderPremiumFar(premiumBuiltUp);
+
+        LOG.info(
+            "FAR Split Calculated | Base FAR BuiltUp: {}, Premium FAR BuiltUp: {}",
+            baseBuiltUp, premiumBuiltUp
+        );
+    }
+
+
 
     private BigDecimal farFloorWiseDeduction(Plan pl, Block blk, Floor floor, BigDecimal parkingAndServiceFloorArea,
                                        BigDecimal farEntranceLobbyArea, BigDecimal farMaxBalconyExemption, BigDecimal farCorridorArea,
@@ -1204,6 +1277,14 @@ public class Far_Assam extends Far {
             blk.setResidentialBuilding(allResidentialOccTypes == 1);
             LOG.info("Block {} classified as Residential Building: {}", blk.getNumber());
 
+            LOG.info(
+            	    "Starting floors above ground calculation | Block: {} | Floors received: {}",
+            	    blk.getNumber(),
+            	    blk.getBuilding().getFloors().size()
+            	);
+
+	        calculateAndSetFloorDetails(blk);
+          
             for (Occupancy occupancy : listOfOccupancies) {
                 if (occupancy.getTypeHelper() != null && occupancy.getTypeHelper().getType() != null) {
                     int residentialOrCommercialOccupancyType = 0;
@@ -1226,6 +1307,75 @@ public class Far_Assam extends Far {
             LOG.info("Block {} has no occupancies to classify.", blk.getNumber());
         }
     }
+    
+    /**
+     * Calculates and sets floor-related details for a given Block.
+     *
+     * <p>
+     * This method determines:
+     * <ul>
+     *   <li>Total number of floors present in the building</li>
+     *   <li>Number of floors above ground level (floor number ≥ 0)</li>
+     *   <li>Maximum floor above ground</li>
+     * </ul>
+     *
+     * <p>
+     * If a terrace floor is present, it is excluded from the above-ground floor count.
+     * The calculated values are set directly on the {@link Building} object associated
+     * with the provided {@link Block}.
+     *
+     * <p>
+     * If the block, building, or floors are not available, the calculation is skipped
+     * safely and a log entry is recorded.
+     *
+     * @param blk the {@link Block} for which floor details need to be calculated;
+     *            must contain a non-null {@link Building} with floor information
+     */
+    
+    private void calculateAndSetFloorDetails(Block blk) {
+
+	    if (blk == null 
+	            || blk.getBuilding() == null 
+	            || blk.getBuilding().getFloors() == null 
+	            || blk.getBuilding().getFloors().isEmpty()) {
+	        LOG.info("No floors found for Block: {}. Skipping floor calculation.",
+	                blk != null ? blk.getNumber() : "UNKNOWN");
+	        return;
+	    }
+
+	    LOG.info("Calculating floors for Block: {}", blk.getNumber());
+
+	    BigDecimal noOfFloorsAboveGround = BigDecimal.ZERO;
+
+	    for (Floor floor : blk.getBuilding().getFloors()) {
+	        if (floor.getNumber() != null && floor.getNumber() >= 0) {
+	            noOfFloorsAboveGround = noOfFloorsAboveGround.add(BigDecimal.ONE);
+	        }
+	    }
+
+	    boolean hasTerrace = blk.getBuilding().getFloors().stream()
+	            .anyMatch(floor -> Boolean.TRUE.equals(floor.getTerrace()));
+
+	    if (hasTerrace) {
+	        noOfFloorsAboveGround = noOfFloorsAboveGround.subtract(BigDecimal.ONE);
+	        LOG.info("Terrace detected for Block {}. Excluding terrace from floor count.",
+	                blk.getNumber());
+	    }
+
+	    blk.getBuilding().setMaxFloor(noOfFloorsAboveGround);
+	    blk.getBuilding().setFloorsAboveGround(noOfFloorsAboveGround);
+	    blk.getBuilding().setTotalFloors(
+	            BigDecimal.valueOf(blk.getBuilding().getFloors().size())
+	    );
+
+	    LOG.info(
+	        "Final Floor Details for Block {} → Total Floors: {}, Floors Above Ground: {}, Max Floor: {}",
+	        blk.getNumber(),
+	        blk.getBuilding().getTotalFloors(),
+	        blk.getBuilding().getFloorsAboveGround(),
+	        blk.getBuilding().getMaxFloor()
+	    );
+	}
 
 
     /**
@@ -1850,6 +2000,8 @@ public class Far_Assam extends Far {
         Optional<FarRequirement> matchedRule = findMatchedFarRule(pl, mostRestrictiveOccupancyType, plotArea,
                 roadWidth);
         
+    
+      
         if (roadWidth != null && roadWidth.compareTo(new BigDecimal("2.4")) < 0) {
             permissibleFar = new BigDecimal("0.75");
             LOG.info("Road width < 2.4m, permissible FAR restricted to 0.75 (G+1 buildings only)");
@@ -1862,6 +2014,14 @@ public class Far_Assam extends Far {
             permissibleFar = rule.getPermissible();
             baseFar = rule.getBaseFar();
             tdr = rule.getMaxTDRLoading();
+            
+            computeBaseAndPremiumFarAreas(
+                    pl,
+                    plotArea,
+                    baseFar,  
+                    permissibleFar,
+                    far);
+            
             LOG.info("Permissible FAR from matched rule: {}", permissibleFar);
 
             // TOD FAR CALCULATION ---
@@ -1926,6 +2086,7 @@ public class Far_Assam extends Far {
 
         List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.FAR.getValue(), false);
 
+        
         if (occupancy == null || occupancy.getType() == null) {
             LOG.warn("Occupancy or occupancy type is null, cannot find matched FAR rule.");
             return Optional.empty();
@@ -2049,23 +2210,47 @@ public class Far_Assam extends Far {
 
         if (matchedRule.isPresent()) {
             FarRequirement mdmsRule = matchedRule.get();
-
+         
             if (G_SI.equalsIgnoreCase(subtypeCode)) {
                 permissibleFar = mdmsRule.getPermissibleLight();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             } else if (G_LI.equalsIgnoreCase(subtypeCode)) {
                 permissibleFar = mdmsRule.getPermissibleMedium();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             } else if (G_PHI.equalsIgnoreCase(subtypeCode)) {
                 permissibleFar = mdmsRule.getPermissibleFlattered();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             } else {
                 permissibleFar = mdmsRule.getPermissible();
                 baseFar = mdmsRule.getBaseFar();
                 tdr =  baseFar = mdmsRule.getMaxTDRLoading();
+                computeBaseAndPremiumFarAreas(
+                        pl,
+                        pl.getPlot().getArea(),
+                        baseFar,  
+                        permissibleFar,
+                        far);
             }
             LOG.info("Permissible FAR for industrial subtype '{}': {}", subtypeCode, permissibleFar);
         } else {

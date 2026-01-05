@@ -1,5 +1,6 @@
 package org.egov.bpa.web.model;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -28,6 +29,10 @@ public class CalulationCriteria {
 	@JsonProperty("applicationNo")
 	@Size(min = 2, max = 64)
 	private String applicationNo;
+	
+	@JsonProperty("subOccupancy")
+	@Size(min = 2, max = 64)
+	private String subOccupancy;
 
 	@JsonProperty("wallType")
 	private String wallType;
@@ -53,4 +58,6 @@ public class CalulationCriteria {
 	@NotNull
 	@Size(min = 2, max = 64)
 	private String serviceType;
+	
+	private BigDecimal premiumBuiltUpArea;
 }

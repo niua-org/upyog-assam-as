@@ -1,5 +1,6 @@
 package org.egov.bpa.calculator.services;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -80,9 +81,13 @@ public class MDMSService {
         
         bpaMasterDetails.add(MasterDetail.builder().name(BPACalculatorConstants.MDMS_CALCULATIONTYPE)
         		.build());
+      
+        bpaMasterDetails.add(MasterDetail.builder().name(BPACalculatorConstants.MDMS_TAXAMOUNT)
+        		.build());
+
         ModuleDetail bpaModuleDtls = ModuleDetail.builder().masterDetails(bpaMasterDetails)
                 .moduleName(BPACalculatorConstants.MDMS_BPA).build();
-
+        
         List<ModuleDetail> moduleDetails = new ArrayList<>();
         
         moduleDetails.add(bpaModuleDtls);
@@ -218,6 +223,7 @@ public class MDMSService {
 		String applicationType = calulationCriteria.getApplicationType();
 		String wallType = calulationCriteria.getWallType();
 		String floorLevel = calulationCriteria.getFloorLevel();
+		String subOccupancy = calulationCriteria.getSubOccupancy();
 		
 		log.info(String.format("TenantID: %s, FeeType: %s, ApplicationType: %s, WallType: %s", bpa.getTenantId(),
 				feeType, applicationType, wallType));
@@ -233,8 +239,19 @@ public class MDMSService {
 			// 2. Filter by applicationType 
 			filterExp = "$.[?(@.applicationType == '" + applicationType + "' || @.applicationType == 'ALL')]";
 			calTypes = JsonPath.read(calTypes, filterExp);
+			
+			// 3. Filter by subOccupancy 
+			if (StringUtils.isNotBlank(subOccupancy)) {
 
-			// 3. Filter by wallType/floorLevel 
+	            filterExp = "$.[?(@.subOccupancy == '" + subOccupancy + "')]";
+	            List<Object> subOccMatched = JsonPath.read(calTypes, filterExp);
+
+	            if (!subOccMatched.isEmpty()) {
+	                calTypes = subOccMatched;
+	            }
+	        }
+
+			// 4. Filter by wallType/floorLevel 
 			if (StringUtils.isNotBlank(wallType)) {
 
 				filterExp = "$.[?(@.wallType == '" + wallType + "' || @.wallType == 'ALL')]";
@@ -251,6 +268,7 @@ public class MDMSService {
 				calculationType.put("unitType", calculationType.getOrDefault("unitType", "FIXED"));
 				calculationType.put("rate", calculationType.getOrDefault("rate", "0"));
 				calculationType.put("additionalFee", calculationType.getOrDefault("additionalFee", "0"));
+				calculationType.put("multiplier", calculationType.getOrDefault("multiplier", "1"));
 				finalList.add(calculationType);
 			}
 
@@ -261,5 +279,49 @@ public class MDMSService {
 
 		return finalList;
 	}
+	
+	/**
+	 * Fetches the Labour Cess rate from MDMS configuration.
+	 *
+	 * <p>
+	 * This method reads the Labour Cess master data from MDMS and extracts
+	 * the configured rate value. The rate is expected to be defined as a
+	 * percentage (e.g., 1 for 1%) and is later applied on the aggregated
+	 * building permit fee.
+	 * </p>
+	 *
+	 * <p>
+	 * Key Notes:
+	 * <ul>
+	 *   <li>The Labour Cess rate is tenant-configurable via MDMS.</li>
+	 *   <li>If no active Labour Cess configuration is found, this method
+	 *       safely returns {@link BigDecimal#ZERO}.</li>
+	 *   <li>The actual calculation logic (percentage / flat, etc.) is
+	 *       handled by the caller based on fee type.</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param requestInfo the request information containing tenant and
+	 *                    user context (currently not used, but kept for
+	 *                    future extensibility and consistency with other
+	 *                    MDMS fetch methods)
+	 * @param mdmsData    the MDMS response object containing Labour Cess
+	 *                    configuration under the BPA module
+	 *
+	 * @return the Labour Cess rate as {@link BigDecimal}; returns
+	 *         {@link BigDecimal#ZERO} if no configuration is available
+	 */
+	
+	public BigDecimal getLabourCessRate(RequestInfo requestInfo, Object mdmsData) {
+	    List<Map<String, Object>> cessList =
+	            JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_TAX_AMOUNT_PATH);
+
+	    if (cessList == null || cessList.isEmpty())
+	        return BigDecimal.ZERO;
+
+	    Map<String, Object> cess = cessList.get(0);
+	    return new BigDecimal(cess.get("rate").toString());
+	}
+
 
 }

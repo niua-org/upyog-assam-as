@@ -276,10 +276,54 @@ public class CalculationService {
 		estimatesAndSlabs.setEstimates(estimates);
 		return estimatesAndSlabs;
 	}
+	
+	/**
+	 * Calculates fee estimates for a BPA application based on floor-wise built-up area,
+	 * construction cost, and MDMS configuration.
+	 *
+	 * <p>
+	 * This method computes permit / planning fees by iterating over each floor and
+	 * applying the appropriate rate slabs fetched from MDMS. It also handles special
+	 * fee components such as:
+	 * </p>
+	 *
+	 * <ul>
+	 *   <li><b>Premium FAR Fee</b> – Applied only once for Planning Permit Fee, based on
+	 *       total premium built-up area, irrespective of number of floors.</li>
+	 *   <li><b>Labour Cess</b> – Calculated as 1% of the total Building Permit Fee and
+	 *       added as a separate tax head.</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * Key rules implemented:
+	 * </p>
+	 * <ul>
+	 *   <li>Ground floor and upper floors can have different calculation types.</li>
+	 *   <li>Premium FAR fee is applied only once using a guard flag.</li>
+	 *   <li>Negative tax amounts are not allowed and will throw an exception.</li>
+	 *   <li>All monetary values are rounded to the nearest whole number using
+	 *       {@link RoundingMode#HALF_UP}.</li>
+	 * </ul>
+	 *
+	 * @param calulationCriteria Contains BPA details, floor information, fee type,
+	 *                           premium built-up area, and other inputs required for
+	 *                           calculation.
+	 * @param requestInfo        Request metadata including user and tenant context.
+	 * @param mdmsData           MDMS data object used to derive rate slabs and
+	 *                           calculation types.
+	 *
+	 * @return {@link EstimatesAndSlabs} containing a list of {@link TaxHeadEstimate}
+	 *         objects representing calculated fees.
+	 *
+	 * @throws CustomException if any calculated tax amount is negative or if required
+	 *                         calculation inputs are invalid.
+	 */
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private EstimatesAndSlabs fetchBaseRates(CalulationCriteria calulationCriteria, RequestInfo requestInfo,
 			Object mdmsData) {
+
+		boolean premiumApplied = false;
 
 		BPA bpa = calulationCriteria.getBpa();
 		BigDecimal constructionCost = bpa.getConstructionCost();
@@ -291,6 +335,8 @@ public class CalculationService {
 		log.info("Calculation Type: "+calculationTypeMap);
 		Map<String, Object> calcTypeGround = calculationTypeMap.get(0);
 		Map<String, Object> calcTypeUpper = calculationTypeMap.get(1);
+		BigDecimal totalPermitFee = BigDecimal.ZERO;
+
 		
 //		Calculating fee for each floor
 		for (Floor floor : floors) {
@@ -300,10 +346,44 @@ public class CalculationService {
 			log.info("Total Built Up Area : "+totalBuiltupArea+", Floor Level : "+floor.getLevel());
 
 			if (floor.getLevel() == 0) {
-				totalTax = totalTax.add(calculateEstimate(totalBuiltupArea, constructionCost, calcTypeGround));
+				totalTax = totalTax.add(calculateEstimate(totalBuiltupArea, constructionCost, calcTypeGround, BigDecimal.ZERO));
 			} else {
-				totalTax = totalTax.add(calculateEstimate(totalBuiltupArea, constructionCost, calcTypeUpper));
+				totalTax = totalTax.add(calculateEstimate(totalBuiltupArea, constructionCost, calcTypeUpper, calulationCriteria.getPremiumBuiltUpArea()));
 			}
+
+			
+			/**
+			 * Premium FAR fee calculation
+			 *
+			 * Premium FAR charges are applicable only for PLANNING_PERMIT_FEE.
+			 * The premium amount is calculated once on the total premium built-up area,
+			 * irrespective of the number of floors.
+			 *
+			 * Conditions:
+			 * - Should be applied only once (controlled using premiumApplied flag)
+			 * - Applicable only when premium built-up area is greater than zero
+			 * - Rate and multiplier are picked from upper floor calculation type
+			 */
+			
+		    if (!premiumApplied
+		            && BPACalculatorConstants.PLANNING_PERMIT_FEE.equals(calulationCriteria.getFeeType())
+		            && calulationCriteria.getPremiumBuiltUpArea() != null
+		            && calulationCriteria.getPremiumBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
+
+		        BigDecimal rate = new BigDecimal(calcTypeUpper.get("rate").toString());
+		        BigDecimal multiplier = new BigDecimal(calcTypeUpper.get("multiplier").toString());
+
+		        BigDecimal premiumAmount =
+		                calulationCriteria.getPremiumBuiltUpArea()
+		                        .multiply(rate)
+		                        .multiply(multiplier)
+		                        .setScale(0, RoundingMode.HALF_UP);
+
+		        totalTax = totalTax.add(premiumAmount);
+		        premiumApplied = true;
+
+		        log.info("Premium FAR Fee applied once: {}", premiumAmount);
+		    }
 
 			TaxHeadEstimate estimate = new TaxHeadEstimate();
 			estimate.setEstimateAmount(totalTax);
@@ -320,16 +400,57 @@ public class CalculationService {
 				throw new CustomException(BPACalculatorConstants.INVALID_AMOUNT, "Tax amount is negative");
 
 			estimates.add(estimate);
+			totalPermitFee = totalPermitFee.add(totalTax);
 
 		}
 		
+		/**
+		 * Labour Cess calculation
+		 *
+		 * As per building permit rules, Labour Cess is applicable only for
+		 * BUILDING_PERMIT_FEE and is calculated as 1% of the total permit fee.
+		 *
+		 * - It is NOT applied for planning permit fee.
+		 * - It is calculated after aggregating permit fee of all floors.
+		 * - The amount is rounded to the nearest whole number (HALF_UP).
+		 */
+		
+		if (BPACalculatorConstants.BUILDING_PERMIT_FEE.equals(calulationCriteria.getFeeType())
+		        && totalPermitFee.compareTo(BigDecimal.ZERO) > 0) {
+
+		    BigDecimal labourCessRate = mdmsService
+		            .getLabourCessRate(requestInfo, mdmsData); // returns 1
+
+		    if (labourCessRate.compareTo(BigDecimal.ZERO) > 0) {
+
+		        BigDecimal labourCessAmount = totalPermitFee
+		                .multiply(labourCessRate)
+		                .divide(BigDecimal.valueOf(100))   // percentage
+		                .setScale(0, RoundingMode.HALF_UP);
+
+		        TaxHeadEstimate labourCessEstimate = new TaxHeadEstimate();
+		        labourCessEstimate.setEstimateAmount(labourCessAmount);
+		        labourCessEstimate.setCategory(Category.FEE);
+		        labourCessEstimate.setTaxHeadCode(BPACalculatorConstants.LABOUR_CESS);
+
+		        Map<String, Object> additional = new HashMap<>();
+		        additional.put(BPACalculatorConstants.FLOOR, BPACalculatorConstants.LABOURCESS);
+		        labourCessEstimate.setAdditionalDetails(additional);
+
+		        estimates.add(labourCessEstimate);
+		        
+		        log.info("Labour Cess  calculated on total permit fee {} : {}",
+			            totalPermitFee, labourCessAmount);
+		    }
+		}
+
 		estimatesAndSlabs.setEstimates(estimates);
 
 		return estimatesAndSlabs;
 	}
 
 	private BigDecimal calculateEstimate(BigDecimal totalBuiltUpArea, BigDecimal constructionCost,
-			Map<String, Object> calcType) {
+			Map<String, Object> calcType,  BigDecimal premiumFarBuiltUpArea) {
 
 		String unitType = (String) calcType.get("unitType");
 		BigDecimal rate = new BigDecimal(calcType.get("rate").toString());
@@ -362,8 +483,6 @@ public class CalculationService {
 	public List<Calculation> calculateFee(RequestInfo requestInfo, List<CalulationCriteria> criterias,
 			Object mdmsData) {
 
-
-
 		List<Calculation> calculations = new LinkedList<>();
 
 		for (CalulationCriteria criteria : criterias) {
@@ -393,6 +512,7 @@ public class CalculationService {
 
 		return estimatesAndSlabs;
 	}
-
+	
+	
 
 }
