@@ -1,5 +1,6 @@
 package org.egov.bpa.calculator.services;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -80,9 +81,13 @@ public class MDMSService {
         
         bpaMasterDetails.add(MasterDetail.builder().name(BPACalculatorConstants.MDMS_CALCULATIONTYPE)
         		.build());
+      
+        bpaMasterDetails.add(MasterDetail.builder().name(BPACalculatorConstants.MDMS_TAXAMOUNT)
+        		.build());
+
         ModuleDetail bpaModuleDtls = ModuleDetail.builder().masterDetails(bpaMasterDetails)
                 .moduleName(BPACalculatorConstants.MDMS_BPA).build();
-
+        
         List<ModuleDetail> moduleDetails = new ArrayList<>();
         
         moduleDetails.add(bpaModuleDtls);
@@ -274,5 +279,49 @@ public class MDMSService {
 
 		return finalList;
 	}
+	
+	/**
+	 * Fetches the Labour Cess rate from MDMS configuration.
+	 *
+	 * <p>
+	 * This method reads the Labour Cess master data from MDMS and extracts
+	 * the configured rate value. The rate is expected to be defined as a
+	 * percentage (e.g., 1 for 1%) and is later applied on the aggregated
+	 * building permit fee.
+	 * </p>
+	 *
+	 * <p>
+	 * Key Notes:
+	 * <ul>
+	 *   <li>The Labour Cess rate is tenant-configurable via MDMS.</li>
+	 *   <li>If no active Labour Cess configuration is found, this method
+	 *       safely returns {@link BigDecimal#ZERO}.</li>
+	 *   <li>The actual calculation logic (percentage / flat, etc.) is
+	 *       handled by the caller based on fee type.</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param requestInfo the request information containing tenant and
+	 *                    user context (currently not used, but kept for
+	 *                    future extensibility and consistency with other
+	 *                    MDMS fetch methods)
+	 * @param mdmsData    the MDMS response object containing Labour Cess
+	 *                    configuration under the BPA module
+	 *
+	 * @return the Labour Cess rate as {@link BigDecimal}; returns
+	 *         {@link BigDecimal#ZERO} if no configuration is available
+	 */
+	
+	public BigDecimal getLabourCessRate(RequestInfo requestInfo, Object mdmsData) {
+	    List<Map<String, Object>> cessList =
+	            JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_TAX_AMOUNT_PATH);
+
+	    if (cessList == null || cessList.isEmpty())
+	        return BigDecimal.ZERO;
+
+	    Map<String, Object> cess = cessList.get(0);
+	    return new BigDecimal(cess.get("rate").toString());
+	}
+
 
 }

@@ -15,8 +15,12 @@ public class BPACalculatorConstants {
     public static final String MDMS_ENDDATE  = "endingDate";
 
     public static final String MDMS_CALCULATIONTYPE = "CalculationType";
+    
+    public static final String MDMS_TAXAMOUNT = "TaxAmount";
 
     public static final String MDMS_CALCULATIONTYPE_PATH = "$.MdmsRes.BPA.CalculationType";
+    
+    public static final String MDMS_TAX_AMOUNT_PATH= "$.MdmsRes.BPA.TaxAmount";
 
     public static final String MDMS_BPA_PATH = "$.MdmsRes.BPA";
 
@@ -63,6 +67,8 @@ public class BPACalculatorConstants {
 	public static final String BUILDING_PERMIT_FEE = "BUILDING_PERMIT_FEE";
 	
 	public static final String LABOUR_CESS = "LABOUR_CESS";
+	
+	public static final String LABOURCESS = "Labour cess";
 	
 	public static final String FLOOR = "floor";
 	
