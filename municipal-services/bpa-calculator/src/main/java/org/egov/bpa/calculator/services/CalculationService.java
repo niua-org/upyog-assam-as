@@ -418,24 +418,32 @@ public class CalculationService {
 		if (BPACalculatorConstants.BUILDING_PERMIT_FEE.equals(calulationCriteria.getFeeType())
 		        && totalPermitFee.compareTo(BigDecimal.ZERO) > 0) {
 
-		    BigDecimal labourCessAmount = totalPermitFee
-		            .multiply(new BigDecimal("0.01"))
-		            .setScale(0, RoundingMode.HALF_UP);
+		    BigDecimal labourCessRate = mdmsService
+		            .getLabourCessRate(requestInfo, mdmsData); // returns 1
 
-		    TaxHeadEstimate labourCessEstimate = new TaxHeadEstimate();
-		    labourCessEstimate.setEstimateAmount(labourCessAmount);
-		    labourCessEstimate.setCategory(Category.FEE);
-		    labourCessEstimate.setTaxHeadCode(BPACalculatorConstants.LABOUR_CESS);
-		    
-		    Map<String, Object> additional = new HashMap<>();
-		    additional.put(BPACalculatorConstants.FLOOR, BPACalculatorConstants.LABOURCESS);
-		    labourCessEstimate.setAdditionalDetails(additional);
+		    if (labourCessRate.compareTo(BigDecimal.ZERO) > 0) {
 
-		    estimates.add(labourCessEstimate);
+		        BigDecimal labourCessAmount = totalPermitFee
+		                .multiply(labourCessRate)
+		                .divide(BigDecimal.valueOf(100))   // percentage
+		                .setScale(0, RoundingMode.HALF_UP);
 
-		    log.info("Labour Cess (1%) calculated on total permit fee {} : {}",
-		            totalPermitFee, labourCessAmount);
+		        TaxHeadEstimate labourCessEstimate = new TaxHeadEstimate();
+		        labourCessEstimate.setEstimateAmount(labourCessAmount);
+		        labourCessEstimate.setCategory(Category.FEE);
+		        labourCessEstimate.setTaxHeadCode(BPACalculatorConstants.LABOUR_CESS);
+
+		        Map<String, Object> additional = new HashMap<>();
+		        additional.put(BPACalculatorConstants.FLOOR, BPACalculatorConstants.LABOURCESS);
+		        labourCessEstimate.setAdditionalDetails(additional);
+
+		        estimates.add(labourCessEstimate);
+		        
+		        log.info("Labour Cess  calculated on total permit fee {} : {}",
+			            totalPermitFee, labourCessAmount);
+		    }
 		}
+
 		estimatesAndSlabs.setEstimates(estimates);
 
 		return estimatesAndSlabs;

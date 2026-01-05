@@ -15,8 +15,12 @@ public class BPACalculatorConstants {
     public static final String MDMS_ENDDATE  = "endingDate";
 
     public static final String MDMS_CALCULATIONTYPE = "CalculationType";
+    
+    public static final String MDMS_TAXAMOUNT = "TaxAmount";
 
     public static final String MDMS_CALCULATIONTYPE_PATH = "$.MdmsRes.BPA.CalculationType";
+    
+    public static final String MDMS_TAX_AMOUNT_PATH= "$.MdmsRes.BPA.TaxAmount";
 
     public static final String MDMS_BPA_PATH = "$.MdmsRes.BPA";
 
