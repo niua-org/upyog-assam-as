@@ -94,7 +94,8 @@ public class CalculationService {
 	public List<Calculation> estimate(CalculationReq calculationReq) {
 		String tenantId = calculationReq.getCalulationCriteria().get(0)
 				.getTenantId();
-		Object mdmsData = mdmsService.mDMSCall(calculationReq, tenantId);
+		String stateId = utils.extractState(tenantId);
+		Object mdmsData = mdmsService.mDMSCall(calculationReq, stateId);
 		List<Calculation> calculations = calculateFee(calculationReq.getRequestInfo(),calculationReq.getCalulationCriteria(), mdmsData);
 		return calculations;
 	}
