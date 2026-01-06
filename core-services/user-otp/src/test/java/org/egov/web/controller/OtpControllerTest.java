@@ -47,7 +47,7 @@ public class OtpControllerTest {
 				.andExpect(content().json(resources.getFileContents("otpSendSuccessResponse.json")));
 
 		final OtpRequest expectedOtpRequest =
-				new OtpRequest("mobileNumber", "tenantId", OtpRequestType.PASSWORD_RESET, "CITIZEN", false);
+				new OtpRequest("mobileNumber", "tenantId", OtpRequestType.PASSWORD_RESET, "CITIZEN", null);
 
 		verify(otpService).sendOtp(expectedOtpRequest);
 	}
@@ -99,7 +99,7 @@ public class OtpControllerTest {
 	@Test
 	public void test_should_return_error_response_when_user_doesntExist_incaseoftypeislogin() throws Exception {
 		final OtpRequest expectedOtpRequest =
-				new OtpRequest("mobileNumber", "tenantId", OtpRequestType.LOGIN, "CITIZEN", true);
+				new OtpRequest("mobileNumber", "tenantId", OtpRequestType.LOGIN, "CITIZEN", false);
 
 		doThrow(new UserNotExistingInSystemException())
 				.when(otpService).sendOtp(expectedOtpRequest);
