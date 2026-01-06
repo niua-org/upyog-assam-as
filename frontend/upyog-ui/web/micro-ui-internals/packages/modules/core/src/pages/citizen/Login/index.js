@@ -118,6 +118,7 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
       ...mobileNumber,
       tenantId: stateCode,
       userType: "citizen",
+      rtpLogin: location.state?.rtpLogin,
     };
     if (isUserRegistered) {
       const [res, err] = await sendOtp({ otp: { ...data, ...TYPE_LOGIN } });
@@ -128,16 +129,12 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
       } else {
         setCanSubmitNo(true);
           if (isRtpLogin()) {
-          setError("RTP Does Not Exist please contact to Department");
+          setError(t("RTP_USER_NOT_REGISTERED_PLAESE_CONTACT_TO_DEPARTMENT"));
           return;
         }
           // Show modal instead of redirecting
           setShowRegistrationModal(true);
           return;
-      }
-      if (location.state?.role) {
-        setCanSubmitNo(true);
-        setError(location.state?.role === "FSM_DSO" ? t("ES_ERROR_DSO_LOGIN") : "User not registered.");
       }
     } else {
       const [res, err] = await sendOtp({ otp: { ...data, ...TYPE_REGISTER } });
@@ -157,7 +154,7 @@ const ePramaanRegister = async () => {
     localStorage.setItem("epramaanData", JSON.stringify(data?.epramaanData));
     window.location.href = redirectUrl;
   } catch (error) {
-    setError("Registration failed. Please try again.");
+    setError(t("EPRAMAAN_REGISTRATION_FAILED"));
   }
   setShowRegistrationModal(false);
 };
