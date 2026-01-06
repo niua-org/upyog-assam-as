@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CardText, FormStep, CitizenConsentForm, Loader, CheckBox,Modal,Card ,CardHeader} from "@upyog/digit-ui-react-components";
+import { CardText, FormStep, CitizenConsentForm, Loader, CheckBox, Modal, Card, CardHeader, CardLabel } from "@upyog/digit-ui-react-components";
 import { Link } from "react-router-dom";
 
 const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMobileChange, config, canSubmit, showRegistrationModal, setShowRegistrationModal, ePramaanRegister }) => {
@@ -125,22 +125,22 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
         <div className="col col-md-4  text-md-center p-0" style={{width:"40%", marginTop:"5px"}}>
         <button className="digilocker-btn" type="submit" onClick={ePramaanRegister}>
           <img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" className="mr-2" style={{"width":"12%"}} />
-          Register/Login with ePramaan
+          {t("CORE_COMMON_REGISTER_LOGIN_WITH_EPRAMAAN")}
         </button>
      
       {showRegistrationModal  && (
       <Modal
-        headerBarMain={<Heading label="Registration Required" />}
+        headerBarMain={<Heading label={t("CORE_COMMON_REGISTRATION_REQUIRED")} />}
         headerBarEnd={<CloseBtn onClick={() => setShowRegistrationModal(false)} />}
-        actionCancelLabel="No"
+        actionCancelLabel={t("CORE_COMMON_NO")}
         actionCancelOnSubmit={() => setShowRegistrationModal(false)}
-        actionSaveLabel="Yes"
+        actionSaveLabel={t("CORE_COMMON_YES")}
         actionSaveOnSubmit={ePramaanRegister}
         formId="registration-modal"
       >
         <div style={{ width: "100%" }}>
           <Card>
-            <p>Your Number is not registered. Want to register using ePramaan?</p>
+            <CardLabel>{t("CORE_COMMON_REGISTER_MOBILE_WITH_EPRAMAAN")}</CardLabel>
           </Card>
         </div>
       </Modal>
