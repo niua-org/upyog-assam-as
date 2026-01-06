@@ -3,6 +3,7 @@
     "mobileNumber": "mobileNumber",
     "tenantId": "tenantId",
     "type": "login",
-    "userType": "CITIZEN"
+    "userType": "CITIZEN",
+    "rtpLogin": false
   }
 }

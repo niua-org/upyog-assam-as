@@ -25,7 +25,8 @@ public class OtpRequest {
 				|| isMobileNumberAbsent()
 				|| isInvalidType()
 				|| isMobileNumberNumeric()
-				|| isMobileNumberValidLength()) {
+				|| isMobileNumberValidLength()
+				|| Boolean.TRUE.equals(getRtpLogin())) {
             throw new InvalidOtpRequestException(this);
         }
     }
