@@ -42,10 +42,7 @@ const LocationSelection = () => {
       const redirectBackTo = location.state?.redirectBackTo;
       if (redirectBackTo) {
         history.replace(redirectBackTo);
-      } else history.push({
-        pathname: "/upyog-ui/citizen/rtp-login",
-        state: { rtpLogin: true },
-      });
+      } else history.push("/upyog-ui/citizen/rtp-login");
     } else {
       setShowError(true);
     }

@@ -118,7 +118,7 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
       ...mobileNumber,
       tenantId: stateCode,
       userType: "citizen",
-      rtpLogin: location.state?.rtpLogin,
+      rtpLogin: isRtpLogin(),
     };
     if (isUserRegistered) {
       const [res, err] = await sendOtp({ otp: { ...data, ...TYPE_LOGIN } });
