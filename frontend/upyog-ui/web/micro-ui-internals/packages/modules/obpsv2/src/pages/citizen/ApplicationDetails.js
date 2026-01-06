@@ -1087,6 +1087,10 @@ import {
               {bpa_details?.buildingPermitNo && (
                 <Row label={t("BPA_BUILDING_PERMIT_NO")} text={bpa_details.buildingPermitNo} />
               )}
+              {bpa_details?.occupancyCertificateNo && (
+                <Row label={t("BPA_OCCUPANCY_CERTIFICATE_NO")} text={bpa_details.occupancyCertificateNo} />
+              )}
+
             </StatusTable>
                     
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_AREA_MAPPING")}</CardSubHeader>

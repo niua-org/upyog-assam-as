@@ -462,6 +462,14 @@ export const OBPSV2Services = {
               },
             ]
           : []),
+        ...(bpa?.occupancyCertificateNo
+          ? [
+              {
+                title: "BPA_OCCUPANCY_CERTIFICATE_NO",
+                value: bpa.occupancyCertificateNo,
+              },
+            ]
+          : [])
       ],
     };
     const landInfo = bpa?.landInfo || {};
