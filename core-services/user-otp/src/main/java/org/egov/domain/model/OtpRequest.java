@@ -1,5 +1,6 @@
 package org.egov.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.domain.exception.InvalidOtpRequestException;
@@ -17,6 +18,7 @@ public class OtpRequest {
     private String tenantId;
     private OtpRequestType type;
     private String userType;
+	private Boolean rtpLogin;
 
     public void validate() {
         if(isTenantIdAbsent()

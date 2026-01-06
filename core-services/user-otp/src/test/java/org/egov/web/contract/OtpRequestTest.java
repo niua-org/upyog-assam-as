@@ -9,32 +9,34 @@ import static org.junit.Assert.assertNull;
 
 public class OtpRequestTest {
 
-    @Test
-    public void test_should_map_from_contract_to_domain() {
-        final Otp otp = new Otp("mobileNumber", "tenantId", "register", "CITIZEN");
-        final OtpRequest request = new OtpRequest(null, otp);
+	@Test
+	public void test_should_map_from_contract_to_domain() {
+		final Otp otp = new Otp("mobileNumber", "tenantId", "register", "CITIZEN", false);
+		final OtpRequest request = new OtpRequest(null, otp);
 
-        final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
 
-        assertNotNull(domainOtpRequest);
-        assertEquals("mobileNumber", domainOtpRequest.getMobileNumber());
-        assertEquals("tenantId", domainOtpRequest.getTenantId());
-        assertEquals(OtpRequestType.REGISTER, domainOtpRequest.getType());
-    }
+		assertNotNull(domainOtpRequest);
+		assertEquals("mobileNumber", domainOtpRequest.getMobileNumber());
+		assertEquals("tenantId", domainOtpRequest.getTenantId());
+		assertEquals(OtpRequestType.REGISTER, domainOtpRequest.getType());
+		assertEquals(false, domainOtpRequest.getRtpLogin());
+	}
 
 	@Test
 	public void test_should_set_request_type_to_register_when_type_not_explicitly_specified() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", null, "CITIZEN");
+		final Otp otp = new Otp("mobileNumber", "tenantId", null, "CITIZEN", null);
 		final OtpRequest request = new OtpRequest(null, otp);
 
 		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
 
 		assertEquals(OtpRequestType.REGISTER, domainOtpRequest.getType());
+		assertNull(domainOtpRequest.getRtpLogin());
 	}
 
 	@Test
 	public void test_should_set_request_type_to_null_when_type_is_unknown() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "unknown", "CITIZEN");
+		final Otp otp = new Otp("mobileNumber", "tenantId", "unknown", "CITIZEN", null);
 		final OtpRequest request = new OtpRequest(null, otp);
 
 		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
@@ -44,7 +46,7 @@ public class OtpRequestTest {
 
 	@Test
 	public void test_should_set_request_type_to_register_when_type_is_register() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "regisTER", "CITIZEN");
+		final Otp otp = new Otp("mobileNumber", "tenantId", "regisTER", "CITIZEN", false);
 		final OtpRequest request = new OtpRequest(null, otp);
 
 		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
@@ -54,31 +56,33 @@ public class OtpRequestTest {
 
 	@Test
 	public void test_should_set_request_type_to_password_reset_when_type_is_passwordreset() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "passwordRESET", "CITIZEN");
+		final Otp otp = new Otp("mobileNumber", "tenantId", "passwordRESET", "CITIZEN", false);
 		final OtpRequest request = new OtpRequest(null, otp);
 
 		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
 
 		assertEquals(OtpRequestType.PASSWORD_RESET, domainOtpRequest.getType());
 	}
-	
+
 	@Test
 	public void test_should_set_request_type_login_when_type_is_login() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "LOGIN", "CITIZEN");
+		final Otp otp = new Otp("mobileNumber", "tenantId", "LOGIN", "CITIZEN", true);
 		final OtpRequest request = new OtpRequest(null, otp);
 
 		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
 
 		assertEquals(OtpRequestType.LOGIN, domainOtpRequest.getType());
+		assertEquals(true, domainOtpRequest.getRtpLogin());
 	}
-	
+
 	@Test
 	public void test_should_set_request_type_to_login_when_type_is_login() {
-		final Otp otp = new Otp("mobileNumber", "tenantId", "login", "CITIZEN");
+		final Otp otp = new Otp("mobileNumber", "tenantId", "login", "CITIZEN", true);
 		final OtpRequest request = new OtpRequest(null, otp);
 
 		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
 
 		assertEquals(OtpRequestType.LOGIN, domainOtpRequest.getType());
+		assertEquals(true, domainOtpRequest.getRtpLogin());
 	}
 }
