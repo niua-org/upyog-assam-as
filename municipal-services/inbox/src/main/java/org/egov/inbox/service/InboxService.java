@@ -147,8 +147,7 @@ public class InboxService {
 			if (StringUtils.isEmpty(applicationStatusParam)) {
 				applicationStatusParam = "applicationStatus";
 			}
-			List<String> crtieriaStatuses = new ArrayList<String>();
-			if (StatusIdNameMap.values().size() > 0) {
+            if (StatusIdNameMap.values().size() > 0) {
 				if (!CollectionUtils.isEmpty(processCriteria.getStatus())) {
 					List<String> statuses = new ArrayList<String>();
 					processCriteria.getStatus().forEach(status -> {
@@ -248,9 +247,6 @@ public class InboxService {
 					statusCountMap = bpaInboxStatusCountMap;
 				}
 			}
-
-			// }
-			// Redirect request to searcher in case of PT to fetch acknowledgement IDS
 			Boolean isSearchResultEmpty = false;
 			List<String> businessKeys = new ArrayList<>();
 
@@ -311,7 +307,6 @@ public class InboxService {
 			List<Map<String, Object>> result = new ArrayList<>();
 			businessObjects = new JSONArray();
 			// Search module specific data from respective modules. Works for all modules
-			// except WS and SW
 			if (!isSearchResultEmpty) {
 				businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
 						requestInfo, srvMap, processCriteria.getModuleName(), criteria);
@@ -329,13 +324,7 @@ public class InboxService {
 			processCriteria.setBusinessIds(businessIds);
 			processCriteria.setIsProcessCountCall(false);
 
-            JSONArray serviceSearchObject = new JSONArray();
-			Map<String, Object> serviceSearchMap;
-            serviceSearchMap = StreamSupport.stream(serviceSearchObject.spliterator(), false)
-					.collect(Collectors.toMap(s1 -> ((JSONObject) s1).get("connectionNo").toString(), s1 -> s1,
-							(e1, e2) -> e1, LinkedHashMap::new));
-
-			ProcessInstanceResponse processInstanceResponse;
+            ProcessInstanceResponse processInstanceResponse;
 			/*
 			 * In BPA, the stakeholder can able to submit applications for multiple cities
 			 * and in the single inbox all cities submitted applications need to show
@@ -427,8 +416,7 @@ public class InboxService {
 			ProcessInstanceResponse processInstanceResponse = workflowService.getProcessInstance(processCriteria,
 					requestInfo);
 			List<ProcessInstance> processInstances = processInstanceResponse.getProcessInstances();
-			HashMap<String, List<String>> businessSrvIdsMap = new HashMap<String, List<String>>();
-			Map<String, ProcessInstance> processInstanceMap = processInstances.stream()
+            Map<String, ProcessInstance> processInstanceMap = processInstances.stream()
 					.collect(Collectors.toMap(ProcessInstance::getBusinessId, Function.identity()));
 			moduleSearchCriteria = new HashMap<String, String>();
 			if (CollectionUtils.isEmpty(srvMap)) {
@@ -497,9 +485,9 @@ public class InboxService {
 		}
 		StringBuilder url = new StringBuilder(srvMap.get("searchPath"));
 		url.append("?tenantId=").append(tenantId);
-		
+
 		// Add isInboxSearch flag for BPA module only when planningAreaCode is present
-		if (BPA.equals(moduleName) && criteria != null 
+		if (BPA.equals(moduleName) && criteria != null
 				&& criteria.getPlanningAreaCode() != null && !criteria.getPlanningAreaCode().isEmpty()) {
 			url.append("&isInboxSearch=true");
 		}
