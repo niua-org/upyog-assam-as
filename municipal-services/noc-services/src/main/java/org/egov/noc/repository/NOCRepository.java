@@ -8,6 +8,7 @@ import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.producer.Producer;
 import org.egov.noc.repository.builder.NocQueryBuilder;
+import org.egov.noc.repository.rowmapper.LimitedNocRowMapper;
 import org.egov.noc.repository.rowmapper.NocRowMapper;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.NocRequest;
@@ -37,6 +38,9 @@ public class NOCRepository {
 
 	@Autowired
 	private NocRowMapper rowMapper;
+
+	@Autowired
+	private LimitedNocRowMapper limitedNocRowMapper;
 
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
@@ -124,5 +128,22 @@ public class NOCRepository {
                 int count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
                 return count;
         }
+
+		/**
+		 * Get limited Noc data for normal search
+		 * */
+	public List<Noc> getLimitedNocData(NocSearchCriteria criteria) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = queryBuilder.getLimitedNocSearchQuery(criteria, preparedStmtList, false);
+		try {
+			query = centralInstanceUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
+		} catch (InvalidTenantIdException e) {
+			throw new CustomException("EG_NOC_TENANTID_ERROR",
+					"TenantId length is not sufficient to replace query schema in a multi state instance");
+		}
+		log.info("preparedStmtList.toArray(:"+preparedStmtList.toArray().toString());
+		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), limitedNocRowMapper);
+		return nocList;
+	}
 
 }
