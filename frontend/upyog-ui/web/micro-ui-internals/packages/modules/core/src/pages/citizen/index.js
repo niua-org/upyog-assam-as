@@ -34,7 +34,8 @@ const sidebarHiddenFor = [
   "/upyog-ui/citizen/login",
   "/upyog-ui/citizen/register/otp",
   "/upyog-ui/citizen/verificationsearch-home", // route for verificationsearch component
-  "/upyog-ui/citizen/select-location",
+  "/upyog-ui/citizen/rtp/select-location",
+  "/upyog-ui/citizen/rtp-login",
 ];
 import { APPLICATION_PATH } from "./Home/EDCR/utils";
 const getTenants = (codes, tenants) => {
@@ -223,7 +224,7 @@ const Home = ({
           <Route exact path={`${path}/area-mapping`}>
             <AreaMapping />
           </Route> 
-           <Route exact path={`${path}/select-location`}>
+           <Route exact path={`${path}/rtp/select-location`}>
             <LocationSelection />
           </Route>
           <Route path={`${path}/error`}>
@@ -245,6 +246,9 @@ const Home = ({
           </Route>
 
           <Route path={`${path}/login`}>
+            <Login stateCode={stateCode} />
+          </Route>
+          <Route path={`${path}/rtp-login`}>
             <Login stateCode={stateCode} />
           </Route>
 

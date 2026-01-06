@@ -84,7 +84,7 @@ const AreaMapping = () => {
           </CardHeader>
           
           <Link 
-            to={`/upyog-ui/citizen/select-location`}
+            to={`/upyog-ui/citizen/rtp/select-location`}
             style={{
               position: "absolute",
               top: "0",

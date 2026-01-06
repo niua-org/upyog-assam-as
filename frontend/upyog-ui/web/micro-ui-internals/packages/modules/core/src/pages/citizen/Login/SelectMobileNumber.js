@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { CardText, FormStep, CitizenConsentForm, Loader, CheckBox,Modal,Card ,CardHeader} from "@upyog/digit-ui-react-components";
+import { CardText, FormStep, CitizenConsentForm, Loader, CheckBox, Modal, Card, CardHeader, CardLabel } from "@upyog/digit-ui-react-components";
 import { Link } from "react-router-dom";
 
-const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMobileChange, config, canSubmit }) => {
+const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMobileChange, config, canSubmit, showRegistrationModal, setShowRegistrationModal, ePramaanRegister }) => {
 
   const [isCheckBox, setIsCheckBox] = useState(false);
   const [isCCFEnabled, setisCCFEnabled] = useState(false);
@@ -28,25 +28,9 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
     }
   }, [data]);
 
-  const onLinkClick = (e) => {
-    setMdmsConfig(e.target.id)
-}
 
-  const checkLabels = () => {
-    return (
-    <span>
-      {isCCFEnabled?.checkBoxLabels?.map((data, index) => {
-        return <span>
-          {/* {index == 0 && "CCF"} */}
-          {data?.linkPrefix && <span>{t(`${data?.linkPrefix}_`)}</span>}
-          {data?.link && <span id={data?.linkId} onClick={(e) => { onLinkClick(e) }} style={{ color: "#a82227", cursor: "pointer" }}>{t(`${data?.link}_`)}</span>}
-          {data?.linkPostfix && <span>{t(`${data?.linkPostfix}_`)}</span>}
-          {(index == isCCFEnabled?.checkBoxLabels?.length - 1) && t("LABEL")}
-        </span>
-      })}
-    </span>
-    );
-  };
+
+  
   const validateMobileNumber=()=>{
       if(/^\d{0,10}$/.test(mobileNumber)){
         setError("")
@@ -74,15 +58,7 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
     window.location.href = redirectUrl;
   }
 
-  const ePramaanRegister = async (e) => {
-    const data = await Digit.EPramaanService.register({ module: "SSO" });
-    e.preventDefault();
-    const redirectUrl = data.redirectURL;
-    console.log("epramaanData", data);
-    localStorage.setItem("epramaanData", JSON.stringify(data?.epramaanData));
-    //  debugger;
-    window.location.href = redirectUrl;
-  }
+
 
   const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;
@@ -110,7 +86,7 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
   const setModal=(e)=>{
     setShowToast(false);
    // register(e);  
-    ePramaanRegister(e);
+    ePramaanRegister();
   }
 
   return (
@@ -145,22 +121,30 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
           setMdmsConfig={setMdmsConfig}
         />
       </div>)}
-      { <div className="col col-md-4  text-md-center p-0" style={{width:"40%", marginTop:"5px"}}>
-             <button className="digilocker-btn"type="submit" onClick={(e)=>setShowToast(true)   }><img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" class="mr-2" style={{"width":"12%"}}></img>Register/Login with ePramaan</button>
-     { showToast &&   <Modal
-      headerBarMain={<Heading label={t("Consent")} />}
-      headerBarEnd={<CloseBtn onClick={closeModal} />}
-      actionCancelLabel={"Cancel"}
-      actionCancelOnSubmit={closeModal}
-      actionSaveLabel={"Ok"}
-      actionSaveOnSubmit={(e)=>setModal(e)}
-      formId="modal-action"
-    > <div style={{ width: "100%" }}>
-    <Card>
-      <p>By selecting this option, I am providing my consent to associate my Upyog account with my Eparman</p>
-    </Card>
-     </div>
-      </Modal>}
+      { 
+        <div className="col col-md-4  text-md-center p-0" style={{width:"40%", marginTop:"5px"}}>
+        <button className="digilocker-btn" type="submit" onClick={ePramaanRegister}>
+          <img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" className="mr-2" style={{"width":"12%"}} />
+          {t("CORE_COMMON_REGISTER_LOGIN_WITH_EPRAMAAN")}
+        </button>
+     
+      {showRegistrationModal  && (
+      <Modal
+        headerBarMain={<Heading label={t("CORE_COMMON_REGISTRATION_REQUIRED")} />}
+        headerBarEnd={<CloseBtn onClick={() => setShowRegistrationModal(false)} />}
+        actionCancelLabel={t("CORE_COMMON_NO")}
+        actionCancelOnSubmit={() => setShowRegistrationModal(false)}
+        actionSaveLabel={t("CORE_COMMON_YES")}
+        actionSaveOnSubmit={ePramaanRegister}
+        formId="registration-modal"
+      >
+        <div style={{ width: "100%" }}>
+          <Card>
+            <CardLabel>{t("CORE_COMMON_REGISTER_MOBILE_WITH_EPRAMAAN")}</CardLabel>
+          </Card>
+        </div>
+      </Modal>
+    )}
                 </div> }
     </FormStep>
   );
