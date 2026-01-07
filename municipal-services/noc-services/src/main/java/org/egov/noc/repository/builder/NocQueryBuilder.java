@@ -155,9 +155,18 @@ public class NocQueryBuilder {
 		// Tenant ID filter
 		if (criteria.getTenantId() != null) {
 			addClauseIfRequired(builder);
-			builder.append(" noc.tenantid=? ");
-			preparedStmtList.add(criteria.getTenantId());
-			log.info(criteria.getTenantId());
+
+			String tenantId = criteria.getTenantId();
+			// If state-level tenant, fetch records for all child ULB tenants using LIKE
+			if (!tenantId.contains(".")) {
+				builder.append(" noc.tenantid LIKE ? ");
+				preparedStmtList.add(tenantId + "%");
+			} else {
+				// If ULB-level tenant, match only that tenant
+				builder.append(" noc.tenantid = ? ");
+				preparedStmtList.add(tenantId);
+			}
+			log.info(tenantId);
 		}
 
 		// IDs filter
