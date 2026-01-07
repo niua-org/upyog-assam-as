@@ -8,8 +8,8 @@ import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.producer.Producer;
 import org.egov.noc.repository.builder.NocQueryBuilder;
-import org.egov.noc.repository.rowmapper.LimitedNocRowMapper;
 import org.egov.noc.repository.rowmapper.NocRowMapper;
+import org.egov.noc.repository.rowmapper.NocDetailRowMapper;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.NocRequest;
 import org.egov.noc.web.model.NocSearchCriteria;
@@ -37,10 +37,10 @@ public class NOCRepository {
 	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
-	private NocRowMapper rowMapper;
+	private NocDetailRowMapper detailRowMapper;
 
 	@Autowired
-	private LimitedNocRowMapper limitedNocRowMapper;
+	private NocRowMapper rowMapper;
 
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
@@ -69,12 +69,13 @@ public class NOCRepository {
 	/**
 	 * using the queryBulider query the data on applying the search criteria and return the data 
 	 * parsing throw row mapper
+	 * this method will be used to fetch the complete noc data with documents
 	 * @param criteria
 	 * @return
 	 */
-	public List<Noc> getNocData(NocSearchCriteria criteria) {
+	public List<Noc> getNocDataDetails(NocSearchCriteria criteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		String query = queryBuilder.getNocSearchQuery(criteria, preparedStmtList, false);
+		String query = queryBuilder.getNocDetailSearchQuery(criteria, preparedStmtList, false);
 		try {
 			query = centralInstanceUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
 		} catch (InvalidTenantIdException e) {
@@ -82,7 +83,7 @@ public class NOCRepository {
 					"TenantId length is not sufficient to replace query schema in a multi state instance");
 		}
 		log.info("preparedStmtList.toArray(:"+preparedStmtList.toArray().toString());
-		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), detailRowMapper);
 		return nocList;
 	}
 	
@@ -97,11 +98,11 @@ public class NOCRepository {
 	 */
 	public List<Noc> getNocDatav2(NocSearchCriteria criteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		String query = queryBuilder.getNocSearchQuery(criteria, preparedStmtList, false);
+		String query = queryBuilder.getNocDetailSearchQuery(criteria, preparedStmtList, false);
 		
 		try {
 			query = query.replaceAll("\\{schema\\}\\.", "");
-			List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+			List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), detailRowMapper);
 			return nocList;
 		} catch (Exception e) {
 			log.error("Error fetching NOC data", e);
@@ -118,7 +119,7 @@ public class NOCRepository {
          */
         public Integer getNocCount(NocSearchCriteria criteria) {
                 List<Object> preparedStmtList = new ArrayList<>();
-                String query = queryBuilder.getNocSearchQuery(criteria, preparedStmtList, true);
+                String query = queryBuilder.getNocDetailSearchQuery(criteria, preparedStmtList, true);
 				try {
 					query = centralInstanceUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
 				} catch (InvalidTenantIdException e) {
@@ -130,11 +131,14 @@ public class NOCRepository {
         }
 
 		/**
-		 * Get limited Noc data for normal search
+		 * Get Noc data based on search criteria for normal search results
+		 * this method will be used to fetch only summary noc data without documents and lesser details
+		 * @param criteria
+		 * @return List<Noc>
 		 * */
-	public List<Noc> getLimitedNocData(NocSearchCriteria criteria) {
+	public List<Noc> getNocData(NocSearchCriteria criteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
-		String query = queryBuilder.getLimitedNocSearchQuery(criteria, preparedStmtList, false);
+		String query = queryBuilder.getNocDataSearchQuery(criteria, preparedStmtList, false);
 		try {
 			query = centralInstanceUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
 		} catch (InvalidTenantIdException e) {
@@ -142,7 +146,8 @@ public class NOCRepository {
 					"TenantId length is not sufficient to replace query schema in a multi state instance");
 		}
 		log.info("preparedStmtList.toArray(:"+preparedStmtList.toArray().toString());
-		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), limitedNocRowMapper);
+		log.info("NOC basic data Query : "+query);
+		List<Noc> nocList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
 		return nocList;
 	}
 

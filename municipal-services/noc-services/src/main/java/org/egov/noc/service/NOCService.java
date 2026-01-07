@@ -220,7 +220,7 @@ public class NOCService {
 //				return nocs;
 //			}
 //			log.info("NOC CALL STARTED" + criteria.getSourceRefId());
-//			nocs = nocRepository.getLimitedNocData(criteria);
+//			nocs = nocRepository.getNocData(criteria);
 //			nocs.forEach(noc -> {
 //				Map<String, String> additionalDetails = noc.getAdditionalDetails() != null
 //						? (Map<String, String>) noc.getAdditionalDetails()
@@ -260,7 +260,7 @@ public class NOCService {
 //		}else if(criteria.getApplicationNo()!=null){
 ////			All details should come when criteria contains application no
 //			log.info("IN 2 NOC CALL STARTED" + criteria.getSourceRefId());
-//			nocs = nocRepository.getNocData(criteria);
+//			nocs = nocRepository.getNocDataDetails(criteria);
 //			nocs.forEach(noc -> {
 //				Map<String, String> additionalDetails = noc.getAdditionalDetails() != null
 //						? (Map<String, String>) noc.getAdditionalDetails()
@@ -312,7 +312,7 @@ public class NOCService {
 //		else {
 ////			Limited details should come when criteria does not contain application no
 //			log.info("IN 3 NOC CALL STARTED" + criteria.getSourceRefId());
-//			nocs = nocRepository.getLimitedNocData(criteria);
+//			nocs = nocRepository.getNocData(criteria);
 ////			nocs.forEach(noc -> {
 ////				Map<String, String> additionalDetails = noc.getAdditionalDetails() != null
 ////						? (Map<String, String>) noc.getAdditionalDetails()
@@ -459,7 +459,7 @@ public class NOCService {
 
 		// 2. Fetch Existing NOC
 		NocSearchCriteria criteria = getFireNocSearchCriteria(inputNoc.getTenantId(), sourceRefId);
-		List<Noc> existingNocs = nocRepository.getNocData(criteria);
+		List<Noc> existingNocs = nocRepository.getNocDataDetails(criteria);
 
 		if (CollectionUtils.isEmpty(existingNocs)) {
 			throw new CustomException("NOC_NOT_FOUND", "NOC not found for sourceRefId: " + sourceRefId);
@@ -595,10 +595,10 @@ public class NOCService {
 		// 2. Db Search: Full or Limited based on presence of applicationNo
 		if (isFullSearch) {
 			log.info("Full Details NOC Search for: {}", criteria.getApplicationNo());
-			nocs = nocRepository.getNocData(criteria);
+			nocs = nocRepository.getNocDataDetails(criteria);
 		} else {
 			log.info("Limited Details NOC Search (Basic Fields)");
-			nocs = nocRepository.getLimitedNocData(criteria);
+			nocs = nocRepository.getNocData(criteria);
 		}
 
 		if (CollectionUtils.isEmpty(nocs)) return Collections.emptyList();
@@ -670,7 +670,7 @@ public class NOCService {
 				.append(config.getBpaContextPath())
 				.append(config.getBpaSearchEndpoint())
 				.append("?tenantId=").append(tenantId)
-				.append("&applicationNos=").append(String.join(",", bpaNos));
+				.append("&applicationNo=").append(String.join(",", bpaNos));
 
 		try {
 			LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository.fetchResult(uri, wrapper);
