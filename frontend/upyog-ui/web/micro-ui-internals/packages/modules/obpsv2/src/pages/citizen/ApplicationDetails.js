@@ -1138,13 +1138,15 @@ import {
                 text={areaMapping?.mouza || t("CS_NA")}
               />
             </StatusTable>
+        {propertyDetails && (
+          <>
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_PROPERTY_DETAILS")}</CardSubHeader>
             <StatusTable>
           <Row
             label={t("BPA_PROPERTY_ID")}
             text={bpa_details?.additionalDetails?.propertyID||"NA"}
           />
-          {propertyDetails && Object.entries(propertyDetails.details || {}).map(([key, value]) => (
+          {Object.entries(propertyDetails.details || {}).map(([key, value]) => (
             <Row
               key={key}
               label={t(`BPA_${key.toUpperCase()}`)}
@@ -1152,6 +1154,8 @@ import {
             />
           ))}
           </StatusTable>
+          </>
+        )}
   
             <CardSubHeader style={{ fontSize: "24px" }}>{t("BPA_APPLICANT_DETAILS")}</CardSubHeader>
             <StatusTable>

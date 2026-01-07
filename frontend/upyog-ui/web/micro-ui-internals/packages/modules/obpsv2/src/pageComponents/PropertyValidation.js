@@ -108,15 +108,15 @@ const PropertyValidation = ({ t, config, onSelect, formData, searchResult }) => 
       <Timeline currentStep={1} flow={"buildingPermit" || "editApplication"} />
       
       <FormStep config={propertyDetails ? config : ""} onSelect={getPropertyDetails} onSkip={onSkip} t={t}>                                                                                                                                                                                                                                                                                                                 
-      <Header>{t("BPA_PROPERTY_VALIDATION")}</Header>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+        <Header>{t("BPA_PROPERTY_VALIDATION")}</Header>
+        <div style={{ marginLeft: "auto" }}>
+          <SubmitBar label={t("CS_SKIP_AND_CONTINUE")} onSubmit={onSkip} />
+        </div>
+      </div>
       <div>{t("Please Enter a valid property Number to search")}</div>
-      <div style={{ display: "flex", alignItems: "center", position: "relative" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <TextInput
-            style={{
-            background: "#FAFAFA",
-            padding: "0px 35px 0px 10px",
-            width: "calc(100% - 100px)",
-            }}
             type="text"
             t={t}
             isMandatory={false}
@@ -126,7 +126,7 @@ const PropertyValidation = ({ t, config, onSelect, formData, searchResult }) => 
             onChange={(e) => setPropertyID(e.target.value)}
         />
 
-        <div style={{ marginLeft: "10px", marginTop: "-20px"}}>
+        <div style={{ marginBottom: "20px" }}>
             <SubmitBar label={t("SEARCH")} onSubmit={getPropertyDetails} />
         </div>
     </div>

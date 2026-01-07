@@ -223,7 +223,7 @@ console.log("citizenServicesObjcitizenServicesObj",citizenServicesObj)
         </div>}
 
 
-        {(whatsAppBannerMobObj || whatsAppBannerWebObj) && (
+        {/* {(whatsAppBannerMobObj || whatsAppBannerWebObj) && (
           <div className="WhatsAppBanner">
             {isMobile ? (
               <img src={"https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%281920x500%29B+%282%29.jpg"} onClick={() => handleClickOnWhatsAppBanner(whatsAppBannerMobObj)} style={{"width":"100%"}}/>
@@ -231,9 +231,9 @@ console.log("citizenServicesObjcitizenServicesObj",citizenServicesObj)
               <img src={"https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%281920x500%29B+%282%29.jpg"} onClick={() => handleClickOnWhatsAppBanner(whatsAppBannerWebObj)} style={{"width":"100%"}}/>
             )}
           </div>
-        )}
+        )} */}
 
-        {conditionsToDisableNotificationCountTrigger() ? (
+        {/* {conditionsToDisableNotificationCountTrigger() ? (
           EventsDataLoading ? (
             <Loader />
           ) : (
@@ -245,8 +245,8 @@ console.log("citizenServicesObjcitizenServicesObj",citizenServicesObj)
               <WhatsNewCard {...EventsData?.[0]} />
             </div>
           )
-        ) : null}
-        <ChatBot/>
+        ) : null} */}
+        {/* <ChatBot/> */}
       </div>
     </div>
   );
