@@ -22,7 +22,7 @@ public class NocQueryBuilder {
 	@Value("${egov.noc.fuzzysearch.isFuzzyEnabled}")
 	private boolean isFuzzyEnabled;
 
-	private static final String QUERY = "SELECT noc.*,nocdoc.*,noc.id as noc_id,noc.tenantid as noc_tenantId,noc.lastModifiedTime as "
+	private static final String DETAIL_QUERY = "SELECT noc.*,nocdoc.*,noc.id as noc_id,noc.tenantid as noc_tenantId,noc.lastModifiedTime as "
 			+ "noc_lastModifiedTime,noc.createdBy as noc_createdBy,noc.lastModifiedBy as noc_lastModifiedBy,noc.createdTime as "
 			+ "noc_createdTime,noc.additionalDetails,noc.landId as noc_landId, nocdoc.id as noc_doc_id, nocdoc.additionalDetails as doc_details, "
 			+ "nocdoc.documenttype as noc_doc_documenttype,nocdoc.filestoreid as noc_doc_filestore"
@@ -35,6 +35,10 @@ public class NocQueryBuilder {
 	
 	private final String countWrapper = "SELECT COUNT(DISTINCT(noc_id)) FROM ({INTERNAL_QUERY}) as noc_count";
 
+	private static final String BASIC_DATA_QUERY = "SELECT noc.* ,noc.id as noc_id,noc.tenantid as noc_tenantId, noc.lastModifiedTime as noc_lastModifiedTime,"
+			+ "noc.createdBy as noc_createdBy,noc.lastModifiedBy as noc_lastModifiedBy,noc.createdTime as noc_createdTime, noc.additionalDetails,noc.landId as noc_landId  "
+			+ " FROM eg_noc noc WHERE 1=1 ";
+
 	/**
 	 * To give the Search query based on the requirements.
 	 * 
@@ -44,90 +48,11 @@ public class NocQueryBuilder {
 	 *            values to be replased on the query
 	 * @return Final Search Query
 	 */
-	public String getNocSearchQuery(NocSearchCriteria criteria, List<Object> preparedStmtList, boolean isCount) {
+	public String getNocDetailSearchQuery(NocSearchCriteria criteria, List<Object> preparedStmtList, boolean isCount) {
 
-		StringBuilder builder = new StringBuilder(QUERY);
+		StringBuilder builder = new StringBuilder(DETAIL_QUERY);
+		addCommonFilters(builder, criteria, preparedStmtList);
 
-		if (criteria.getTenantId() != null) {
-	        addClauseIfRequired(builder);
-	        builder.append(" noc.tenantid=? ");
-	        preparedStmtList.add(criteria.getTenantId());
-			log.info(criteria.getTenantId());
-		}
-
-		List<String> ids = criteria.getIds();
-		if (!CollectionUtils.isEmpty(ids)) {
-			addClauseIfRequired(builder);
-			builder.append(" noc.id IN (").append(createQuery(ids)).append(")");
-			addToPreparedStatement(preparedStmtList, ids);
-		}		
-
-		String applicationNo = criteria.getApplicationNo();
-                if (applicationNo != null) {
-                    List<String> applicationNos = Arrays.asList(applicationNo.split(","));
-                    addClauseIfRequired(builder);
-                    if (isFuzzyEnabled) {
-                        builder.append(" noc.applicationNo LIKE ANY(ARRAY[ ").append(createQuery(applicationNos)).append("])");
-                        addToPreparedStatementForFuzzySearch(preparedStmtList, applicationNos);
-                    } else {
-                        builder.append(" noc.applicationNo IN (").append(createQuery(applicationNos)).append(")");
-                        addToPreparedStatement(preparedStmtList, applicationNos);
-                    }
-                }
-		
-		String approvalNo = criteria.getNocNo();
-                if (approvalNo != null) {
-                    List<String> approvalNos = Arrays.asList(approvalNo.split(","));
-                    addClauseIfRequired(builder);
-                    if (isFuzzyEnabled) {
-                        builder.append(" noc.nocNo LIKE ANY(ARRAY[ ").append(createQuery(approvalNos)).append("])");
-                        addToPreparedStatementForFuzzySearch(preparedStmtList, approvalNos);
-                    } else {
-                        builder.append(" noc.nocNo IN (").append(createQuery(approvalNos)).append(")");
-                        addToPreparedStatement(preparedStmtList, approvalNos);
-                    }
-                }
-		
-		String source = criteria.getSource();
-		if (source!=null) {
-			addClauseIfRequired(builder);
-			builder.append(" noc.source = ?");
-			preparedStmtList.add(criteria.getSource());
-			log.info(criteria.getSource());
-		}
-
-		String sourceRefId = criteria.getSourceRefId();
-                if (sourceRefId != null) {
-					sourceRefId = sourceRefId.replace("[","");
-					sourceRefId = sourceRefId.replace("]","");
-					List<String> sourceRefIds = Arrays.asList(sourceRefId.split(","));
-					addClauseIfRequired(builder);
-                    if (isFuzzyEnabled) {
-                        builder.append(" noc.sourceRefId LIKE ANY(ARRAY[ ").append(createQuery(sourceRefIds)).append("])");
-                        addToPreparedStatementForFuzzySearch(preparedStmtList, sourceRefIds);
-                    } else {
-                        builder.append(" noc.sourceRefId IN (").append(createQuery(sourceRefIds)).append(")");
-                        addToPreparedStatement(preparedStmtList, sourceRefIds);
-                    }
-                }
-		
-		String nocType = criteria.getNocType();
-		if (nocType!=null) {
-		        List<String> nocTypes = Arrays.asList(nocType.split(","));
-			addClauseIfRequired(builder);
-			builder.append(" noc.nocType IN (").append(createQuery(nocTypes)).append(")");
-                        addToPreparedStatement(preparedStmtList, nocTypes);
-                        log.info(nocType);
-                }
-                
-                List<String> status = criteria.getStatus();
-                if (status!=null) {
-                        addClauseIfRequired(builder);
-                        builder.append(" noc.status IN (").append(createQuery(status)).append(")");
-                        addToPreparedStatement(preparedStmtList, status);
-                }
-
-		
 		log.info(criteria.toString());
 		log.info("Final Query");
 		log.info(builder.toString());
@@ -202,5 +127,116 @@ public class NocQueryBuilder {
 	
 	private String addCountWrapper(String query) {
 	    return countWrapper.replace("{INTERNAL_QUERY}", query);
+	}
+
+	public String getNocDataSearchQuery(NocSearchCriteria criteria, List<Object> preparedStmtList, boolean b) {
+
+		StringBuilder builder = new StringBuilder(BASIC_DATA_QUERY);
+		addCommonFilters(builder, criteria, preparedStmtList);
+
+		log.info(criteria.toString());
+		log.info("Final Query");
+		log.info(builder.toString());
+
+		return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+
+	}
+
+	/**
+	 * Add filters for where clause based on search criteria
+	 * which is common for search and detail search
+	 * 
+	 * @param builder The StringBuilder to append query clauses
+	 * @param criteria NOC search criteria
+	 * @param preparedStmtList List to add prepared statement parameters
+	 */
+	private void addCommonFilters(StringBuilder builder, NocSearchCriteria criteria, List<Object> preparedStmtList) {
+		
+		// Tenant ID filter
+		if (criteria.getTenantId() != null) {
+			addClauseIfRequired(builder);
+			builder.append(" noc.tenantid=? ");
+			preparedStmtList.add(criteria.getTenantId());
+			log.info(criteria.getTenantId());
+		}
+
+		// IDs filter
+		List<String> ids = criteria.getIds();
+		if (!CollectionUtils.isEmpty(ids)) {
+			addClauseIfRequired(builder);
+			builder.append(" noc.id IN (").append(createQuery(ids)).append(")");
+			addToPreparedStatement(preparedStmtList, ids);
+		}
+
+		// Application Number filter
+		String applicationNo = criteria.getApplicationNo();
+		if (applicationNo != null) {
+			List<String> applicationNos = Arrays.asList(applicationNo.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" noc.applicationNo LIKE ANY(ARRAY[ ").append(createQuery(applicationNos)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, applicationNos);
+			} else {
+				builder.append(" noc.applicationNo IN (").append(createQuery(applicationNos)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationNos);
+			}
+		}
+
+		// NOC Number filter
+		String approvalNo = criteria.getNocNo();
+		if (approvalNo != null) {
+			List<String> approvalNos = Arrays.asList(approvalNo.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" noc.nocNo LIKE ANY(ARRAY[ ").append(createQuery(approvalNos)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, approvalNos);
+			} else {
+				builder.append(" noc.nocNo IN (").append(createQuery(approvalNos)).append(")");
+				addToPreparedStatement(preparedStmtList, approvalNos);
+			}
+		}
+
+		// Source filter
+		String source = criteria.getSource();
+		if (source != null) {
+			addClauseIfRequired(builder);
+			builder.append(" noc.source = ?");
+			preparedStmtList.add(criteria.getSource());
+			log.info(criteria.getSource());
+		}
+
+		// Source Reference ID filter
+		String sourceRefId = criteria.getSourceRefId();
+		if (sourceRefId != null) {
+			sourceRefId = sourceRefId.replace("[", "");
+			sourceRefId = sourceRefId.replace("]", "");
+			List<String> sourceRefIds = Arrays.asList(sourceRefId.split(","));
+			addClauseIfRequired(builder);
+			if (isFuzzyEnabled) {
+				builder.append(" noc.sourceRefId LIKE ANY(ARRAY[ ").append(createQuery(sourceRefIds)).append("])");
+				addToPreparedStatementForFuzzySearch(preparedStmtList, sourceRefIds);
+			} else {
+				builder.append(" noc.sourceRefId IN (").append(createQuery(sourceRefIds)).append(")");
+				addToPreparedStatement(preparedStmtList, sourceRefIds);
+			}
+		}
+
+		// NOC Type filter
+		String nocType = criteria.getNocType();
+		if (nocType != null) {
+			List<String> nocTypes = Arrays.asList(nocType.split(","));
+			addClauseIfRequired(builder);
+			builder.append(" noc.nocType IN (").append(createQuery(nocTypes)).append(")");
+			addToPreparedStatement(preparedStmtList, nocTypes);
+			log.info(nocType);
+		}
+
+		// Status filter
+		List<String> status = criteria.getStatus();
+		if (status != null) {
+			addClauseIfRequired(builder);
+			builder.append(" noc.status IN (").append(createQuery(status)).append(")");
+			addToPreparedStatement(preparedStmtList, status);
+		}
 	}
 }
