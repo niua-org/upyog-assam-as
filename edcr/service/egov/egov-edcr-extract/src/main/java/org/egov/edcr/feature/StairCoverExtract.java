@@ -29,18 +29,16 @@ public class StairCoverExtract extends FeatureExtract {
             block.setStairCovers(Util.getListOfDimensionValueByLayer(planDetail,
                     String.format(layerNames.getLayerName("LAYER_NAME_STAIR_COVER"), block.getNumber())));
 
-            if (block.getStairCovers() != null && !block.getStairCovers().isEmpty()) {
-                minHeight = block.getStairCovers().stream().reduce(BigDecimal::min).get();
-                if (minHeight.compareTo(new BigDecimal(3)) > 0) {
-                    increasedHeight = block.getBuilding().getBuildingHeight()
-                            .subtract(block.getBuilding().getDeclaredBuildingHeight());
-                    if (minHeight.compareTo(increasedHeight) > 0) {
-                        block.getBuilding()
-                                .setBuildingHeight(block.getBuilding().getDeclaredBuildingHeight().add(minHeight));
-                        block.getBuilding().setHeightIncreasedBy("Stair Cover");
-                    }
-                }
-            }
+			/*
+			 * if (block.getStairCovers() != null && !block.getStairCovers().isEmpty()) {
+			 * minHeight = block.getStairCovers().stream().reduce(BigDecimal::min).get(); if
+			 * (minHeight.compareTo(new BigDecimal(3)) > 0) { increasedHeight =
+			 * block.getBuilding().getBuildingHeight()
+			 * .subtract(block.getBuilding().getDeclaredBuildingHeight()); if
+			 * (minHeight.compareTo(increasedHeight) > 0) { block.getBuilding()
+			 * .setBuildingHeight(block.getBuilding().getDeclaredBuildingHeight().add(
+			 * minHeight)); block.getBuilding().setHeightIncreasedBy("Stair Cover"); } } }
+			 */
 
             if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
                 block.getBuilding().setIsHighRise(true);

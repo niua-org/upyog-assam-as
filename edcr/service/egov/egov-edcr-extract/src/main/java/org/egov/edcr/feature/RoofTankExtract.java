@@ -39,22 +39,20 @@ public class RoofTankExtract extends FeatureExtract {
                 BigDecimal declaredHeight = block.getBuilding().getDeclaredBuildingHeight();
 
                 //  Only subtract if roof tank height < 2m
-                if (minHeight.compareTo(new BigDecimal(2)) < 0) {
-
-                    BigDecimal newHeight = declaredHeight.subtract(minHeight);
-
-                    if (newHeight.compareTo(BigDecimal.ZERO) < 0) {
-                        newHeight = BigDecimal.ZERO;
-                    }
-
-                    block.getBuilding().setBuildingHeight(newHeight);
-                    block.getBuilding().setHeightIncreasedBy("Roof Tank (<2m) Subtracted");
-                } 
-                else {
-                    // ≥ 2m → do NOT add and do NOT subtract
-                    block.getBuilding().setBuildingHeight(declaredHeight);
-                    block.getBuilding().setHeightIncreasedBy(null);
-                }
+				/*
+				 * if (minHeight.compareTo(new BigDecimal(2)) < 0) {
+				 * 
+				 * BigDecimal newHeight = declaredHeight.subtract(minHeight);
+				 * 
+				 * if (newHeight.compareTo(BigDecimal.ZERO) < 0) { newHeight = BigDecimal.ZERO;
+				 * }
+				 * 
+				 * block.getBuilding().setBuildingHeight(newHeight);
+				 * block.getBuilding().setHeightIncreasedBy("Roof Tank (<2m) Subtracted"); }
+				 * else { // ≥ 2m → do NOT add and do NOT subtract
+				 * block.getBuilding().setBuildingHeight(declaredHeight);
+				 * block.getBuilding().setHeightIncreasedBy(null); }
+				 */
             }
 
             // High rise check

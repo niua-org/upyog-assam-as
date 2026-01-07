@@ -329,7 +329,7 @@ public class FarExtract extends FeatureExtract {
                     occupancy.setExistingDeduction(deductionArea == null ? BigDecimal.ZERO : deductionArea);
                     occupancy.setType(Util.findOccupancyType(pline));
                     occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-                    if (occupancy.getTypeHelper() == null)
+                    if (occupancy.getTypeHelper() == null || occupancy.getTypeHelper().getType() == null)
                         pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA,
                                 getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA, String.valueOf(pline.getColor()),
                                         deductLayerName));
@@ -397,7 +397,7 @@ public class FarExtract extends FeatureExtract {
     private void addExistingCarpetArea(PlanDetail pl, Block block, Floor floor, FloorUnit unit) {
         String existingCarpetAreaLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber()
                 + "_" + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber()
-                + "_" + layerNames.getLayerName("LAYER_NAME_UNIT") +  "_" + unit.getUnitNumber() 
+                + "_" + layerNames.getLayerName("LAYER_NAME_UNIT") +  "_" + unit.getUnitNumber() + "_"
                 + layerNames.getLayerName("LAYER_NAME_CRPT_UP_AREA")
                 + layerNames.getLayerName("LAYER_NAME_EXISTING_PREFIX");
         List<DXFLWPolyline> polylines = Util.getPolyLinesByLayer(pl.getDoc(), existingCarpetAreaLayer);
@@ -426,11 +426,11 @@ public class FarExtract extends FeatureExtract {
 
         String existingCarpetAreaDeductByFloor = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + "%s" + "_"
-                + layerNames.getLayerName("LAYER_NAME_UNIT") +  "%s" + "_"
+                + layerNames.getLayerName("LAYER_NAME_UNIT") + "_" + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_CRPT_AREA_DEDUCT")
                 + layerNames.getLayerName("LAYER_NAME_EXISTING_PREFIX");
 
-        String deductLayerName = String.format(existingCarpetAreaDeductByFloor, block.getNumber(), floor.getNumber());
+        String deductLayerName = String.format(existingCarpetAreaDeductByFloor, block.getNumber(), floor.getNumber(), unit.getUnitNumber());
         List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
         for (DXFLWPolyline pline : bldDeduct) {
             BigDecimal deductionArea = Util.getPolyLineArea(pline);
@@ -445,7 +445,7 @@ public class FarExtract extends FeatureExtract {
             else
                 unit.addCarpetDeductionArea(occupancy);
         }
-        // }
+         
     }
 
     private void addCarpetArea(PlanDetail pl, Block block, Floor floor, FloorUnit unit) {
