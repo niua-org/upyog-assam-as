@@ -309,7 +309,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_OLD_DAG_NUMBER")}`}</CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="oldDagNumber"
             placeholder={t("BPA_ENTER_OLD_DAG_NUMBER")}
             value={oldDagNumber}
@@ -322,14 +322,14 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
               }
             }}
             maxlength="6"
-            pattern="\d{1,6}"
+            pattern="\d{6}"
           />
 
           {/* New Dag Number */}
           <CardLabel>{`${t("BPA_NEW_DAG_NUMBER")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="newDagNumber"
             placeholder={t("BPA_ENTER_NEW_DAG_NUMBER")}
             value={newDagNumber}
@@ -342,7 +342,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
               }
             }}
             maxlength="6"
-            pattern="\d{1,6}"
+            pattern="\d{6}"
           />
 
           {/* Old Patta Number */}
