@@ -308,13 +308,18 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             alignItems: "center",
           }}
         >
+        {propertyValidation?.propertyDetails && (
+          <>
           <CardSubHeader style={{ fontSize: "24px", marginTop: "24px" }}>
             {t("BPA_PROPERTY_DETAILS")}
           </CardSubHeader>
           <ActionButton
             jumpTo={`${baseRoute}/property-validation`}
           />
+          </>
+        )}
         </div>
+      {propertyValidation?.propertyDetails && (
         <StatusTable>
           <Row
             label={t("BPA_PROPERTY_ID")}
@@ -328,6 +333,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             />
           ))}
           </StatusTable>
+      )}
         <div
           style={{
             display: "flex",
