@@ -50,6 +50,7 @@ public class BPAQueryBuilder {
                     "       bpa.property_no, " +
                     "       bpa.property_details, " +
                     "       bpa.property_vendor," +
+                    "       bpa.application_type, " +
                     "       bpa.pp_fee_receipt_filestore_id, " +
                     "       bpa.bp_fee_receipt_filestore_id, " +
                     "       bpa.signed_bp_filestore_id, " +
