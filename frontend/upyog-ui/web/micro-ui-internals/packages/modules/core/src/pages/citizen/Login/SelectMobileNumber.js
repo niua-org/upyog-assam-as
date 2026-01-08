@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CardText, FormStep, CitizenConsentForm, Loader, CheckBox, Modal, Card, CardHeader, CardLabel } from "@upyog/digit-ui-react-components";
+import { CardText, FormStep, CitizenConsentForm, Loader, CheckBox, Modal, Card, CardHeader, CardLabel,LinkButton } from "@upyog/digit-ui-react-components";
 import { Link } from "react-router-dom";
 
 const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMobileChange, config, canSubmit, showRegistrationModal, setShowRegistrationModal, ePramaanRegister }) => {
@@ -99,6 +99,18 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
       onChange={handleMobileChange}
       value={mobileNumber}
     >
+      <div style={{ position: "relative" }}>
+        <Link 
+          to={`/upyog-ui/citizen/rtp/select-location`}
+          style={{
+            position: "absolute",
+            top: "-210px",
+            right: "20px",
+            zIndex: 10
+          }}
+        >
+          <LinkButton label={t("BPA_RTP_LOGIN")} />
+        </Link>
       {error && <p style={{color:"red"}}>{error}</p>}
       {isCCFEnabled?.isCitizenConsentFormEnabled && (
       <div>
@@ -145,7 +157,8 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
         </div>
       </Modal>
     )}
-                </div> }
+    </div> }
+    </div>
     </FormStep>
   );
 };

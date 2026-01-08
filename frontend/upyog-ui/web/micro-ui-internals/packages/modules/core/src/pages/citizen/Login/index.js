@@ -48,6 +48,18 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
   const [canSubmitNo, setCanSubmitNo] = useState(true);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    const existingUser = Digit.UserService.getUser();
+    const currentTenant = Digit.ULBService.getCitizenCurrentTenant(true);
+    
+    if (existingUser?.access_token && currentTenant) {
+      // User is already logged in with tenant selected, redirect to home
+      history.replace("/upyog-ui/citizen");
+      return;
+    }
+  }, [history]);
+
    const isRtpLogin = () => {
     return location.pathname.includes('/rtp-login') || location.pathname.includes('/rtp/');
   };
