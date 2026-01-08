@@ -685,7 +685,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                   />
                 }
                 style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/document-details`)}
+                onClick={() => routeTo(`${baseRoute}/document-details`)}
               />
               {
               <DocumentsPreview
