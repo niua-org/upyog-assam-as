@@ -74,19 +74,19 @@ public class NocDetailRowMapper implements ResultSetExtractor<List<Noc>> {
 	@SuppressWarnings("unused")
 	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
 		String documentId = rs.getString("noc_doc_id");
-		String tenantId = noc.getTenantId();
 		if (!StringUtils.isEmpty(documentId)) {
-			Document applicationDocument = new Document();
 			String docDetailsStr = rs.getString("doc_details");
 			Object additionalDetails = null;
 			if (docDetailsStr != null && !docDetailsStr.equals("{}") && !docDetailsStr.equals("null")) {
 				additionalDetails = new Gson().fromJson(docDetailsStr, Object.class);
 			}
-			applicationDocument.setId(documentId);
-			applicationDocument.setDocumentType(rs.getString("documenttype"));
-			applicationDocument.setFileStoreId(rs.getString("noc_doc_filestore"));
-			applicationDocument.setDocumentUid(rs.getString("documentUid"));
-			applicationDocument.setAdditionalDetails(additionalDetails);
+			Document applicationDocument = Document.builder()
+					.id(documentId)
+					.documentType(rs.getString("documenttype"))
+					.fileStoreId(rs.getString("noc_doc_filestore"))
+					.documentUid(rs.getString("documentUid"))
+					.additionalDetails(additionalDetails)
+					.build();
 			noc.addDocumentsItem(applicationDocument);
 		}
 	}

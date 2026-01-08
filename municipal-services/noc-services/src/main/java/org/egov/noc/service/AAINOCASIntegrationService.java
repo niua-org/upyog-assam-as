@@ -307,14 +307,14 @@ public class AAINOCASIntegrationService {
         String statusUpper = aaiStatus.toUpperCase().trim();
         
         switch (statusUpper) {
-            case "ISSUED":
-            case "AUTO_SETTLED":
-            case "APPROVED":
+            case NOCConstants.AAI_STATUS_ISSUED:
+            case NOCConstants.AAI_STATUS_AUTOSETTLED:
+            case NOCConstants.AAI_STATUS_APPROVED:
                 return NOCConstants.APPROVED_STATE;
-            case "REJECTED":
-            case "VERIFICATION_REJECTED":
+            case NOCConstants.AAI_STATUS_REJECTED:
+            case NOCConstants.AAI_STATUS_VERIFICATIONREJECTED:
                 return NOCConstants.APPLICATION_STATUS_REJECTED;
-            case "INPROCESS":
+            case NOCConstants.AAI_STATUS_INPROCESS:
             default:
                 return NOCConstants.APPLICATION_STATUS_INPROGRESS;
         }

@@ -188,4 +188,6 @@ public class NOCConfiguration {
 	@Value("${fire.noc.api.session.cookie:}")
 	private String fireNocApiSessionCookie;
 
+	@Value("${filestore.upload.path}")
+    private String fileStoreUploadPath;
 }
