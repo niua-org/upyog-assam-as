@@ -247,5 +247,18 @@ public class NocQueryBuilder {
 			builder.append(" noc.status IN (").append(createQuery(status)).append(")");
 			addToPreparedStatement(preparedStmtList, status);
 		}
+
+		String applicationStatus = criteria.getApplicationStatus();
+		if (applicationStatus != null) {
+			addClauseIfRequired(builder);
+			List<String> applicationStatusList = Arrays.asList(applicationStatus.split(","));
+			if (applicationStatusList.size() == 1) {
+				builder.append(" noc.applicationStatus = ?");
+				preparedStmtList.add(applicationStatus);
+			} else {
+				builder.append(" noc.applicationStatus IN (").append(createQuery(applicationStatusList)).append(")");
+				addToPreparedStatement(preparedStmtList, applicationStatusList);
+			}
+		}
 	}
 }
