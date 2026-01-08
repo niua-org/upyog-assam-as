@@ -317,7 +317,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             onChange={(e) => {
               const value = e.target.value;
               // Allow numbers between 0 and 999999 (1 to 6 digits)
-              if (/^\d{1,6}$/.test(value)) {
+              if (/^\d{0,6}$/.test(value)) {
                 setOldDagNumber(value);
               }
             }}
@@ -337,7 +337,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             onChange={(e) => {
               const value = e.target.value;
               // Allow numbers between 0 and 999999 (1 to 6 digits)
-              if (/^\d{1,6}$/.test(value)) {
+              if (/^\d{0,6}$/.test(value)) {
                 setNewDagNumber(value);
               }
             }}
@@ -357,12 +357,12 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             onChange={(e) => {
               const value = e.target.value;
               // Allow numbers between 0 and 999999 (1 to 6 digits)
-              if (/^\d{1,6}$/.test(value)) {
+              if (/^\d{0,6}$/.test(value)) {
                 setOldPattaNumber(value);
               }
             }}
             maxlength="6"
-            pattern="\d{1,6}"
+            pattern="\d{6}"
           />
 
           {/* New Patta Number */}
@@ -377,12 +377,12 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
              onChange={(e) => {
               const value = e.target.value;
               // Allow numbers between 0 and 999999 (1 to 6 digits)
-              if (/^\d{1,6}$/.test(value)) {
+              if (/^\d{0,6}$/.test(value)) {
                 setNewPattaNumber(value);
               }
             }}
             maxlength="6"
-            pattern="\d{1,6}"
+            pattern="\d{6}"
           />
 
           {/* Total Plot Area */}
