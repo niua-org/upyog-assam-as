@@ -159,6 +159,7 @@ public class NOCStatusUpdateService {
                             .id(UUID.randomUUID().toString())
                             .documentType(NOCConstants.DOC_TYPE_AAI_NOC_APPROVAL)
                             .fileStoreId(fileStoreId)
+                            .documentUid(fileStoreId)
                             .build();
                     
                     if (existingNoc.getDocuments() == null) {
