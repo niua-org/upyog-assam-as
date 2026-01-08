@@ -4,10 +4,20 @@ import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 
+
 const SearchFormFieldsComponent = (props) => {
   const { register, control, setValue, getValues, reset, formState, trigger  } = useFormContext()
   const { t } = useTranslation();
-  // const nocTypeList = businessServiceList();
+  const { businessServices } = Digit.Hooks.noc.useBusinessServiceList(true);
+
+    // Prepare NOC types by removing '_SRV' suffix so that it can be used in API filters
+  const nocTypeList = businessServices?.map((item) => ({
+    ...item,
+    code: item.replace(/_SRV$/, ""), // remove _SRV only at end
+  }));
+  let availableNocTypes = [];
+  if (nocTypeList?.length == 1) availableNocTypes = [nocTypeList?.[0]?.code];
+  if (nocTypeList?.length > 1) nocTypeList?.forEach(nocDta => {availableNocTypes.push(nocDta.code);})
 
   function previousPage() {
     setValue("offset", getValues("offset") - getValues("limit"));
@@ -16,6 +26,7 @@ const SearchFormFieldsComponent = (props) => {
       limit: 10,
       sortBy: "commencementDate",
       sortOrder: "DESC",
+      nocType: availableNocTypes[0]
     }, true);
     props?.isMobileView ? props.closeMobilePopupModal() : null;
   }
@@ -70,6 +81,7 @@ const SearchFormFieldsComponent = (props) => {
             setValue("applicationNo", null);
             setValue("sourceRefId", null);
             setValue("mobileNumber", null);
+            setValue("nocType", availableNocTypes[0]);
             setValue("offset", 0);
             setValue("limit", 10);
             setValue("sortBy","commencementDate");
@@ -79,6 +91,7 @@ const SearchFormFieldsComponent = (props) => {
               applicationNo: "",
               sourceRefId: "",
               nocNo: "",
+              nocType: "",
               mobileNumber: "",
               offset: 0,
               limit: 10,
