@@ -72,16 +72,10 @@ import static org.egov.edcr.constants.DxfFileConstants.A_AF;
 import static org.egov.edcr.constants.DxfFileConstants.A_PO;
 import static org.egov.edcr.constants.DxfFileConstants.A_R;
 import static org.egov.edcr.constants.DxfFileConstants.B;
-import static org.egov.edcr.constants.DxfFileConstants.B2;
 import static org.egov.edcr.constants.DxfFileConstants.C;
 import static org.egov.edcr.constants.DxfFileConstants.D;
 import static org.egov.edcr.constants.DxfFileConstants.D_AW;
-import static org.egov.edcr.constants.DxfFileConstants.B_PS;
 import static org.egov.edcr.constants.DxfFileConstants.D_M;
-import static org.egov.edcr.constants.DxfFileConstants.E;
-import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
-import static org.egov.edcr.constants.DxfFileConstants.E_NS;
-import static org.egov.edcr.constants.DxfFileConstants.E_PS;
 import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.G_LI;
@@ -92,9 +86,9 @@ import static org.egov.edcr.constants.DxfFileConstants.I;
 import static org.egov.edcr.constants.EdcrReportConstants.BSMT_SIDE_YARD_DESC;
 import static org.egov.edcr.constants.EdcrReportConstants.BUILDING_HEIGHT;
 import static org.egov.edcr.constants.EdcrReportConstants.BUILDING_HEIGHT_SCHOOL;
+import static org.egov.edcr.constants.EdcrReportConstants.ERR_NARROW_ROAD_RULE;
 import static org.egov.edcr.constants.EdcrReportConstants.MINIMUMLABEL;
 import static org.egov.edcr.constants.EdcrReportConstants.PLOTAREA_300;
-import static org.egov.edcr.constants.EdcrReportConstants.SUB_RULE_SIDE_YARD;
 import static org.egov.edcr.constants.EdcrReportConstants.PLOT_AREA_802_SQM;
 import static org.egov.edcr.constants.EdcrReportConstants.ROAD_WIDTH_TWELVE_POINTTWO;
 import static org.egov.edcr.constants.EdcrReportConstants.RULE_35_T9;
@@ -127,19 +121,21 @@ import static org.egov.edcr.constants.EdcrReportConstants.SIDEVALUE_TWO;
 import static org.egov.edcr.constants.EdcrReportConstants.SIDEVALUE_TWOPOINTFIVE;
 import static org.egov.edcr.constants.EdcrReportConstants.SIDE_YARD_1_NOTDEFINED;
 import static org.egov.edcr.constants.EdcrReportConstants.SIDE_YARD_2_NOTDEFINED;
+import static org.egov.edcr.constants.EdcrReportConstants.SUB_RULE_SIDE_YARD;
 import static org.egov.edcr.service.FeatureUtil.addScrutinyDetailtoPlan;
 import static org.egov.edcr.service.FeatureUtil.mapReportDetails;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.SIDE_YARD1_DESC;
 import static org.egov.edcr.utility.DcrConstants.SIDE_YARD2_DESC;
 import static org.egov.edcr.utility.DcrConstants.SIDE_YARD_DESC;
-import static org.egov.edcr.constants.EdcrReportConstants.ERR_NARROW_ROAD_RULE;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -156,6 +152,7 @@ import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.common.entity.edcr.SideYardServiceRequirement;
 import org.egov.common.entity.edcr.Yard;
+import org.egov.edcr.constants.CommonFeatureConstants;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.service.MDMSCacheManager;
 import org.egov.infra.utils.StringUtils;
@@ -450,7 +447,9 @@ public class SideYardService_Assam extends SideYardService {
 		String rule = SIDE_YARD_DESC;
 		String subRule = RULE_35_T9;
 		String occupancyCode = mostRestrictiveOccupancy.getType().getCode();
+		String subOccupancyCode = mostRestrictiveOccupancy.getSubtype().getCode();
 		Boolean valid = false;
+		String landUse = pl.getPlanInformation().getLandUseZone();
 		BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
 		if (roadWidth != null 
 		        && roadWidth.compareTo(BigDecimal.valueOf(2.40)) >= 0 
@@ -507,7 +506,7 @@ public class SideYardService_Assam extends SideYardService {
 					plotArea, sideYard1Result, sideYard2Result, max);
 		
 		}
-		else if ((D.equalsIgnoreCase(occupancyCode) &&  D_AW.equalsIgnoreCase(occupancyCode))) {
+		else if ((D.equalsIgnoreCase(occupancyCode) &&  D_AW.equalsIgnoreCase(subOccupancyCode))) {
 			processSideYardPlaceOfworship(pl, blockName, level, min, mostRestrictiveOccupancy, rule, subRule, buildingHeight,
 					plotArea, sideYard1Result, sideYard2Result, max);
 		
@@ -521,7 +520,7 @@ public class SideYardService_Assam extends SideYardService {
 			 processSideYardResidential(pl, blockName, level, min, mostRestrictiveOccupancy, rule, subRule,
 						buildingHeight, plotArea, sideYard1Result, sideYard2Result, max);
 		 }
-		else if (D.equalsIgnoreCase(occupancyCode) &&  D_M.equalsIgnoreCase(occupancyCode)) {
+		else if (D.equalsIgnoreCase(occupancyCode) &&  D_M.equalsIgnoreCase(subOccupancyCode)) {
 			processSideYardMultiplex(pl, blockName, level, min, mostRestrictiveOccupancy, rule, subRule, buildingHeight,
 					plotArea, sideYard1Result, sideYard2Result, max);
 		
@@ -553,61 +552,159 @@ public class SideYardService_Assam extends SideYardService {
 	 * @param sideYard2Result          Result object for side yard 2
 	 */
 
-	private Boolean processSideYardResidential(Plan pl, String blockName, Integer level, final double min, 
-			final OccupancyTypeHelper mostRestrictiveOccupancy, String rule, String subRule, BigDecimal buildingHeight,
-			BigDecimal plotArea, SideYardResult sideYard1Result, SideYardResult sideYard2Result, final double max) {
+	private Boolean processSideYardResidential(
+	        Plan pl,
+	        String blockName,
+	        Integer level,
+	        final double min,
+	        final OccupancyTypeHelper mostRestrictiveOccupancy,
+	        String rule,
+	        String subRule,
+	        BigDecimal buildingHeight,
+	        BigDecimal plotArea,
+	        SideYardResult sideYard1Result,
+	        SideYardResult sideYard2Result,
+	        final double max) {
 
-		LOG.info("Processing SideYardResidential with MDMS rules:");
+	    LOG.info("Processing SideYardResidential with bye-law compliant logic");
 
-		// Initialize values
-		BigDecimal minVal = BigDecimal.ZERO;
-		BigDecimal meanVal = BigDecimal.ZERO;
-		HashMap<String, String> errors = new HashMap<>();
+	    BigDecimal minVal = BigDecimal.ZERO;
+	    BigDecimal meanVal = BigDecimal.ZERO;
+	    HashMap<String, String> errors = new HashMap<>();
 
-		
-		subRule = SUB_RULE_SIDE_YARD;
+	    subRule = SUB_RULE_SIDE_YARD;
 
-		// Fetch rule set from cache
-		List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.SIDE_YARD_SERVICE.getValue(), false);
+	    // Fetch MDMS rules
+	    List<Object> rules = cache.getFeatureRules(
+	            pl, FeatureEnum.SIDE_YARD_SERVICE.getValue(), false);
 
-		// Match appropriate rule from MDMS based on building height
-		Optional<SideYardServiceRequirement> matchedRule = rules.stream()
-				.filter(SideYardServiceRequirement.class::isInstance).map(SideYardServiceRequirement.class::cast)
-				.filter(ruleFeature -> ruleFeature.getFromBuildingHeight() != null
-						&& ruleFeature.getToBuildingHeight() != null
-						&& buildingHeight.compareTo(ruleFeature.getFromBuildingHeight()) >= 0
-						&& buildingHeight.compareTo(ruleFeature.getToBuildingHeight()) < 0
-						&& Boolean.TRUE.equals(ruleFeature.getActive()))
-				.findFirst();
+	    List<SideYardServiceRequirement> mdmsRules = rules.stream()
+	            .filter(SideYardServiceRequirement.class::isInstance)
+	            .map(SideYardServiceRequirement.class::cast)
+	            .filter(r -> Boolean.TRUE.equals(r.getActive()))
+	            .filter(r -> r.getFromBuildingHeight() != null
+                && r.getToBuildingHeight() != null)
+	            .collect(Collectors.toList());
 
-		if (matchedRule.isPresent()) {
-			SideYardServiceRequirement mdmsRule = matchedRule.get();
-			meanVal = mdmsRule.getPermissible();
-			minVal = meanVal; // Keeping minVal same as permissible from MDMS
-		} else {
-			LOG.warn("No matching MDMS rule found for building height: {}", buildingHeight);
-			errors.put("MDMS_RULE_MISSING", "No setback rule found for given building height in MDMS.");
-		}
+	    if (!mdmsRules.isEmpty() && buildingHeight != null) {
 
-		// Validate actual min value against expected values
-		boolean valid = validateMinimumAndMeanValue(BigDecimal.valueOf(min), minVal, plotArea);
-		if (!valid) {
-			LOG.info("Side Yard Service: min value validity False: actual/expected : {}/{}", min, minVal);
-			errors.put(MIN_AND_MEAN_VALUE, MIN_LESS_REQ_MIN + min + SLASH + minVal);
-		} else {
-			LOG.info("Side Yard Service: min value validity True: actual/expected : {}/{}", min, minVal);
-		}
+	        SideYardServiceRequirement applicableRule =
+	                sideYardRule(buildingHeight, mdmsRules);
 
-		// Compare results and store
-		
-		compareSideYardResult(blockName, minVal, BigDecimal.valueOf(min), mostRestrictiveOccupancy,
-		        subRule, rule, valid, level, sideYard1Result, sideYard2Result, BigDecimal.valueOf(max));
+	        meanVal = applicableRule.getPermissible();
+	        minVal = meanVal;
 
+	        LOG.info("Side Yard applied slab up to height {} → permissible = {}",
+	                applicableRule.getToBuildingHeight(), meanVal);
 
-		return valid;
+	    } else {
+	        LOG.warn("No Side Yard MDMS rule found for height {}", buildingHeight);
+	        errors.put("MDMS_RULE_MISSING",
+	                "No side yard rule found for given building height in MDMS.");
+	    }
+
+	    // Validate minimum side yard
+	    boolean valid = validateMinimumAndMeanValue(
+	            BigDecimal.valueOf(min), minVal, plotArea);
+
+	    if (!valid) {
+	        LOG.info("Side Yard: min value validity FALSE actual/expected : {}/{}",
+	                min, minVal);
+	        errors.put(MIN_AND_MEAN_VALUE,
+	                MIN_LESS_REQ_MIN + min + SLASH + minVal);
+	    } else {
+	        LOG.info("Side Yard: min value validity TRUE actual/expected : {}/{}",
+	                min, minVal);
+	    }
+
+	    // Store scrutiny result
+	    compareSideYardResult(
+	            blockName,
+	            minVal,
+	            BigDecimal.valueOf(min),
+	            mostRestrictiveOccupancy,
+	            subRule,
+	            rule,
+	            valid,
+	            level,
+	            sideYard1Result,
+	            sideYard2Result,
+	            BigDecimal.valueOf(max));
+
+	    return valid;
 	}
 
+
 	
+	/**
+	 * Resolves the applicable Side Yard setback rule based on the building height
+	 * as per the approved building bye-laws.
+	 *
+	 * <p>
+	 * This method applies the standard height-based slab selection along with the
+	 * special Note (N.B.) clause defined in the bye-laws:
+	 * </p>
+	 *
+	 * <p>
+	 * <b>N.B.:</b> If the building height falls between two specified height slabs
+	 * and exceeds the lower slab height by more than the permissible tolerance
+	 * (10% of the slab height subject to a maximum of 1.5 meters),
+	 * the next higher slab shall be considered for side yard setbacks.
+	 * </p>
+	 *
+	 * <p>
+	 * The method intentionally does <b>not</b> rely on direct
+	 * {@code fromBuildingHeight}–{@code toBuildingHeight} range matching from MDMS.
+	 * Instead, MDMS is treated as a set of reference height slabs, and the legal
+	 * interpretation of the bye-law is applied in code to ensure correct and
+	 * audit-safe scrutiny results.
+	 * </p>
+	 *
+	 * <p>
+	 * If the building height exceeds all defined slabs, the highest available
+	 * slab is applied.
+	 * </p>
+	 *
+	 * @param buildingHeight the total building height extracted from the drawing (in meters)
+	 * @param rules          the list of active {@link SideYardServiceRequirement}
+	 *                       rules fetched from MDMS
+	 * @return the applicable {@link SideYardServiceRequirement} based on the
+	 *         building height and bye-law tolerance rules
+	 */
+	private SideYardServiceRequirement sideYardRule(
+	        BigDecimal buildingHeight,
+	        List<SideYardServiceRequirement> rules) {
+
+	    rules.sort(Comparator.comparing(SideYardServiceRequirement::getFromBuildingHeight));
+
+	    for (int i = 0; i < rules.size(); i++) {
+
+	        SideYardServiceRequirement current = rules.get(i);
+	        BigDecimal upperHeight = current.getToBuildingHeight();
+
+	        // Case 1: Normal slab match
+	        if (buildingHeight.compareTo(upperHeight) <= 0) {
+	            return current;
+	        }
+
+	        // Case 2: NB clause check
+	        BigDecimal tenPercent = upperHeight.multiply(BigDecimal.valueOf(0.10));
+	        BigDecimal tolerance = tenPercent.min(BigDecimal.valueOf(1.5));
+	        BigDecimal maxAllowedHeight = upperHeight.add(tolerance);
+
+	        if (buildingHeight.compareTo(upperHeight) > 0
+	                && buildingHeight.compareTo(maxAllowedHeight) <= 0
+	                && i + 1 < rules.size()) {
+
+	            // Escalate to next slab
+	            return rules.get(i + 1);
+	        }
+	    }
+
+	    // If height exceeds all slabs → take highest slab
+	    return rules.get(rules.size() - 1);
+	}
+
 	/**
 	 * Processes and validates the side yard requirement for Industrial buildings based on MDMS rules.
 	 * 

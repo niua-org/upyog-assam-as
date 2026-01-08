@@ -66,15 +66,10 @@ import static org.egov.edcr.constants.DxfFileConstants.A_AF;
 import static org.egov.edcr.constants.DxfFileConstants.A_PO;
 import static org.egov.edcr.constants.DxfFileConstants.A_R;
 import static org.egov.edcr.constants.DxfFileConstants.B;
-import static org.egov.edcr.constants.DxfFileConstants.B2;
 import static org.egov.edcr.constants.DxfFileConstants.C;
 import static org.egov.edcr.constants.DxfFileConstants.D;
 import static org.egov.edcr.constants.DxfFileConstants.D_AW;
 import static org.egov.edcr.constants.DxfFileConstants.D_M;
-import static org.egov.edcr.constants.DxfFileConstants.E;
-import static org.egov.edcr.constants.DxfFileConstants.E_CLG;
-import static org.egov.edcr.constants.DxfFileConstants.E_NS;
-import static org.egov.edcr.constants.DxfFileConstants.E_PS;
 import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.G_LI;
@@ -136,10 +131,12 @@ import static org.egov.edcr.utility.DcrConstants.REAR_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.YES;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -154,6 +151,7 @@ import org.egov.common.entity.edcr.RearSetBackRequirement;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
+import org.egov.edcr.constants.CommonFeatureConstants;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.service.FeatureUtil;
 import org.egov.edcr.service.FetchEdcrRulesMdms;
@@ -293,64 +291,62 @@ public class RearYardService_Assam extends RearYardService {
 
 	}
 
-//	private Boolean processRearYard1(Plan pl, Block block, Integer level, final BigDecimal min, final BigDecimal mean,
-//			final OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, String subRule,
-//			String rule, BigDecimal minVal, BigDecimal meanVal, BigDecimal depthOfPlot, Boolean valid,
-//			String occupancyName) {
-//
-//	
-//		BigDecimal plotArea = pl.getPlot().getArea();
-//
-//	
-//		List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.REAR_SET_BACK.getValue(), false);
-//        Optional<RearSetBackRequirement> matchedRule = rules.stream()
-//            .filter(RearSetBackRequirement.class::isInstance)
-//            .map(RearSetBackRequirement.class::cast)
-//            .filter(ruleFeature -> plotArea.compareTo(ruleFeature.getFromPlotArea()) >= 0 && plotArea.compareTo(ruleFeature.getToPlotArea()) < 0)
-//            .findFirst();
-//      
-//		if (matchedRule.isPresent()) {
-//			RearSetBackRequirement mdmsRule = matchedRule.get();
-//			meanVal = mdmsRule.getPermissible();
-//		} else {
-//			meanVal = BigDecimal.ZERO;
-//		}
-//
-//		valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
-//
-//		/*
-//		 * valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal); /* if (-1 ==
-//		 * level) { subRule = SUB_RULE_24_12; rule = BSMT_REAR_YARD_DESC; subRuleDesc =
-//		 * SUB_RULE_24_12_DESCRIPTION; }
-//		 */
-//		compareRearYardResult(block.getName(), min, mean, mostRestrictiveOccupancy, rearYardResult, valid, subRule,
-//				rule, minVal, meanVal, level);
-//		return valid;
-//	}
+	/**
+	 * Validates rear yard requirements for residential buildings based on plot
+	 * area. Uses plot area-based calculations instead of height-based rules.
+	 *
+	 * @param pl                       The building plan
+	 * @param blockName                Name of the building block
+	 * @param level                    The setback level
+	 * @param min                      Minimum side yard distance
+	 * @param mostRestrictiveOccupancy The occupancy type
+	 * @param rule                     The applicable rule
+	 * @param subRule                  The sub-rule reference
+	 * @param buildingHeight           Height of the building
+	 * @param plotArea                 Area of the plot
+	 * @param rearYardResult          Result object for rear yard 	 
+	 */
+
 	
-	private Boolean processRearYardResidential(Plan pl, Block block, Integer level, final BigDecimal min, final BigDecimal mean,
-	        final OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, String subRule,
-	        String rule, BigDecimal minVal, BigDecimal meanVal, BigDecimal buildingHeight, Boolean valid,
+	private Boolean processRearYardResidential(
+	        Plan pl,
+	        Block block,
+	        Integer level,
+	        final BigDecimal min,
+	        final BigDecimal mean,
+	        final OccupancyTypeHelper mostRestrictiveOccupancy,
+	        RearYardResult rearYardResult,
+	        String subRule,
+	        String rule,
+	        BigDecimal minVal,
+	        BigDecimal meanVal,
+	        BigDecimal buildingHeight,
+	        Boolean valid,
 	        String occupancyName) {
 
 	    subRule = SUB_RULE_SIDE_YARD;
-	    
-	    List<Object> rules = cache.getFeatureRules(pl, FeatureEnum.REAR_SET_BACK.getValue(), false);
 
-	    Optional<RearSetBackRequirement> matchedRule = rules.stream()
-	        .filter(RearSetBackRequirement.class::isInstance)
-	        .map(RearSetBackRequirement.class::cast)
-	        .filter(ruleFeature ->
-	                ruleFeature.getFromBuildingHeight() != null && ruleFeature.getToBuildingHeight() != null
-	                && buildingHeight.compareTo(ruleFeature.getFromBuildingHeight()) >= 0
-	                && buildingHeight.compareTo(ruleFeature.getToBuildingHeight()) < 0
-	                && Boolean.TRUE.equals(ruleFeature.getActive()))
-	        .findFirst();
+	    List<Object> rules = cache.getFeatureRules(
+	            pl, FeatureEnum.REAR_SET_BACK.getValue(), false);
 
-	    if (matchedRule.isPresent()) {
-	        RearSetBackRequirement mdmsRule = matchedRule.get();
-	        meanVal = mdmsRule.getPermissible();
-	        minVal = meanVal; 
+	    List<RearSetBackRequirement> mdmsRules = rules.stream()
+	            .filter(RearSetBackRequirement.class::isInstance)
+	            .map(RearSetBackRequirement.class::cast)
+	            .filter(r -> Boolean.TRUE.equals(r.getActive()))
+	            .filter(r -> r.getFromBuildingHeight() != null
+                && r.getToBuildingHeight() != null)
+	            .sorted(Comparator.comparing(RearSetBackRequirement::getFromBuildingHeight))
+	            .collect(Collectors.toList());
+
+
+	    if (!mdmsRules.isEmpty() && buildingHeight != null) {
+
+	        RearSetBackRequirement applicableRule =
+	                rearSetbackRule(buildingHeight, mdmsRules);
+
+	        meanVal = applicableRule.getPermissible();
+	        minVal = meanVal;
+
 	    } else {
 	        meanVal = BigDecimal.ZERO;
 	        minVal = BigDecimal.ZERO;
@@ -358,11 +354,92 @@ public class RearYardService_Assam extends RearYardService {
 
 	    valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
 
-	    compareRearYardResult(block.getName(), min, mean, mostRestrictiveOccupancy, rearYardResult, valid, subRule,
-	            rule, minVal, meanVal, level);
+	    compareRearYardResult(
+	            block.getName(),
+	            min,
+	            mean,
+	            mostRestrictiveOccupancy,
+	            rearYardResult,
+	            valid,
+	            subRule,
+	            rule,
+	            minVal,
+	            meanVal,
+	            level);
+
 	    return valid;
 	}
+
+	/**
+	 * Resolves the applicable Rear Yard setback rule based on the building height
+	 * as per the approved building bye-laws.
+	 *
+	 * <p>
+	 * This method applies the standard height-based slab selection along with the
+	 * special Note (N.B.) clause defined in the bye-laws:
+	 * </p>
+	 *
+	 * <p>
+	 * <b>N.B.:</b> If the building height falls between two specified height slabs
+	 * and exceeds the lower slab height by more than the permissible tolerance
+	 * (10% of the slab height subject to a maximum of 1.5 meters),
+	 * the next higher slab shall be considered for side yard setbacks.
+	 * </p>
+	 *
+	 * <p>
+	 * The method intentionally does <b>not</b> rely on direct
+	 * {@code fromBuildingHeight}–{@code toBuildingHeight} range matching from MDMS.
+	 * Instead, MDMS is treated as a set of reference height slabs, and the legal
+	 * interpretation of the bye-law is applied in code to ensure correct and
+	 * audit-safe scrutiny results.
+	 * </p>
+	 *
+	 * <p>
+	 * If the building height exceeds all defined slabs, the highest available
+	 * slab is applied.
+	 * </p>
+	 *
+	 * @param buildingHeight the total building height extracted from the drawing (in meters)
+	 * @param rules          the list of active {@link RearSetBackRequirement}
+	 *                       rules fetched from MDMS
+	 * @return the applicable {@link RearSetBackRequirement} based on the
+	 *         building height and bye-law tolerance rules
+	 */
 	
+	private RearSetBackRequirement rearSetbackRule(
+	        BigDecimal buildingHeight,
+	        List<RearSetBackRequirement> rules) {
+
+	    rules.sort(Comparator.comparing(RearSetBackRequirement::getFromBuildingHeight));
+
+	    for (int i = 0; i < rules.size(); i++) {
+
+	        RearSetBackRequirement current = rules.get(i);
+	        BigDecimal upperHeight = current.getToBuildingHeight();
+
+	        // Case 1: Normal slab match
+	        if (buildingHeight.compareTo(upperHeight) <= 0) {
+	            return current;
+	        }
+
+	        // Case 2: NB clause check
+	        BigDecimal tenPercent = upperHeight.multiply(BigDecimal.valueOf(0.10));
+	        BigDecimal tolerance = tenPercent.min(BigDecimal.valueOf(1.5));
+	        BigDecimal maxAllowedHeight = upperHeight.add(tolerance);
+
+	        if (buildingHeight.compareTo(upperHeight) > 0
+	                && buildingHeight.compareTo(maxAllowedHeight) <= 0
+	                && i + 1 < rules.size()) {
+
+	            // Escalate to next slab
+	            return rules.get(i + 1);
+	        }
+	    }
+
+	    // If height exceeds all slabs → take highest slab
+	    return rules.get(rules.size() - 1);
+	}
+
 	private Boolean processRearYardHospitalAndNursingHomes(Plan pl, Block block, Integer level, final BigDecimal min, final BigDecimal mean,
 	        final OccupancyTypeHelper mostRestrictiveOccupancy, RearYardResult rearYardResult, String subRule,
 	        String rule, BigDecimal minVal, BigDecimal meanVal, BigDecimal buildingHeight, Boolean valid,
@@ -1207,12 +1284,13 @@ public class RearYardService_Assam extends RearYardService {
 	    BigDecimal minVal = BigDecimal.ZERO;
 	    BigDecimal meanVal = BigDecimal.ZERO;
 	    BigDecimal depthOfPlot = pl.getPlanInformation().getDepthOfPlot();
-	    String occupancyCode = mostRestrictiveOccupancy.getType().getCode();
+	    String occupancyCode = mostRestrictiveOccupancy.getType().getCode();	    
 	    String subOccupancyCode = mostRestrictiveOccupancy.getSubtype().getCode();
 	    String occupancyName = mostRestrictiveOccupancy.getType().getName();
 
 	    BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
 	    BigDecimal plotArea = plot.getArea();
+	    String landUse = pl.getPlanInformation().getLandUseZone();
 
 	    // Check Narrow Road Special Rule First
 	    if (roadWidth != null && roadWidth.compareTo(BigDecimal.valueOf(2.40)) == 0) {
@@ -1268,7 +1346,7 @@ public class RearYardService_Assam extends RearYardService {
 	    }else{
 	    	 valid = processRearYardResidential(
 		                pl, block, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
-		                subRule, rule, minVal, meanVal, depthOfPlot, valid, occupancyName);
+		                subRule, rule, minVal, meanVal, buildingHeight, valid, occupancyName);
 
 	    	
 	    }} else if (G.equalsIgnoreCase(occupancyCode)) {
@@ -1277,7 +1355,7 @@ public class RearYardService_Assam extends RearYardService {
 	        valid = processRearYardIndustrial(
 	                pl, block, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
 	                subRule, rule, minVal, meanVal, buildingHeight, valid, occupancyName);
-	    } else if (D.equalsIgnoreCase(occupancyCode) &&  D_AW.equalsIgnoreCase(occupancyCode)) {
+	    } else if (D.equalsIgnoreCase(occupancyCode) &&  D_AW.equalsIgnoreCase(subOccupancyCode)) {
 	       
 	        
 	        valid = processRearYardPlaceOfworship(
@@ -1295,7 +1373,7 @@ public class RearYardService_Assam extends RearYardService {
 	        valid = processRearYardAssembly(
 	                pl, block, level, min, mean, mostRestrictiveOccupancy, rearYardResult,
 	                subRule, rule, minVal, meanVal, buildingHeight, valid, occupancyName);
-	    }else if (D.equalsIgnoreCase(occupancyCode) &&  D_M.equalsIgnoreCase(occupancyCode)) {
+	    }else if (D.equalsIgnoreCase(occupancyCode) &&  D_M.equalsIgnoreCase(subOccupancyCode)) {
 	       
 	        
 	        valid = processRearYardMultiplex(
