@@ -55,7 +55,7 @@ public class NOCSchedulerService {
         if (!config.getSchedulerEnabled() || !config.getAaiNocasEnabled()) {
             return;
         }
-
+        log.info("------AAI sync: started-------");
         try {
             RequestInfo requestInfo = createSystemRequestInfo();
             // below method call just checks if there are any pending applications, otherwise returns
