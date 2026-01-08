@@ -48,90 +48,69 @@
 package org.egov.common.entity.edcr;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.math.BigDecimal;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
-/*All the details extracted from the plan are referred in this object*/
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class PlanBpa implements Serializable {
+//These are the declarations of the applicant in the plan using PLAN_INFO layer.
+public class PlanInformationDTO implements Serializable {
 
-    private static final long serialVersionUID = 7276648029097296311L;
-    private VirtualBuildingDTO virtualBuilding = new VirtualBuildingDTO();
+//    private static final String NA = "NA";
+    public static final String SEQ_EDCR_PLANINFO = "SEQ_EDCR_PLANINFO";
+    private static final long serialVersionUID = 4L;
+//
+    @Id
+    @GeneratedValue(generator = SEQ_EDCR_PLANINFO, strategy = GenerationType.SEQUENCE)
+      private Long id;
+    // Plot area defined in PLAN_INFO layer. Using the same to measure coverage and small plot condition.This is the declared plot area in the plan.
+    private BigDecimal plotArea = BigDecimal.ZERO;
 
-    private PlotDTO plot;
+    //Temporary field used to auto populate occupancy detail.
+    private String occupancy;
+//    
+//    private String liftType;
+//    //Temporary field used for service type.
+    private String serviceType;
 
-    /**
-     * Planinformation captures the declarations of the plan.Plan information captures the boundary, building location
-     * details,surrounding building NOC's etc. User will assert the details about the plot. The same will be used to print in plan
-     * report.
-     */
-    private PlanInformationDTO planInformation;
- 
+    private String materialType;
 
-    // Single plan contain multiple block/building information. Records Existing and proposed block information.
-    private List<BlockDTO> blocks = new ArrayList<>();
-    
-    private FarDetailsDTO farDetails;
-    
-	public FarDetailsDTO getFarDetails() {
-	    return farDetails;
-	}
-	
-	public void setFarDetails(FarDetailsDTO farDetails) {
-	    this.farDetails = farDetails;
+
+
+	public String getMaterialType() {
+		return materialType;
 	}
 
-   
-    public List<BlockDTO> getBlocks() {
-        return blocks;
+	public void setMaterialType(String materialType) {
+		this.materialType = materialType;
+	}
+
+
+
+    public BigDecimal getPlotArea() {
+        return plotArea;
     }
 
-    public void setBlocks(List<BlockDTO> blocks) {
-        this.blocks = blocks;
-    }
-
-    public BlockDTO getBlockByName(String blockName) {
-        for (BlockDTO block : getBlocks()) {
-            if (block.getName().equalsIgnoreCase(blockName))
-                return block;
-        }
-        return null;
+    public void setPlotArea(BigDecimal plotArea) {
+        this.plotArea = plotArea;
     }
 
 
-    public PlanInformationDTO getPlanInformation() {
-        return planInformation;
+    public String getServiceType() {
+        return serviceType;
     }
 
-    public void setPlanInformation(PlanInformationDTO planInformation) {
-        this.planInformation = planInformation;
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
     }
 
-    public PlotDTO getPlot() {
-      
-		return plot;
+    public String getOccupancy() {
+        return occupancy;
     }
 
-    public void setPlot(PlotDTO plot) {
-        this.plot = plot;
+    public void setOccupancy(String occupancy) {
+        this.occupancy = occupancy;
     }
 
-  
-    public VirtualBuildingDTO getVirtualBuilding() {
-        return virtualBuilding;
-    }
-
-    public void setVirtualBuilding(VirtualBuildingDTO virtualBuilding) {
-        this.virtualBuilding = virtualBuilding;
-    }
-    public void sortBlockByName() {
-        if (!blocks.isEmpty())
-            Collections.sort(blocks, Comparator.comparing(BlockDTO::getNumber));
-    }
-
-    
 }

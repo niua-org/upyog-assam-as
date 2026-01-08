@@ -47,91 +47,68 @@
 
 package org.egov.common.entity.edcr;
 
-import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/*All the details extracted from the plan are referred in this object*/
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PlanBpa implements Serializable {
+public class BuildingDTO extends Measurement {
 
-    private static final long serialVersionUID = 7276648029097296311L;
-    private VirtualBuildingDTO virtualBuilding = new VirtualBuildingDTO();
+    private static final long serialVersionUID = 13L;
 
-    private PlotDTO plot;
+    private BigDecimal buildingHeight;
 
-    /**
-     * Planinformation captures the declarations of the plan.Plan information captures the boundary, building location
-     * details,surrounding building NOC's etc. User will assert the details about the plot. The same will be used to print in plan
-     * report.
-     */
-    private PlanInformationDTO planInformation;
- 
+    private List<FloorDTO> floors = new ArrayList<>();
 
-    // Single plan contain multiple block/building information. Records Existing and proposed block information.
-    private List<BlockDTO> blocks = new ArrayList<>();
-    
-    private FarDetailsDTO farDetails;
-    
-	public FarDetailsDTO getFarDetails() {
-	    return farDetails;
-	}
-	
-	public void setFarDetails(FarDetailsDTO farDetails) {
-	    this.farDetails = farDetails;
-	}
 
-   
-    public List<BlockDTO> getBlocks() {
-        return blocks;
+    private BigDecimal totalBuitUpArea;
+
+
+    public BigDecimal getBuildingHeight() {
+        return buildingHeight;
     }
 
-    public void setBlocks(List<BlockDTO> blocks) {
-        this.blocks = blocks;
+    public void setBuildingHeight(BigDecimal buildingHeight) {
+        this.buildingHeight = buildingHeight;
+    }
+    
+
+    public List<FloorDTO> getFloors() {
+        return floors;
     }
 
-    public BlockDTO getBlockByName(String blockName) {
-        for (BlockDTO block : getBlocks()) {
-            if (block.getName().equalsIgnoreCase(blockName))
-                return block;
+    public void sortFloorByName() {
+        if (!floors.isEmpty())
+            Collections.sort(floors, (c1, c2) -> c1.getNumber().compareTo(c2.getNumber()));
+
+    }
+
+    public FloorDTO getFloorNumber(int floorNo) {
+        for (FloorDTO f : floors) {
+            if (f.getNumber() != null && f.getNumber().intValue() == floorNo) {
+                return f;
+            }
         }
         return null;
     }
 
 
-    public PlanInformationDTO getPlanInformation() {
-        return planInformation;
+    public BigDecimal getTotalBuitUpArea() {
+        return totalBuitUpArea;
     }
 
-    public void setPlanInformation(PlanInformationDTO planInformation) {
-        this.planInformation = planInformation;
+    public void setTotalBuitUpArea(BigDecimal totalBuitUpArea) {
+        this.totalBuitUpArea = totalBuitUpArea;
     }
 
-    public PlotDTO getPlot() {
-      
-		return plot;
-    }
+	@Override
+	public String toString() {
+		return "BuildingDTO [buildingHeight=" + buildingHeight + ", floors=" + floors + ", totalBuitUpArea="
+				+ totalBuitUpArea + "]";
+	}
 
-    public void setPlot(PlotDTO plot) {
-        this.plot = plot;
-    }
 
-  
-    public VirtualBuildingDTO getVirtualBuilding() {
-        return virtualBuilding;
-    }
-
-    public void setVirtualBuilding(VirtualBuildingDTO virtualBuilding) {
-        this.virtualBuilding = virtualBuilding;
-    }
-    public void sortBlockByName() {
-        if (!blocks.isEmpty())
-            Collections.sort(blocks, Comparator.comparing(BlockDTO::getNumber));
-    }
-
-    
 }

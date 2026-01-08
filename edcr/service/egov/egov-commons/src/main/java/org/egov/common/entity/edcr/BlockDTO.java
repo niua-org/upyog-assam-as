@@ -47,91 +47,50 @@
 
 package org.egov.common.entity.edcr;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/*All the details extracted from the plan are referred in this object*/
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PlanBpa implements Serializable {
-
-    private static final long serialVersionUID = 7276648029097296311L;
-    private VirtualBuildingDTO virtualBuilding = new VirtualBuildingDTO();
-
-    private PlotDTO plot;
-
-    /**
-     * Planinformation captures the declarations of the plan.Plan information captures the boundary, building location
-     * details,surrounding building NOC's etc. User will assert the details about the plot. The same will be used to print in plan
-     * report.
-     */
-    private PlanInformationDTO planInformation;
- 
-
-    // Single plan contain multiple block/building information. Records Existing and proposed block information.
-    private List<BlockDTO> blocks = new ArrayList<>();
-    
-    private FarDetailsDTO farDetails;
-    
-	public FarDetailsDTO getFarDetails() {
-	    return farDetails;
-	}
-	
-	public void setFarDetails(FarDetailsDTO farDetails) {
-	    this.farDetails = farDetails;
-	}
+public class BlockDTO extends Measurement {
 
    
-    public List<BlockDTO> getBlocks() {
-        return blocks;
+   
+    private static final long serialVersionUID = 12L;
+    private String name;
+    private String number;
+    private BuildingDTO building = new BuildingDTO();  
+    private String numberOfLifts;
+
+    @Override
+    public String toString() {
+        return "Block [building=" + building + ", name=" + name + ", number=" + number +  ""
+                + ", presentInDxf=" + presentInDxf + "]";
     }
 
-    public void setBlocks(List<BlockDTO> blocks) {
-        this.blocks = blocks;
+    public String getNumberOfLifts() {
+        return numberOfLifts;
     }
 
-    public BlockDTO getBlockByName(String blockName) {
-        for (BlockDTO block : getBlocks()) {
-            if (block.getName().equalsIgnoreCase(blockName))
-                return block;
-        }
-        return null;
+    public void setNumberOfLifts(String numberOfLifts) {
+        this.numberOfLifts = numberOfLifts;
     }
 
-
-    public PlanInformationDTO getPlanInformation() {
-        return planInformation;
+    public String getNumber() {
+        return number;
     }
 
-    public void setPlanInformation(PlanInformationDTO planInformation) {
-        this.planInformation = planInformation;
+    public void setNumber(String number) {
+        this.number = number;
     }
 
-    public PlotDTO getPlot() {
-      
-		return plot;
+    public BuildingDTO getBuilding() {
+        return building;
     }
 
-    public void setPlot(PlotDTO plot) {
-        this.plot = plot;
+    public void setBuilding(BuildingDTO building) {
+        this.building = building;
     }
 
-  
-    public VirtualBuildingDTO getVirtualBuilding() {
-        return virtualBuilding;
-    }
-
-    public void setVirtualBuilding(VirtualBuildingDTO virtualBuilding) {
-        this.virtualBuilding = virtualBuilding;
-    }
-    public void sortBlockByName() {
-        if (!blocks.isEmpty())
-            Collections.sort(blocks, Comparator.comparing(BlockDTO::getNumber));
-    }
-
-    
 }

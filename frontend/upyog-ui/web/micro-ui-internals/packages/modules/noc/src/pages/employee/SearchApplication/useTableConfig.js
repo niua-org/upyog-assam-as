@@ -40,7 +40,8 @@ const useSearchApplicationTableConfig = () => {
         {
           Header: t("NOC_COMMON_TABLE_COL_APP_DATE_LABEL"),
           disableSortBy: true,
-          accessor: (row) => GetCell(row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : "-"),
+          accessor: (row) => 
+            GetCell(row?.additionalDetails?.SubmittedOn ? Digit.DateUtils.ConvertEpochToDate(parseInt(row?.additionalDetails?.SubmittedOn)) : "-"),
         },
         {
           Header: t("NOC_APPLICANTS_NAME_LABEL"),

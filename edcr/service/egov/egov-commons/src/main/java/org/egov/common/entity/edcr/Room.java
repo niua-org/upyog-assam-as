@@ -51,6 +51,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Room {
 
     private String number;
@@ -62,6 +64,7 @@ public class Room {
     private List<Measurement> rooms = new ArrayList<>();
 
     private MeasurementWithHeight lightAndVentilation = new MeasurementWithHeight();
+    @JsonIgnore
     private List<Measurement> bathVentilation = new ArrayList<>();
 
     private List<Occupancy> mezzanineAreas = new ArrayList<>();

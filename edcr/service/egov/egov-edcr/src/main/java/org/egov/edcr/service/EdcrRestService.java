@@ -76,6 +76,7 @@ import org.egov.common.entity.dcr.helper.ErrorDetail;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.PlanBpa;
 import org.egov.common.entity.edcr.PlanInformation;
+import org.egov.common.entity.edcr.PlanInformationDTO;
 import org.egov.edcr.config.properties.EdcrApplicationSettings;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.EdcrDetail;
@@ -486,21 +487,21 @@ public class EdcrRestService {
     public EdcrDetailBpa setEdcrResponseBpa(EdcrApplicationDetail edcrApplnDtl, EdcrRequest edcrRequest) {
         EdcrDetailBpa edcrDetail = new EdcrDetailBpa();
         List<String> planPdfs = new ArrayList<>();
-        edcrDetail.setTransactionNumber(edcrApplnDtl.getApplication().getTransactionNumber());
+       // edcrDetail.setTransactionNumber(edcrApplnDtl.getApplication().getTransactionNumber());
         LOG.info("edcr number == " + edcrApplnDtl.getDcrNumber());
         edcrDetail.setEdcrNumber(edcrApplnDtl.getDcrNumber());
        
         edcrDetail.setStatus(edcrApplnDtl.getStatus());
         LOG.info("application number ==" + edcrApplnDtl.getApplication().getApplicationNumber());
-        edcrDetail.setApplicationNumber(edcrApplnDtl.getApplication().getApplicationNumber());
+       edcrDetail.setApplicationNumber(edcrApplnDtl.getApplication().getApplicationNumber());
         edcrDetail.setApplicationDate(edcrApplnDtl.getApplication().getApplicationDate());
 
         if (edcrApplnDtl.getApplication().getPlanPermitNumber() != null) {
             edcrDetail.setPermitNumber(edcrApplnDtl.getApplication().getPlanPermitNumber());
         }
-        if (edcrApplnDtl.getApplication().getPermitApplicationDate() != null) {
-            edcrDetail.setPermitDate(edcrApplnDtl.getApplication().getPermitApplicationDate());
-        }
+//        if (edcrApplnDtl.getApplication().getPermitApplicationDate() != null) {
+//            edcrDetail.setPermitDate(edcrApplnDtl.getApplication().getPermitApplicationDate());
+//        }
         ApplicationType applicationType = edcrApplnDtl.getApplication().getApplicationType();
         if (applicationType != null) {
             if (ApplicationType.PERMIT.getApplicationTypeVal()
@@ -522,13 +523,13 @@ public class EdcrRestService {
             tenantId = tenantArr[0];
         else
             tenantId = tenantArr[1];
-        if (edcrApplnDtl.getDxfFileId() != null)
-            edcrDetail.setDxfFile(format(getFileDownloadUrl(edcrApplnDtl.getDxfFileId().getFileStoreId(), tenantId)));
-
+//        if (edcrApplnDtl.getDxfFileId() != null)
+//            edcrDetail.setDxfFile(format(getFileDownloadUrl(edcrApplnDtl.getDxfFileId().getFileStoreId(), tenantId)));
+//
         if (edcrApplnDtl.getScrutinizedDxfFileId() != null)
             edcrDetail.setUpdatedDxfFile(
                     format(getFileDownloadUrl(edcrApplnDtl.getScrutinizedDxfFileId().getFileStoreId(), tenantId)));
-
+//
         if (edcrApplnDtl.getReportOutputId() != null)
             edcrDetail.setPlanReport(
                     format(getFileDownloadUrl(edcrApplnDtl.getReportOutputId().getFileStoreId(), tenantId)));
@@ -543,16 +544,16 @@ public class EdcrRestService {
         try {
             if (file == null) {
                 PlanBpa pl1 = new PlanBpa();
-                PlanInformation pi = new PlanInformation();
+                PlanInformationDTO pi = new PlanInformationDTO();
                
-                pi.setApplicantName(edcrApplnDtl.getApplication().getApplicantName());
+//                pi.setApplicantName(edcrApplnDtl.getApplication().getApplicantName());
                 pl1.setPlanInformation(pi);
                 edcrDetail.setPlanDetail(pl1);
             } else {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 PlanBpa pl1 = mapper.readValue(file, PlanBpa.class);
-                pl1.getPlanInformation().setApplicantName(edcrApplnDtl.getApplication().getApplicantName());
+               // pl1.getPlanInformation().setApplicantName(edcrApplnDtl.getApplication().getApplicantName());
                
                 if (LOG.isInfoEnabled())
                     LOG.info("**************** Plan detail object **************" + pl1);
@@ -572,11 +573,11 @@ public class EdcrRestService {
             }
         }
 
-        edcrDetail.setPlanPdfs(planPdfs);
-        edcrDetail.setTenantId(edcrRequest.getTenantId());
-
-        if (StringUtils.isNotBlank(edcrRequest.getComparisonEdcrNumber()))
-            edcrDetail.setComparisonEdcrNumber(edcrRequest.getComparisonEdcrNumber());
+//        edcrDetail.setPlanPdfs(planPdfs);
+//        edcrDetail.setTenantId(edcrRequest.getTenantId());
+//
+//        if (StringUtils.isNotBlank(edcrRequest.getComparisonEdcrNumber()))
+//            edcrDetail.setComparisonEdcrNumber(edcrRequest.getComparisonEdcrNumber());
 
         if (!edcrApplnDtl.getStatus().equalsIgnoreCase("Accepted"))
             edcrDetail.setStatus(edcrApplnDtl.getStatus());
@@ -663,7 +664,7 @@ public class EdcrRestService {
 
     public EdcrDetailBpa setEdcrResponseForAcrossTenantsBpa(Object[] applnDtls, String stateCityCode) {
     	EdcrDetailBpa edcrDetail = new EdcrDetailBpa();
-        edcrDetail.setTransactionNumber(String.valueOf(applnDtls[1]));
+//        edcrDetail.setTransactionNumber(String.valueOf(applnDtls[1]));
         edcrDetail.setEdcrNumber(String.valueOf(applnDtls[2]));
         edcrDetail.setStatus(String.valueOf(applnDtls[3]));
         edcrDetail.setApplicationDate(new LocalDate(String.valueOf(applnDtls[9])).toDate());
@@ -684,13 +685,13 @@ public class EdcrRestService {
         edcrDetail.setApplicationSubType(String.valueOf(applnDtls[12]));
         edcrDetail.setPermitNumber(String.valueOf(applnDtls[13]));
         String tenantId = String.valueOf(applnDtls[0]);
-        if (applnDtls[14] != null)
-            edcrDetail.setPermitDate(new LocalDate(String.valueOf(applnDtls[14])).toDate());
-
-        if (String.valueOf(applnDtls[5]) != null)
-            edcrDetail
-                    .setDxfFile(format(getFileDownloadUrl(String.valueOf(applnDtls[5]), tenantId)));
-
+//        if (applnDtls[14] != null)
+//            edcrDetail.setPermitDate(new LocalDate(String.valueOf(applnDtls[14])).toDate());
+//
+//        if (String.valueOf(applnDtls[5]) != null)
+//            edcrDetail
+//                    .setDxfFile(format(getFileDownloadUrl(String.valueOf(applnDtls[5]), tenantId)));
+//
         if (String.valueOf(applnDtls[6]) != null)
             edcrDetail.setUpdatedDxfFile(
                     format(getFileDownloadUrl(String.valueOf(applnDtls[6]), tenantId)));
@@ -713,15 +714,15 @@ public class EdcrRestService {
         try {
             if (file == null) {
                 PlanBpa pl1 = new PlanBpa();
-                PlanInformation pi = new PlanInformation();
-                pi.setApplicantName(String.valueOf(applnDtls[4]));
+                PlanInformationDTO pi = new PlanInformationDTO();
+               // pi.setApplicantName(String.valueOf(applnDtls[4]));
                 pl1.setPlanInformation(pi);
                 edcrDetail.setPlanDetail(pl1);
             } else {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 PlanBpa pl1 = mapper.readValue(file, PlanBpa.class);
-                pl1.getPlanInformation().setApplicantName(String.valueOf(applnDtls[4]));
+             //   pl1.getPlanInformation().setApplicantName(String.valueOf(applnDtls[4]));
                 if (LOG.isInfoEnabled())
                     LOG.info("**************** Plan detail object **************" + pl1);
                 edcrDetail.setPlanDetail(pl1);
@@ -730,7 +731,7 @@ public class EdcrRestService {
             LOG.log(Level.ERROR, e);
         }
 
-        edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+       // edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
 
         if (!String.valueOf(applnDtls[3]).equalsIgnoreCase("Accepted"))
             edcrDetail.setStatus(String.valueOf(applnDtls[3]));
@@ -908,12 +909,12 @@ public class EdcrRestService {
                 String orderBy = "desc";
                 if (isNotBlank(edcrRequest.getOrderBy()))
                     orderBy = edcrRequest.getOrderBy();
-                if (orderBy.equalsIgnoreCase("asc"))
-                    sortedList = edcrDetails2.stream().sorted(Comparator.comparing(EdcrDetailBpa::getApplicationDate))
-                            .collect(Collectors.toList());
-                else
-                    sortedList = edcrDetails2.stream().sorted(Comparator.comparing(EdcrDetailBpa::getApplicationDate).reversed())
-                            .collect(Collectors.toList());
+//                if (orderBy.equalsIgnoreCase("asc"))
+//                    sortedList = edcrDetails2.stream().sorted(Comparator.comparing(EdcrDetailBpa::getApplicationDate))
+//                            .collect(Collectors.toList());
+//                else
+//                    sortedList = edcrDetails2.stream().sorted(Comparator.comparing(EdcrDetailBpa::getApplicationDate).reversed())
+//                            .collect(Collectors.toList());
 
                 LOG.info("The number of records = " + edcrDetails2.size());
                 return sortedList;

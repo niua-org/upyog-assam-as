@@ -56,39 +56,27 @@ import org.egov.common.entity.edcr.PlanBpa;
 
 public class EdcrDetailBpa {
 
-    private String dxfFile;
-
     private String updatedDxfFile;
-
     private String planReport;
-
-    private String transactionNumber;
-
-    private Date applicationDate;
-
-    private String applicationNumber;
-
     private String status;
 
     private String edcrNumber;
 
-    private String tenantId;
-
     private String errors;
-
-    private List<String> planPdfs;
 
     private PlanBpa planDetail;
 
     private String permitNumber;
 
-    private Date permitDate;
 
     private String appliactionType;
 
     private String applicationSubType;
+    
+    private Date applicationDate;
 
-    private String comparisonEdcrNumber;
+    private String applicationNumber;
+
 
     public String getPlanReport() {
         return planReport;
@@ -114,13 +102,6 @@ public class EdcrDetailBpa {
         this.planDetail = planDetail;
     }
 
-    public List<String> getPlanPdfs() {
-        return planPdfs;
-    }
-
-    public void setPlanPdfs(List<String> planPdfs) {
-        this.planPdfs = planPdfs;
-    }
 
     public String getEdcrNumber() {
         return edcrNumber;
@@ -128,46 +109,6 @@ public class EdcrDetailBpa {
 
     public void setEdcrNumber(String edcrNumber) {
         this.edcrNumber = edcrNumber;
-    }
-
-    public String getTransactionNumber() {
-        return transactionNumber;
-    }
-
-    public void setTransactionNumber(String transactionNumber) {
-        this.transactionNumber = transactionNumber;
-    }
-
-    public void setApplicationDate(Date applicationDate) {
-        this.applicationDate = applicationDate;
-    }
-
-    public Date getApplicationDate() {
-        return applicationDate;
-    }
-
-    public void setApplicationNumber(String applicationNumber) {
-        this.applicationNumber = applicationNumber;
-    }
-
-    public String getApplicationNumber() {
-        return applicationNumber;
-    }
-
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public String getDxfFile() {
-        return dxfFile;
-    }
-
-    public void setDxfFile(String dxfFile) {
-        this.dxfFile = dxfFile;
     }
 
     public String getUpdatedDxfFile() {
@@ -194,14 +135,6 @@ public class EdcrDetailBpa {
         this.permitNumber = permitNumber;
     }
 
-    public Date getPermitDate() {
-        return permitDate;
-    }
-
-    public void setPermitDate(Date permitDate) {
-        this.permitDate = permitDate;
-    }
-
     public String getAppliactionType() {
         return appliactionType;
     }
@@ -217,22 +150,32 @@ public class EdcrDetailBpa {
     public void setApplicationSubType(String applicationSubType) {
         this.applicationSubType = applicationSubType;
     }
-
-    public String getComparisonEdcrNumber() {
-        return comparisonEdcrNumber;
+    
+    public void setApplicationDate(Date applicationDate) {
+        this.applicationDate = applicationDate;
     }
 
-    public void setComparisonEdcrNumber(String comparisonEdcrNumber) {
-        this.comparisonEdcrNumber = comparisonEdcrNumber;
+    public Date getApplicationDate() {
+        return applicationDate;
     }
 
-    @Override
-    public String toString() {
-        return "EdcrDetail [transactionNumber=" + transactionNumber + ", applicationDate=" + applicationDate
-                + ", applicationNumber=" + applicationNumber + ", status=" + status + ", edcrNumber=" + edcrNumber + ", tenantId="
-                + tenantId + ", errors=" + errors + ", planPdfs=" + planPdfs + ", planDetail=" + planDetail + ", permitNumber="
-                + permitNumber + ", permitDate=" + permitDate + ", appliactionType=" + appliactionType + ", applicationSubType="
-                + applicationSubType + ", comparisonEdcrNumber=" + comparisonEdcrNumber + "]";
+    public void setApplicationNumber(String applicationNumber) {
+        this.applicationNumber = applicationNumber;
     }
 
+    public String getApplicationNumber() {
+        return applicationNumber;
+    }
+
+	@Override
+	public String toString() {
+		return "EdcrDetailBpa [updatedDxfFile=" + updatedDxfFile + ", planReport=" + planReport + ", status=" + status
+				+ ", edcrNumber=" + edcrNumber + ", errors=" + errors + ", planDetail=" + planDetail + ", permitNumber="
+				+ permitNumber + ", appliactionType=" + appliactionType + ", applicationSubType=" + applicationSubType
+				+ "]";
+	}
+
+	
+
+  
 }
