@@ -158,8 +158,7 @@ public class BPAService {
        // String serviceType = values.get(BPAConstants.SERVICETYPE);
        // this.validateCreateOC(applicationType, values, requestInfo, bpaRequest);
 
-		bpaValidator.validateStateMdmsData(bpaRequest, mdmsStateData);
-        bpaValidator.validateMdmsData(bpaRequest, mdmsTenantData);
+		bpaValidator.validateCreate(bpaRequest, mdmsTenantData, mdmsStateData);
        
 
         landService.addLandInfoToBPA(bpaRequest);
@@ -428,9 +427,12 @@ public class BPAService {
         Object mdmsTenantData = mdmsCacheService.getMdmsData(requestInfo, tenantId);
         
         Object mdmsStateData = mdmsCacheService.getMdmsData(requestInfo, stateTenantId);
+
+        // Validate action for pending NOC applications if not approved then update not allowed
+      //  bpaValidator.validateActionForPendingNoc(bpaRequest);
         // Validate the update request
-        bpaValidator.validateStateMdmsData(bpaRequest, mdmsStateData);
-        bpaValidator.validateMdmsData(bpaRequest, mdmsTenantData);
+        //bpaValidator.validateStateMdmsData(bpaRequest, mdmsStateData);
+        //bpaValidator.validateMdmsData(bpaRequest, mdmsTenantData);
 
         BPA bpa = bpaRequest.getBPA();
 

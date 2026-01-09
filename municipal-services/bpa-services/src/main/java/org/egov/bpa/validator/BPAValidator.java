@@ -3,13 +3,7 @@ package org.egov.bpa.validator;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.egov.bpa.config.BPAConfiguration;
@@ -18,10 +12,7 @@ import org.egov.bpa.service.NocService;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.util.BPAUtil;
-import org.egov.bpa.web.model.BPA;
-import org.egov.bpa.web.model.BPARequest;
-import org.egov.bpa.web.model.BPASearchCriteria;
-import org.egov.bpa.web.model.Document;
+import org.egov.bpa.web.model.*;
 import org.egov.bpa.web.model.NOC.Noc;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
@@ -59,11 +50,11 @@ public class BPAValidator {
 	 * @param bpaRequest The BPA request object.
 	 * @param mdmsData The MDMS data for validation.
 	 */
-	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+	private void validateMdmsData(BPARequest bpaRequest, Object mdmsData) {
 		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
 	}
 
-	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+	private void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData) {
 		mdmsValidator.validateStateMdmsData(bpaRequest, mdmsData);
 	}
 
@@ -75,16 +66,18 @@ public class BPAValidator {
 	 * @param mdmsData The MDMS data for validation.
 	 * @param values Additional values for validation.
 	 */
-	public void validateCreate(BPARequest bpaRequest, Object mdmsData, Map<String, String> values) {
-        @SuppressWarnings("unchecked")
-		Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
+	public void validateCreate(BPARequest bpaRequest, Object tenantMdmsData, Object stateMdmsData) {
+		/*Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
                 ? (Map<String, String>) bpaRequest.getBPA().getAdditionalDetails()
-                : new HashMap<String, String>();
-		mdmsValidator.validateMdmsData(bpaRequest, mdmsData);
-		validateApplicationDocuments(bpaRequest, mdmsData, null, values);		
-        if (bpaRequest.getBPA().getRiskType() != null) {
+                : new HashMap<String, String>();*/
+		mdmsValidator.validateMdmsData(bpaRequest, tenantMdmsData);
+		mdmsValidator.validateStateMdmsData(bpaRequest, stateMdmsData);
+		//TODO: need to check if it can be used
+	//	validateApplicationDocuments(bpaRequest, mdmsData, null, values);
+
+       /* if (bpaRequest.getBPA().getRiskType() != null) {
             additionalDetails.put(BPAConstants.RISKTYPE, bpaRequest.getBPA().getRiskType());
-        }
+        }*/
 		
 	}
 
@@ -204,7 +197,7 @@ public class BPAValidator {
 	 * @param requestInfo The request info containing user details.
 	 * @param criteria The BPA search criteria.
 	 */
-//TODO need to make the changes in the data
+   //TODO: need to make the changes in the data
 	public void validateSearch(RequestInfo requestInfo, BPASearchCriteria criteria) {
 		
 		log.info("Validating Search Parameters ");
@@ -212,7 +205,7 @@ public class BPAValidator {
 		log.info("criteria.isEmpty(): " + criteria.isEmpty());
 		
 		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(BPAConstants.CITIZEN) && criteria.isEmpty())
-			throw new CustomException(BPAErrorConstants.INVALID_SEARCH, "Search without any paramters is not allowed");
+			throw new CustomException(BPAErrorConstants.INVALID_SEARCH, "Search without any parameters is not allowed");
 
 		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(BPAConstants.CITIZEN) && !criteria.tenantIdOnly()
 				&& criteria.getTenantId() == null)
@@ -349,9 +342,6 @@ public class BPAValidator {
 
 		if (!searchedBpa.getId().equalsIgnoreCase(bpa.getId()))
 			errorMap.put("INVALID UPDATE", "The id " + bpa.getId() + " does not exist");
-
-
-
 
 		if (!CollectionUtils.isEmpty(errorMap))
 			throw new CustomException(errorMap);
@@ -592,75 +582,23 @@ public class BPAValidator {
 		}
 	}
 
-	/**
-	 * validate the workflow and the nocapproval stages to move forward
-	 * @param bpaRequest
-	 * @param mdmsRes
-	 */
-	public void validatePreEnrichData(BPARequest bpaRequest, Object mdmsRes) {		
-		validateSkipPaymentAction(bpaRequest);
-		validateNocApprove(bpaRequest, mdmsRes);
-	}
-	/**
-	 * Validate workflowActions against the skipPayment 
-	 * @param bpaRequest
-	 */
-	private void validateSkipPaymentAction(BPARequest bpaRequest) {
-		BPA bpa = bpaRequest.getBPA();
-		if (bpa.getWorkflow().getAction() != null && (bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SKIP_PAY))) {
-			BigDecimal demandAmount = bpaUtil.getDemandAmount(bpaRequest);
-			if ((demandAmount.compareTo(BigDecimal.ZERO) > 0)) {
-				throw new CustomException(BPAErrorConstants.BPA_INVALID_ACTION, "Payment can't be skipped once demand is generated.");
-			}
-		}
-	}
-	
-	/**
-	 * Validates the NOC approval state to move forward the bpa applicaiton
-	 * @param bpaRequest
-	 * @param mdmsRes
-	 */
-	@SuppressWarnings("unchecked")
-	private void validateNocApprove(BPARequest bpaRequest, Object mdmsRes) {
-		BPA bpa = bpaRequest.getBPA();
-		log.debug("===========> valdiateNocApprove method called");
-		if (config.getValidateRequiredNoc()) {
-			if (bpa.getStatus().equalsIgnoreCase(BPAConstants.NOCVERIFICATION_STATUS)
-					&& bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_FORWORD)) {
-				Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(),
-						bpaRequest.getBPA());
-				log.debug("===========> valdiateNocApprove method called, application is in noc verification pending");
-				String riskType = "ALL";
-				if (StringUtils.isEmpty(bpa.getRiskType()) || bpa.getRiskType().equalsIgnoreCase("LOW")) {
-					riskType = bpa.getRiskType();
-				}
-				log.debug("fetching NocTypeMapping record having riskType : " + riskType);
-
-				String nocPath = BPAConstants.NOCTYPE_REQUIRED_MAP
-						.replace("{1}", edcrResponse.get(BPAConstants.APPLICATIONTYPE))
-						.replace("{2}", edcrResponse.get(BPAConstants.SERVICETYPE)).replace("{3}", riskType);
-
-				List<Object> nocMappingResponse = (List<Object>) JsonPath.read(mdmsRes, nocPath);
-				List<String> nocTypes = JsonPath.read(nocMappingResponse, "$..code");
-
-				log.debug("===========> valdiateNocApprove method called, noctypes====",nocTypes);
-				List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);
-				if (!CollectionUtils.isEmpty(nocs)) {
-					for (Noc noc : nocs) {
-						if (!nocTypes.isEmpty() && nocTypes.contains(noc.getNocType())) {
-							List<String> statuses = Arrays.asList(config.getNocValidationCheckStatuses().split(","));
-							if(!statuses.contains(noc.getApplicationStatus())) {
-								log.error("Noc is not approved having applicationNo :" + noc.getApplicationNo());
-								throw new CustomException(BPAErrorConstants.NOC_SERVICE_EXCEPTION,
-										" Application can't be forwarded without NOC "
-												+ StringUtils.join(statuses, " or "));
-							}
+	public void validateActionForPendingNoc(BPARequest bpaRequest){
+		String action = Optional.ofNullable(bpaRequest.getBPA().getWorkflow()).map(Workflow::getAction).orElse("");
+		List<String> pendingNocNotAllowedActions = Arrays.asList(config.getPendingNocNotAllowedActions().split(","));
+		if(pendingNocNotAllowedActions.contains(action)) {
+			List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);
+			if (!CollectionUtils.isEmpty(nocs)) {
+				for (Noc noc : nocs) {
+						List<String> statuses = Arrays.asList(config.getNocValidationCheckStatuses().split(","));
+						if(!statuses.contains(noc.getApplicationStatus())) {
+							log.error("Noc is not approved having applicationNo :" + noc.getApplicationNo());
+							throw new CustomException(BPAErrorConstants.NOC_SERVICE_EXCEPTION,
+									" Application can't be forwarded without NOC "
+											+ StringUtils.join(statuses, " or "));
 						}
-					}
-				} else {
-					log.debug("No NOC record found to validate with sourceRefId " + bpa.getApplicationNo());
 				}
 			}
 		}
+
 	}
 }
