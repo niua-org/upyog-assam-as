@@ -92,7 +92,9 @@ public class PaymentUpdateService {
 							+ paymentDetail.getBusinessService());
 					log.info("Fetching BPA for Consumer Code: "
 							+ paymentDetail.getBill().getConsumerCode());
-					List<BPA> bpas = repository.getBPAData(searchCriteria, null);
+					// Use full details for payment update flow
+					// List<BPA> bpas = repository.getBPAData(searchCriteria, null);
+					List<BPA> bpas = repository.getBPADetailData(searchCriteria, null);
 					if (CollectionUtils.isEmpty(bpas)) {
 						throw new CustomException(BPAErrorConstants.INVALID_RECEIPT,
 								"No Building Plan Application found for the comsumerCode "
