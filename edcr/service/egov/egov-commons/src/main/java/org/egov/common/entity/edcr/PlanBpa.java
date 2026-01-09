@@ -87,6 +87,7 @@ public class PlanBpa implements Serializable {
     private BigDecimal totalLatrines = BigDecimal.ZERO;
     private BigDecimal totalUrinals = BigDecimal.ZERO;
     private transient List<ElectricLine> electricLine = new ArrayList<>();
+    private BigDecimal coverage = BigDecimal.ZERO;
     private ReportOutput reportOutput = new ReportOutput();
 
    public ReportOutput getReportOutput() {
@@ -200,6 +201,14 @@ public class PlanBpa implements Serializable {
 
     public void setPlanInfoProperties(Map<String, String> planInfoProperties) {
         this.planInfoProperties = planInfoProperties;
+    }
+    
+    public BigDecimal getCoverage() {
+        return coverage;
+    }
+
+    public void setCoverage(BigDecimal coverage) {
+        this.coverage = coverage;
     }
 
 }
