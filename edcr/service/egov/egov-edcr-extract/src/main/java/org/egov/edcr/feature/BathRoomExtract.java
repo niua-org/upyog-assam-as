@@ -40,7 +40,7 @@ public class BathRoomExtract extends FeatureExtract {
         for (Block block : planDetail.getBlocks())
             if (block.getBuilding() != null && block.getBuilding().getFloors() != null)
                 for (Floor f : block.getBuilding().getFloors()) {
-                    if (f.getUnits() != null || !f.getUnits().isEmpty())
+                    if (f.getUnits() != null && !f.getUnits().isEmpty())
                         for (FloorUnit floorUnit : f.getUnits()) {
                             LOG.info("Processing BathRoom for Block: " + block.getNumber() + " Floor: " + f.getNumber()
                                     + " Unit: " + floorUnit.getUnitNumber());
@@ -52,12 +52,16 @@ public class BathRoomExtract extends FeatureExtract {
                                     + layerNames.getLayerName("LAYER_NAME_UNIT_NAME_PREFIX") + floorUnit.getUnitNumber() + "_"
                                     + layerNames.getLayerName("LAYER_NAME_BATH_STORE_VENTILATION");
                             ventilationBS = Util.getPolyLinesByLayer(planDetail.getDoc(), ventilationLayerName);
-                            if (ventilationBS != null) {
-                                ventilationMeasurements = ventilationBS.stream()
-                                        .map(flightPolyLine -> new MeasurementDetail(flightPolyLine, true)).collect(Collectors.toList());
-                            } else {
-                                ventilationMeasurements = new ArrayList<>();
+                            ventilationMeasurements = new ArrayList<>();
+
+                            if (ventilationBS != null && !ventilationBS.isEmpty()) {
+                                ventilationMeasurements.addAll(
+                                    ventilationBS.stream()
+                                        .map(flightPolyLine -> new MeasurementDetail(flightPolyLine, true))
+                                        .collect(Collectors.toList())
+                                );
                             }
+
                             rooms = Util.getPolyLinesByLayer(planDetail.getDoc(), layerName);
 
                             // Setting total no of bathrooms in plan detail

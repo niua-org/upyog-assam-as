@@ -77,6 +77,7 @@ import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.PlanBpa;
 import org.egov.common.entity.edcr.PlanInformation;
 import org.egov.common.entity.edcr.PlanInformationDTO;
+import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.edcr.config.properties.EdcrApplicationSettings;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.EdcrDetail;
@@ -983,6 +984,50 @@ public class EdcrRestService {
             return criteria.list().size();
         }
 
+    }
+
+    /**
+     * Filters scrutiny details to retain only Common_Parking.
+     * Modifies the input list in-place.
+     *
+     * @param edcrDetail List of EDCR details
+     */
+    public void extractCommonParking(List<EdcrDetailBpa> edcrDetail) {
+    	
+    	LOG.info("extractCommonParking() called");
+
+        if (edcrDetail == null || edcrDetail.isEmpty()) {
+            return;
+        }
+
+        EdcrDetailBpa detailBpa = edcrDetail.get(0);
+        PlanBpa planBpa = detailBpa.getPlanDetail();
+
+        if (planBpa == null
+                || planBpa.getReportOutput() == null
+                || planBpa.getReportOutput().getScrutinyDetails() == null) {
+            return;
+        }
+
+        List<ScrutinyDetail> filteredScrutinyDetails =
+                planBpa.getReportOutput().getScrutinyDetails()
+                        .stream()
+                        .filter(sd -> sd.getKey() != null)
+                        .filter(sd -> sd.getKey()
+                                .replace(" ", "_")
+                                .equalsIgnoreCase("Common_Parking"))
+                        .limit(1)
+                        .collect(Collectors.toList());
+        
+        if (filteredScrutinyDetails.isEmpty()) {
+            LOG.warn("No Common_Parking scrutiny found");
+        } else {
+        	LOG.info("Common_Parking scrutiny extracted successfully");
+        }
+
+        planBpa.getReportOutput().setScrutinyDetails(filteredScrutinyDetails);
+        
+        LOG.info("extractCommonParking() completed");
     }
 
 

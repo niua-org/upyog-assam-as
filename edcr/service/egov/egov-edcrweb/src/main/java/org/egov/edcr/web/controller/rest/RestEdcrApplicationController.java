@@ -407,6 +407,7 @@ public class RestEdcrApplicationController {
     @ResponseBody
     public ResponseEntity<?> edcrDetails(@ModelAttribute EdcrRequest edcrRequest,
             @RequestBody @Valid RequestInfoWrapper requestInfoWrapper) {
+    	 LOGGER.info(" /edcrdetails API called");
         ErrorDetail edcReqRes = edcrValidator.validate(edcrRequest);
         if (edcReqRes != null && StringUtils.isNotBlank(edcReqRes.getErrorMessage()))
             return new ResponseEntity<>(edcReqRes, HttpStatus.BAD_REQUEST);
@@ -416,8 +417,11 @@ public class RestEdcrApplicationController {
         List<EdcrDetailBpa> edcrDetail = edcrRestService.fetchEdcrBpa(edcrRequest, requestInfoWrapper);
         Integer count = edcrRestService.fetchCount(edcrRequest, requestInfoWrapper);
         if (!edcrDetail.isEmpty() && edcrDetail.get(0).getErrors() != null) {
+        	 LOGGER.warn("EDCR returned errors");
             return new ResponseEntity<>(edcrDetail.get(0).getErrors(), HttpStatus.OK);
         } else {
+        	edcrRestService.extractCommonParking(edcrDetail);
+        	 LOGGER.info("Returning success response for /edcrdetails");
             return getSuccessResponseForEdcrDetail(edcrDetail, requestInfoWrapper.getRequestInfo(), count);
         }
     }

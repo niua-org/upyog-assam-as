@@ -47,6 +47,7 @@
 
 package org.egov.common.entity.edcr;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,21 +56,41 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BlockDTO extends Measurement {
 
-   
+	private static final String SIDE_YARD1_DESC = "Side Yard1";
+    private static final String SIDE_YARD2_DESC = "Side Yard2";
    
     private static final long serialVersionUID = 12L;
     private String name;
     private String number;
     private BuildingDTO building = new BuildingDTO();  
     private String numberOfLifts;
+    private List<SetBack> setBacks = new ArrayList<>();
+    private List<BigDecimal> plinthHeight;
 
     @Override
-    public String toString() {
-        return "Block [building=" + building + ", name=" + name + ", number=" + number +  ""
-                + ", presentInDxf=" + presentInDxf + "]";
+	public String toString() {
+		return "BlockDTO [name=" + name + ", number=" + number + ", building=" + building + ", numberOfLifts="
+				+ numberOfLifts + ", setBacks=" + setBacks + ", plinthHeight=" + plinthHeight + "]";
+	}
+
+
+    public List<BigDecimal> getPlinthHeight() {
+        return plinthHeight;
     }
 
-    public String getNumberOfLifts() {
+    public void setPlinthHeight(List<BigDecimal> plinthHeight) {
+        this.plinthHeight = plinthHeight;
+    }
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getNumberOfLifts() {
         return numberOfLifts;
     }
 
@@ -91,6 +112,55 @@ public class BlockDTO extends Measurement {
 
     public void setBuilding(BuildingDTO building) {
         this.building = building;
+    }
+
+    public List<SetBack> getSetBacks() {
+        return setBacks;
+    }
+
+    public SetBack getLevelZeroSetBack() {
+        SetBack setBack = null;
+
+        for (SetBack setback : getSetBacks()) {
+            if (setback.getLevel() == 0)
+                return setback;
+        }
+        return setBack;
+    }
+    public SetBack getLowerLevelSetBack(Integer level, String yardDesc) {
+
+        SetBack setBack = null;
+        if (level == 0)
+            return null;
+
+        while (level > 0) {
+            level--;
+            for (SetBack setback : getSetBacks()) {
+                if (setback.getLevel() == level && yardDesc.equalsIgnoreCase(SIDE_YARD1_DESC)
+                        && setback.getSideYard1() != null)
+                    return setback;
+                else if (setback.getLevel() == level && yardDesc.equalsIgnoreCase(SIDE_YARD2_DESC)
+                        && setback.getSideYard2() != null)
+                    return setback;
+            }
+
+        }
+        return setBack;
+
+    }
+    public void setSetBacks(List<SetBack> setBacks) {
+        this.setBacks = setBacks;
+    }
+    
+    public SetBack getSetBackByLevel(String level) {
+
+        SetBack setBack = null;
+        Integer lvl = Integer.valueOf(level);
+        for (SetBack setback : getSetBacks()) {
+            if (setback.getLevel() == lvl)
+                return setback;
+        }
+        return setBack;
     }
 
 }

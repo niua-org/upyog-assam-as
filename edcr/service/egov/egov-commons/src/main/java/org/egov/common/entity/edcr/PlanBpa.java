@@ -48,10 +48,13 @@
 package org.egov.common.entity.edcr;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -70,12 +73,70 @@ public class PlanBpa implements Serializable {
      * report.
      */
     private PlanInformationDTO planInformation;
+    
+    Map<String, String> planInfoProperties = new HashMap<>();
  
 
     // Single plan contain multiple block/building information. Records Existing and proposed block information.
     private List<BlockDTO> blocks = new ArrayList<>();
     
     private FarDetailsDTO farDetails;
+    
+    private BigDecimal totalKitchens = BigDecimal.ZERO;
+    private BigDecimal totalBathrooms = BigDecimal.ZERO;
+    private BigDecimal totalLatrines = BigDecimal.ZERO;
+    private BigDecimal totalUrinals = BigDecimal.ZERO;
+    private transient List<ElectricLine> electricLine = new ArrayList<>();
+    private ReportOutput reportOutput = new ReportOutput();
+
+   public ReportOutput getReportOutput() {
+        return reportOutput;
+    }
+
+    public void setReportOutput(ReportOutput reportOutput) {
+        this.reportOutput = reportOutput;
+    }
+    
+    public List<ElectricLine> getElectricLine() {
+        return electricLine;
+    }
+
+    public void setElectricLine(List<ElectricLine> electricLine) {
+        this.electricLine = electricLine;
+    }
+
+
+ public BigDecimal getTotalKitchens() {
+        return totalKitchens;
+    }
+
+    public void setTotalKitchens(BigDecimal totalKitchens) {
+        this.totalKitchens = totalKitchens;
+    }
+
+    public BigDecimal getTotalBathrooms() {
+        return totalBathrooms;
+    }
+
+    public void setTotalBathrooms(BigDecimal totalBathrooms) {
+        this.totalBathrooms = totalBathrooms;
+    }
+
+    public BigDecimal getTotalLatrines() {
+        return totalLatrines;
+    }
+
+    public void setTotalLatrines(BigDecimal totalLatrines) {
+        this.totalLatrines = totalLatrines;
+    }
+
+    public BigDecimal getTotalUrinals() {
+        return totalUrinals;
+    }
+
+    public void setTotalUrinals(BigDecimal totalUrinals) {
+        this.totalUrinals = totalUrinals;
+    }
     
 	public FarDetailsDTO getFarDetails() {
 	    return farDetails;
@@ -133,5 +194,12 @@ public class PlanBpa implements Serializable {
             Collections.sort(blocks, Comparator.comparing(BlockDTO::getNumber));
     }
 
-    
+    public Map<String, String> getPlanInfoProperties() {
+        return planInfoProperties;
+    }
+
+    public void setPlanInfoProperties(Map<String, String> planInfoProperties) {
+        this.planInfoProperties = planInfoProperties;
+    }
+
 }

@@ -63,10 +63,38 @@ public class BuildingDTO extends Measurement {
 
     private List<FloorDTO> floors = new ArrayList<>();
 
-
+    private BigDecimal totalFloorArea;
+    
     private BigDecimal totalBuitUpArea;
 
+    private List<OccupancyDTO> totalArea = new ArrayList<>();
+    
+    private BigDecimal coverage;
+    
+    public BigDecimal getTotalFloorArea() {
+        return totalFloorArea;
+    }
 
+    public void setTotalFloorArea(BigDecimal totalFloorArea) {
+        this.totalFloorArea = totalFloorArea;
+    }
+
+    private BigDecimal coverageArea;
+ public BigDecimal getCoverageArea() {
+        return coverageArea;
+    }
+
+    public void setCoverageArea(BigDecimal coverageArea) {
+        this.coverageArea = coverageArea;
+    }
+  public BigDecimal getCoverage() {
+        return coverage;
+    }
+
+    public void setCoverage(BigDecimal coverage) {
+        this.coverage = coverage;
+    }
+    
     public BigDecimal getBuildingHeight() {
         return buildingHeight;
     }
@@ -75,6 +103,14 @@ public class BuildingDTO extends Measurement {
         this.buildingHeight = buildingHeight;
     }
     
+    public List<OccupancyDTO> getTotalArea() {
+        return totalArea;
+    }
+
+    public void setTotalArea(List<OccupancyDTO> totalArea) {
+        this.totalArea = totalArea;
+    }
+
 
     public List<FloorDTO> getFloors() {
         return floors;
@@ -107,8 +143,11 @@ public class BuildingDTO extends Measurement {
 	@Override
 	public String toString() {
 		return "BuildingDTO [buildingHeight=" + buildingHeight + ", floors=" + floors + ", totalBuitUpArea="
-				+ totalBuitUpArea + "]";
+				+ totalBuitUpArea + ", totalArea=" + totalArea + ", coverage=" + coverage + ", coverageArea="
+				+ coverageArea + "]";
 	}
+
+	
 
 
 }
