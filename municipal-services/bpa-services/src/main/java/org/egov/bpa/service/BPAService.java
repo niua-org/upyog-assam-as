@@ -299,24 +299,31 @@ public class BPAService {
      */
     private void populateLandToBPA(List<BPA> bpas, List<LandInfo> landInfos, RequestInfo requestInfo) {
         if (CollectionUtils.isEmpty(bpas)) return;
-        Map<String, LandInfo> landMap = landInfos.stream().filter(land -> land.getId() != null)
-                .collect(Collectors.toMap(land -> land.getId().toLowerCase(), Function.identity(), (existing, replacement) -> existing));
-        List<String> missingLandIds = bpas.stream().filter(bpa -> bpa.getLandId() != null && bpa.getLandInfo() == null)
-                .filter(bpa -> !landMap.containsKey(bpa.getLandId().toLowerCase())).map(BPA::getLandId).distinct().collect(Collectors.toList());
+        
+        Map<String, LandInfo> landMap = landInfos.stream()
+                .filter(land -> land.getId() != null)
+                .collect(Collectors.toMap(land -> land.getId().toLowerCase(), Function.identity(), (e, r) -> e));
+        
+        List<String> missingLandIds = bpas.stream()
+                .map(BPA::getLandId)
+                .filter(Objects::nonNull)
+                .filter(landId -> !landMap.containsKey(landId.toLowerCase()))
+                .distinct()
+                .collect(Collectors.toList());
+        
         if (!missingLandIds.isEmpty()) {
-            LandSearchCriteria missingLandcriteria = new LandSearchCriteria();
-            missingLandcriteria.setIds(missingLandIds);
-            missingLandcriteria.setTenantId(bpas.get(0).getTenantId());
-            log.debug("Batch fetching missing land info for landIds: {} with tenantId: {}", missingLandIds, missingLandcriteria.getTenantId());
-            List<LandInfo> newLandInfo = landService.searchLandInfoToBPA(requestInfo, missingLandcriteria);
-            newLandInfo.stream().filter(land -> land.getId() != null).forEach(land -> landMap.put(land.getId().toLowerCase(), land));
+            LandSearchCriteria criteria = new LandSearchCriteria();
+            criteria.setIds(missingLandIds);
+            criteria.setTenantId(bpas.get(0).getTenantId());
+            log.debug("Batch fetching missing land info for landIds: {} with tenantId: {}", missingLandIds, criteria.getTenantId());
+            landService.searchLandInfoToBPA(requestInfo, criteria).stream()
+                    .filter(land -> land.getId() != null)
+                    .forEach(land -> landMap.put(land.getId().toLowerCase(), land));
         }
-        bpas.forEach(bpa -> {
-            if (bpa.getLandId() != null) {
-                LandInfo land = landMap.get(bpa.getLandId().toLowerCase());
-                if (land != null) bpa.setLandInfo(land);
-            }
-        });
+        
+        bpas.stream()
+                .filter(bpa -> bpa.getLandId() != null)
+                .forEach(bpa -> Optional.ofNullable(landMap.get(bpa.getLandId().toLowerCase())).ifPresent(bpa::setLandInfo));
     }
 
     /**
