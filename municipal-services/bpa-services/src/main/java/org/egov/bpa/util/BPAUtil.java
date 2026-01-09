@@ -4,14 +4,7 @@ import static org.egov.bpa.util.BPAConstants.BILL_AMOUNT;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.ServiceRequestRepository;
@@ -84,10 +77,8 @@ public class BPAUtil {
 
 	/**
 	 * Creates request to search ApplicationType and etc from MDMS
-	 * 
-	 * @param requestInfo
-	 *            The requestInfo of the request
-	 * @param tenantId
+	 *
+	 * @param tenantCode
 	 *            The tenantId of the BPA
 	 * @return request to search ApplicationType and etc from MDMS
 	 */
@@ -250,63 +241,6 @@ public class BPAUtil {
 	}
 
 	/**
-	 * fetch the busniess servce of the current record
-	 * @param applicationType
-	 * @param serviceType
-	 * @return
-	 */
-	public ArrayList<String> getBusinessService(String applicationType, String serviceType) {
-		Map<String, Map<String, String>> appSrvTypeBussSrvCode = config.getAppSrvTypeBussSrvCode();
-		String[] codes = null;
-		Map<String, String> serviceTypeMap = appSrvTypeBussSrvCode.get(applicationType);
-		if (!CollectionUtils.isEmpty(serviceTypeMap)) {
-			if (serviceType != null) {
-				String serviceCodes = serviceTypeMap.get(serviceType);
-				codes = serviceCodes.split(",");
-			} else {
-				codes = (String[]) serviceTypeMap.values().toArray(new String[serviceTypeMap.size()]);
-				codes = codes[0].toString().split(",");
-			}
-		}else{
-			codes = new String[0];
-		}
-		return  new ArrayList<String>(Arrays.asList(codes));
-	}
-
-	/**
-	 * Fetch the demand amount of the BPA
-	 * @param bpaRequest
-	 * @return
-	 */
-	public BigDecimal getDemandAmount(BPARequest bpaRequest) {
-		BPA bpa = bpaRequest.getBPA();
-		RequestInfo requestInfo = bpaRequest.getRequestInfo();
-		LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(getBillUri(bpa),
-				new RequestInfoWrapper(requestInfo));
-		JSONObject jsonObject = new JSONObject(responseMap);
-		double amount = 0.0;
-		try {
-			JSONArray demandArray = (JSONArray) jsonObject.get("Demands");
-			if (demandArray != null && demandArray.length() > 0) {
-				JSONObject firstElement = (JSONObject) demandArray.get(0);
-				if (firstElement != null) {
-					JSONArray demandDetails = (JSONArray) firstElement.get("demandDetails");
-					if (demandDetails != null) {
-						for (int i = 0; i < demandDetails.length(); i++) {
-							JSONObject object = (JSONObject) demandDetails.get(i);
-							Double taxAmt = Double.valueOf((object.get("taxAmount").toString()));
-							amount = amount + taxAmt;
-						}
-					}
-				}
-			}
-			return BigDecimal.valueOf(amount);
-		} catch (Exception e) {
-			throw new CustomException("PARSING ERROR", "Failed to parse the response using jsonPath: " + BILL_AMOUNT);
-		}
-	}
-
-	/**
 	 * gererate bill url with the query params
 	 * @param bpa
 	 * @return
@@ -343,32 +277,6 @@ public class BPAUtil {
 		
 	}
 
-	public String getLandInfoAsString(LandInfo landInfo) {
-		if (landInfo == null) {
-			return null;
-		}
-		try {
-			// Using Gson to convert the object to a JSON string
-			Gson gson = new Gson();
-			return gson.toJson(landInfo);
-		} catch (Exception e) {
-			throw new CustomException("JSON_CONVERSION_ERROR", "Failed to convert LandInfo to JSON string: " + e.getMessage());
-		}
-	}
-
-	public static LandInfo getLandInfoFromString(String landInfoString) {
-		if (landInfoString == null || landInfoString.trim().isEmpty()) {
-			return null;
-		}
-		try {
-			Gson gson = new Gson();
-			return gson.fromJson(landInfoString, LandInfo.class);
-		} catch (Exception e) {
-			throw new CustomException("JSON_PARSING_ERROR",
-					"Failed to convert JSON string to LandInfo: " + e.getMessage());
-		}
-	}
-
 	public long getCurrentTimestampMillis() {
 		return Instant.now().toEpochMilli();
 	}
@@ -387,6 +295,10 @@ public class BPAUtil {
 		}
 		int dotIndex = tenantId.indexOf('.');
 		return dotIndex > 0 ? tenantId.substring(0, dotIndex) : tenantId;
+	}
+
+	public static String generateUUID() {
+		return UUID.randomUUID().toString();
 	}
 
 }

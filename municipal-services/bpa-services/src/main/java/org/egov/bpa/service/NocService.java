@@ -187,7 +187,8 @@ public class NocService {
 			throw new IllegalArgumentException("Roles list is null in the RequestInfo object");
 		}
 
-		// Add the hardcoded extra role
+		/*Hardcoding role to bpa engineer to bypass the NOC role check BPA_ENGINEER_DA.
+		 We are displaying all tenants of DA to engineer in single inbox */
 		Role extraRole = Role.builder()
 				.name("BPA Engineer")
 				.code("BPA_ENGINEER")
@@ -313,22 +314,6 @@ public class NocService {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void updateNoc(NocRequest nocRequest) {
-		StringBuilder uri = new StringBuilder(config.getNocServiceHost());
-		uri.append(config.getNocUpdateEndpoint());
-
-		LinkedHashMap<String, Object> responseMap = null;
-		try {
-			responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository.fetchResult(uri, nocRequest);
-			NocResponse nocResponse = mapper.convertValue(responseMap, NocResponse.class);
-			log.debug("NOC updated with applicationNo : " + nocResponse.getNoc().get(0).getApplicationNo());
-		} catch (Exception se) {
-			throw new CustomException(BPAErrorConstants.NOC_SERVICE_EXCEPTION,
-					" Failed to update NOC of Type " + nocRequest.getNoc().getNocType());
-		}
-	}
-
-	@SuppressWarnings("unchecked")
 	public List<Noc> fetchNocRecords(BPARequest bpaRequest) {
 
 		StringBuilder url = getNOCWithSourceRef(bpaRequest);
@@ -362,87 +347,4 @@ public class NocService {
 		return uri;
 	}
 
-	/**
-	 * Calls the iniate  workflow for the applicable noc records
-	 * @param bpaRequest
-	 * @param mdmsData
-	 */
-	public void initiateNocWorkflow(BPARequest bpaRequest, Object mdmsData) {
-		log.debug("====> initiateNocWorkflow");
-		List<Noc> nocs = fetchNocRecords(bpaRequest);
-		log.debug("====> initiateNocWorkflow = no of noc "+ nocs.size());
-		initiateNocWorkflow(bpaRequest, mdmsData, nocs);
-	}
-
-	/**
-	 * fetches the applicable offline noc's and mark them as approved
-	 * @param bpaRequest
-	 * @param mdmsData
-	 * @param nocs
-	 */
-	@SuppressWarnings("unchecked")
-	private void approveOfflineNoc(BPARequest bpaRequest, Object mdmsData, List<Noc> nocs) {
-		BPA bpa = bpaRequest.getBPA();
-		log.debug(" auto approval of offline noc with bpa status "+ bpa.getStatus() +" and "+bpa.getWorkflow().getAction());
-		if (bpa.getStatus().equalsIgnoreCase(BPAConstants.NOCVERIFICATION_STATUS)
-				&& bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_FORWORD)) {
-			List<String> statuses = Arrays.asList(config.getNocValidationCheckStatuses().split(","));
-			List<String> offlneNocs = (List<String>) JsonPath.read(mdmsData, BPAConstants.NOCTYPE_OFFLINE_MAP);
-			log.debug(" auto approval of offline noc with bpa status and no of nocs "+offlneNocs.size()+" noc statuses"+ statuses.toString());
-			if (!CollectionUtils.isEmpty(nocs)) {
-				nocs.forEach(noc -> {
-					log.debug(" auto approval of offline noc "+ noc.getApplicationNo() +" _"+noc.getApplicationStatus());
-						if (offlneNocs.contains(noc.getNocType()) && !statuses.contains(noc.getApplicationStatus())) {
-							Workflow workflow = Workflow.builder().action(config.getNocAutoApproveAction()).build();
-							noc.setWorkflow(workflow);
-							NocRequest nocRequest = NocRequest.builder().noc(noc)
-									.requestInfo(bpaRequest.getRequestInfo()).build();
-							updateNoc(nocRequest);
-							log.debug("Offline NOC is Auto-Approved " + noc.getApplicationNo());
-						}
-					
-				});
-			}
-		}
-	}
-
-	/**
-	 *
-	 *initate the workflow of applicale NOc to the bpa
-	 * @param bpaRequest
-	 * @param mdmsData
-	 * @param nocs
-	 */
-	@SuppressWarnings("unchecked")
-	private void initiateNocWorkflow(BPARequest bpaRequest, Object mdmsData, List<Noc> nocs) {
-		BPA bpa = bpaRequest.getBPA();
-		String businessServices = bpaRequest.getBPA().getBusinessService(); 
-		Map<String, String> edcrResponse = new HashMap<>();
-		
-		log.info("Edcr api calling..");
-		edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
-		
-		String nocPath = BPAConstants.NOC_TRIGGER_STATE_MAP
-				.replace("{1}", edcrResponse.get(BPAConstants.APPLICATIONTYPE))
-				.replace("{2}", edcrResponse.get(BPAConstants.SERVICETYPE))
-				.replace("{3}", (StringUtils.isEmpty(bpa.getRiskType()) || !bpa.getRiskType().equalsIgnoreCase("LOW"))
-						? "ALL" : bpa.getRiskType().toString());
-		List<Object> triggerActionStates = (List<Object>) JsonPath.read(mdmsData, nocPath);
-		log.debug("====> initiateNocWorkflow = triggerStates" + triggerActionStates.toString());
-		if (!CollectionUtils.isEmpty(triggerActionStates)
-				&& triggerActionStates.get(0).toString().equalsIgnoreCase(bpa.getStatus())) {
-			if (!CollectionUtils.isEmpty(nocs)) {
-				nocs.forEach(noc -> {
-					log.debug("====> noc application status " + noc.getApplicationStatus()  +" for noc appno "+ noc.getApplicationNo());
-					if(!noc.getApplicationStatus().equalsIgnoreCase(INPROGRESS_STATUS)){
-						noc.setWorkflow(Workflow.builder().action(config.getNocInitiateAction()).build());
-						NocRequest nocRequest = NocRequest.builder().noc(noc).requestInfo(bpaRequest.getRequestInfo())
-								.build();
-						updateNoc(nocRequest);
-						log.debug("Noc Initiated with applicationNo : " + noc.getApplicationNo());
-					}
-				});
-			}
-		}
-	}
 }
