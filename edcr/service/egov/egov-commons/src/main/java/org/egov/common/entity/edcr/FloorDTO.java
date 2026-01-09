@@ -176,4 +176,11 @@ public class FloorDTO extends Measurement {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+
+        return "Floor :" + number;
+
+    }
+
 }

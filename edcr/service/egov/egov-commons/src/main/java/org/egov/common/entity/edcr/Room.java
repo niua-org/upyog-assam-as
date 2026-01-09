@@ -49,9 +49,10 @@ package org.egov.common.entity.edcr;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class Room {
 
@@ -64,7 +65,8 @@ public class Room {
     private List<Measurement> rooms = new ArrayList<>();
 
     private MeasurementWithHeight lightAndVentilation = new MeasurementWithHeight();
-    @JsonIgnore
+   
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<Measurement> bathVentilation = new ArrayList<>();
 
     private List<Occupancy> mezzanineAreas = new ArrayList<>();
@@ -217,8 +219,9 @@ public class Room {
 	}
 
 	public List<Measurement> getBathVentilation() {
-		return bathVentilation;
+	    return bathVentilation == null ? Collections.emptyList() : bathVentilation;
 	}
+
 
 	public void setBathVentilation(List<Measurement> bathVentilation) {
 		this.bathVentilation = bathVentilation;

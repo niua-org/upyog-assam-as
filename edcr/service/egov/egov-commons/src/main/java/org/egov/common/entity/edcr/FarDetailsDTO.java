@@ -57,7 +57,8 @@ import java.math.BigDecimal;
  */
 public class FarDetailsDTO implements Serializable {
 
-	    
+	    private Double providedFar;
+	      
 	    private BigDecimal buitUpAreaUnderPremiumFar;
 	    
 
@@ -69,5 +70,12 @@ public class FarDetailsDTO implements Serializable {
 			this.buitUpAreaUnderPremiumFar = buitUpAreaUnderPremiumFar;
 		}
 
+		public Double getProvidedFar() {
+			return providedFar;
+		}
+
+		public void setProvidedFar(Double providedFar) {
+			this.providedFar = providedFar;
+		}
 
 }

@@ -418,6 +418,7 @@ public class RestEdcrApplicationController {
         if (!edcrDetail.isEmpty() && edcrDetail.get(0).getErrors() != null) {
             return new ResponseEntity<>(edcrDetail.get(0).getErrors(), HttpStatus.OK);
         } else {
+        	edcrRestService.filterOnlyCommonParking(edcrDetail);
             return getSuccessResponseForEdcrDetail(edcrDetail, requestInfoWrapper.getRequestInfo(), count);
         }
     }
