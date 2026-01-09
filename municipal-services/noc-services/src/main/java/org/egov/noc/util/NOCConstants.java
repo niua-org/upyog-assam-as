@@ -1,6 +1,5 @@
 package org.egov.noc.util;
 
-import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -105,6 +104,15 @@ public class NOCConstants {
 	public static final String DOC_TYPE_SITECORDINATES = "NOC.SITECORDINATES";
 	public static final String DOC_TYPE_AUTHORIZATION = "NOC.AUTHORIZATION";
 	public static final String DOC_TYPE_PERMISSION = "NOC.PERMISSION";
+	public static final String DOC_TYPE_AAI_NOC_APPROVAL = "NOC.AAI_NOC_APPROVAL";
+
+	// AAI Status Constants
+	public static final String AAI_STATUS_ISSUED = "ISSUED";
+	public static final String AAI_STATUS_AUTOSETTLED = "AUTOSETTLED";
+	public static final String AAI_STATUS_APPROVED = "APPROVED";
+	public static final String AAI_STATUS_REJECTED = "REJECTED";
+	public static final String AAI_STATUS_VERIFICATIONREJECTED = "VERIFICATIONREJECTED";
+	public static final String AAI_STATUS_INPROCESS = "INPROCESS";
 
 	// Fire NOC Workflow Constants
 	public static final String FIRE_NOC_WORKFLOW_CODE = "FIRE_SAFETY_SRV";

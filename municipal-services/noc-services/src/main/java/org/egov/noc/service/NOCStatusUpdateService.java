@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.noc.util.NOCConstants;
+import org.egov.noc.web.model.Document;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.NocRequest;
 import org.egov.noc.web.model.NocSearchCriteria;
@@ -15,11 +17,10 @@ import org.egov.noc.web.model.Workflow;
 import org.egov.noc.web.model.aai.AAIApplicationStatus;
 import org.egov.noc.web.model.aai.AAIStatusResponse;
 import org.egov.noc.workflow.WorkflowIntegrator;
-import org.egov.noc.workflow.WorkflowService;
-import org.egov.noc.web.model.workflow.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +41,7 @@ public class NOCStatusUpdateService {
     private WorkflowIntegrator wfIntegrator;
 
     @Autowired
-    private WorkflowService workflowService;
+    private FileStoreService fileStoreService;
 
     /**
      * Updates NOC statuses based on AAI response
@@ -98,12 +99,13 @@ public class NOCStatusUpdateService {
         String aaiStatusValue = aaiStatus.getStatus();
         String newNocStatus = aaiIntegrationService.mapAAIStatusToNOCStatus(aaiStatusValue);
         
-        if ("INPROCESS".equalsIgnoreCase(aaiStatusValue)) {
+        if (aaiStatus.getNocasId() != null && !aaiStatus.getNocasId().trim().isEmpty()) {
+            existingNoc.setNocNo(aaiStatus.getNocasId());
+        }
+        
+        if (NOCConstants.AAI_STATUS_INPROCESS.equalsIgnoreCase(aaiStatusValue)) {
             log.info("NOC {} is INPROCESS - updating additionalDetails and nocNo", uniqueId);
             updateAdditionalDetailsFromAAI(existingNoc, aaiStatus);
-            if (aaiStatus.getNocasId() != null && !aaiStatus.getNocasId().trim().isEmpty()) {
-                existingNoc.setNocNo(aaiStatus.getNocasId());
-            }
             NocRequest nocRequest = NocRequest.builder()
                     .noc(existingNoc)
                     .requestInfo(requestInfo)
@@ -113,7 +115,13 @@ public class NOCStatusUpdateService {
         }
         
         if (newNocStatus.equals(existingNoc.getApplicationStatus())) {
-            log.debug("NOC {} already has status {}", uniqueId, newNocStatus);
+            log.debug("NOC {} already has status {}, updating nocNo and additionalDetails", uniqueId, newNocStatus);
+            updateAdditionalDetailsFromAAI(existingNoc, aaiStatus);
+            NocRequest nocRequest = NocRequest.builder()
+                    .noc(existingNoc)
+                    .requestInfo(requestInfo)
+                    .build();
+            nocRepository.update(nocRequest, false);
             return existingNoc;
         }
         String workflowAction = determineWorkflowAction(newNocStatus);
@@ -122,6 +130,7 @@ public class NOCStatusUpdateService {
 
     /**
      * Executes NOC status update with or without workflow
+     * For ISSUED and AutoSettled statuses, also downloads and saves the approval document
      * 
      * @param existingNoc NOC application
      * @param aaiStatus AAI status
@@ -134,9 +143,39 @@ public class NOCStatusUpdateService {
                                      String workflowAction, String newNocStatus, RequestInfo requestInfo) {
         updateAdditionalDetailsFromAAI(existingNoc, aaiStatus);
         
-        if (aaiStatus.getNocasId() != null && !aaiStatus.getNocasId().trim().isEmpty()) {
-            existingNoc.setNocNo(aaiStatus.getNocasId());
+        String aaiStatusValue = aaiStatus.getStatus();
+        if ((NOCConstants.AAI_STATUS_ISSUED.equalsIgnoreCase(aaiStatusValue) 
+                || NOCConstants.AAI_STATUS_AUTOSETTLED.equalsIgnoreCase(aaiStatusValue))
+                && StringUtils.hasText(aaiStatus.getFileName())) {
+            
+            try {
+                String fileStoreId = fileStoreService.uploadFileFromUrlToFileStore(
+                        aaiStatus.getFileName(), 
+                        existingNoc.getTenantId(), 
+                        NOCConstants.NOC_MODULE);
+                
+                if (StringUtils.hasText(fileStoreId)) {
+                    Document aaiDocument = Document.builder()
+                            .id(UUID.randomUUID().toString())
+                            .documentType(NOCConstants.DOC_TYPE_AAI_NOC_APPROVAL)
+                            .fileStoreId(fileStoreId)
+                            .documentUid(fileStoreId)
+                            .build();
+                    
+                    if (existingNoc.getDocuments() == null) {
+                        existingNoc.setDocuments(new ArrayList<>());
+                    }
+                    existingNoc.getDocuments().add(aaiDocument);
+                    log.info("Added AAI NOC approval document to NOC {} for saving through update flow", existingNoc.getId());
+                } else {
+                    log.warn("Failed to upload AAI document for NOC {}, fileName: {}", 
+                            existingNoc.getId(), aaiStatus.getFileName());
+                }
+            } catch (Exception e) {
+                log.error("Failed to add AAI document for NOC {}", existingNoc.getId(), e);
+            }
         }
+        
         NocRequest nocRequest = NocRequest.builder()
                 .noc(existingNoc)
                 .requestInfo(requestInfo)
@@ -173,7 +212,6 @@ public class NOCStatusUpdateService {
         aaiData.put("PTE", aaiStatus.getPte());
         aaiData.put("ISSUEDATE", aaiStatus.getIssueDate());
         aaiData.put("AirportName", aaiStatus.getAirportName());
-        aaiData.put("REMARK", aaiStatus.getRemark());
         aaiData.put("FILENAME", aaiStatus.getFileName());
         aaiData.put("ActionType", aaiStatus.getActionType());
         aaiData.put("QueryType", aaiStatus.getQueryType());
@@ -184,8 +222,12 @@ public class NOCStatusUpdateService {
         aaiData.put("aaiLastUpdated", Instant.now().toEpochMilli());
 
         String aaiStatusValue = aaiStatus.getStatus();
-        if ("REJECTED".equalsIgnoreCase(aaiStatusValue) || 
-            "VERIFICATION_REJECTED".equalsIgnoreCase(aaiStatusValue)) {
+        if (!NOCConstants.AAI_STATUS_INPROCESS.equalsIgnoreCase(aaiStatusValue) && aaiStatus.getRemark() != null) {
+            aaiData.put("REMARK", aaiStatus.getRemark());
+        }
+        
+        if (NOCConstants.AAI_STATUS_REJECTED.equalsIgnoreCase(aaiStatusValue) || 
+            NOCConstants.AAI_STATUS_VERIFICATIONREJECTED.equalsIgnoreCase(aaiStatusValue)) {
             aaiData.put("aaiRejectionRemarks", aaiStatus.getRemark());
         }
 

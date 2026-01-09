@@ -381,15 +381,16 @@ public class NOCService {
 		 * @param tenantId Tenant ID or null for default
 		 * @return List of NOC records in CREATED status
 		 */
-		public List<Noc> fetchNewAAINOCs(String tenantId) {
-			NocSearchCriteria criteria = new NocSearchCriteria();
-			criteria.setApplicationStatus(NOCConstants.APPLICATION_STATUS_INPROGRESS);
-			criteria.setNocType(NOCConstants.CIVIL_AVIATION_NOC_TYPE);
-			criteria.setTenantId(tenantId);
-			criteria.setLimit(config.getMaxSearchLimit());
-			criteria.setOffset(0);
-			return nocRepository.getNocDatav2(criteria);
-		}
+	public List<Noc> fetchNewAAINOCs(String tenantId) {
+		NocSearchCriteria criteria = new NocSearchCriteria();
+		String applicationStatuses = NOCConstants.APPLICATION_STATUS_INPROGRESS + "," + NOCConstants.AAI_STATUS_INPROCESS;
+		criteria.setApplicationStatus(applicationStatuses);
+		criteria.setNocType(NOCConstants.CIVIL_AVIATION_NOC_TYPE);
+		criteria.setTenantId(tenantId);
+		criteria.setLimit(config.getMaxSearchLimit());
+		criteria.setOffset(0);
+		return nocRepository.getNocDatav2(criteria);
+	}
 
 		/**
 		 * Retrieves BPA details for each NOC by calling the BPA service.

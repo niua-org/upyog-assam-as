@@ -671,6 +671,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
         </StatusTable>
         {window.location.href.includes("editApplication") ? (
           <React.Fragment>
+          {getOrderDocuments(applicationDocs)?.length > 0 && (
             <StatusTable>
               <CardLabel style={{fontSize: "18px", marginTop: "24px", fontWeight: "bold"}}>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardLabel>
               <LinkButton
@@ -685,7 +686,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                   />
                 }
                 style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/document-details`)}
+                onClick={() => routeTo(`${baseRoute}/document-details`)}
               />
               {
               <DocumentsPreview
@@ -703,6 +704,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
             />
               }
             </StatusTable>
+          )}
             
             {/* <StatusTable>
               <Accordion
