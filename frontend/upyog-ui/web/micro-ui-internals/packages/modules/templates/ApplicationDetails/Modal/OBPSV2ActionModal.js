@@ -139,7 +139,26 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         ...applicationData?.additionalDetails,
         submitReportinspection_pending: submitReport,
         nocDetails: nocDetails,
-        pendingapproval: getPendingApprovals()
+        pendingapproval: getPendingApprovals(),
+         adjoiningOwners: {
+            ...applicationData?.additionalDetails?.adjoiningOwners,
+
+            north:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.north ??
+              applicationData?.additionalDetails?.adjoiningOwners?.north,
+
+            south:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.south ??
+              applicationData?.additionalDetails?.adjoiningOwners?.south,
+
+            east:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.east ??
+              applicationData?.additionalDetails?.adjoiningOwners?.east,
+
+            west:
+              applicationData?.additionalDetails?.submitReportinspection_pending?.west ??
+              applicationData?.additionalDetails?.adjoiningOwners?.west,
+          }
       },
        workflow:{
         action: action?.action,

@@ -14,11 +14,37 @@ import DocumentsPreview from "../../../templates/ApplicationDetails/components/D
 
 const siteReport = ({submitReport, onChange, data}) => {
   // Extract BPA data from FormComposer
+  const stateId = Digit.ULBService.getStateId();
   const bpaData = data?.bpaData;
   const { t } = useTranslation();
   const [buildingPermitAuthority, setBuildingPermitAuthority] = useState("");
+  const [siteQuestions, setSiteQuestions] = useState([]);
+  
+  const { data: siteQuestionLists } = Digit.Hooks.useEnabledMDMS(
+    stateId, 
+    "BPA", 
+    [
+      { name: "CheckList" },
+    ],
+    {
+      select: (data) => {
+        return data?.BPA?.CheckList|| [];
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (siteQuestionLists && siteQuestionLists.length > 0) {
+      siteQuestionLists.map((item)=>{
+        setSiteQuestions(item.questions)
+      })
+    }
+  }, [siteQuestionLists]);
+
+  
+
   const { data: nocLists, isLoading } = Digit.Hooks.useEnabledMDMS(
-    "as", 
+    stateId, 
     "NOC", 
     [
       { name: "NocTypeMapping" },
@@ -66,52 +92,28 @@ const siteReport = ({submitReport, onChange, data}) => {
     masterPlanZone: "",
     inspectionDate: "",
     mouza: "",
- 
-    topographyOfLand: "",
-    topographyOfLandRemarks: "",
-    earthFillingRequired: "",
-    earthFillingRequiredRemarks: "",
-    provisionOfExistingRoadSideDrain: "",
-    provisionOfExistingRoadSideDrainRemarks: "",
-    provisionOfParkingForHighRiseBuilding: "",
-    provisionOfParkingForHighRiseBuildingRemarks: "",
-    roadWidthInFrontPlot: "",
-    roadWidthInFrontPlotRemarks: "",
-    roadWidthNearestPlot: "",
-    roadWidthNearestPlotRemarks: "",
-    roadWidthNarrowestPlot: "",
-    roadWidthNarrowestPlotRemarks: "",
-    totalAverageRoadWidth: "",
-    totalAverageRoadWidthRemarks: "",
-    proposedRoadWidth: "",
-    proposedRoadWidthRemarks: "",
-    descriptionOfAnyOtherRoad: "",
-    descriptionOfAnyOtherRoadRemarks: "",
-    existingNatureOfApproachRoad: "",
-    existingNatureOfApproachRoadRemarks: "",
-    approximateLengthDeadEndRoad: "",
-    approximateLengthDeadEndRoadRemarks: "",
-    roadCondition: "",
-    roadConditionRemarks: "",
-    proposedUseConformityWithMasterPlan: "",
-    proposedUseConformityWithMasterPlanRemarks: "",
-    anyWaterBodyExistsInPlot: "",
-    anyWaterBodyExistsInPlotRemarks: "",
-    distanceOfPlotFromNearestWaterBody: "",
-    distanceOfPlotFromNearestWaterBodyRemarks: "",
-    areaOfPlotMeasured: "",
-    areaOfPlotMeasuredRemarks: "",
-    north: "",
-    northRemarks: "",
-    south: "",
-    southRemarks: "",
-    east: "",
-    eastRemarks: "",
-    west: "",
-    westRemarks: "",
-    commentsOnProposal: "",
-    commentsOnProposalRemarks: ""
   });
+
+  useEffect(() => {
+  if (siteQuestions && siteQuestions.length > 0) {
+    const dynamicFields = {};
+    const directionFields = ["north", "south", "east", "west"];
+
+    siteQuestions.forEach(question => {
+      if (!question.active) return;
+      const key = question.fieldKey;
+      const isDirection = directionFields.includes(key);
+
+      // Do not touch direction fields at all
+      if (!isDirection) {
+        dynamicFields[key] = "";
+        dynamicFields[`${key}Remarks`] = "";
+      }
+    });
+
+    setForm(prev => ({ ...prev, ...dynamicFields }));
+  }
+}, [siteQuestions]);
 
   // Autofill form with BPA data
   useEffect(() => {
@@ -330,6 +332,76 @@ const siteReport = ({submitReport, onChange, data}) => {
   
     saveSession(nocDetails); 
   };
+
+   // Validation function to check if all mandatory fields are filled
+  const validateForm = () => {
+    // Check mandatory static fields
+    if (!form.inspectorName || !form.inspectionDate) {
+      return false;
+    }
+
+    // Check mandatory dynamic fields from siteQuestions
+    if (siteQuestions && siteQuestions.length > 0) {
+      const mandatoryQuestions = siteQuestions.filter(q => q.active && q.mandatory);
+      for (const question of mandatoryQuestions) {
+        if (!form[question.fieldKey]) {
+          return false;
+        }
+      }
+    }
+
+    // Check Civil Aviation NOC if selected
+    if (nocList.includes("CIVIL_AVIATION")) {
+      const aaiDetails = nocDetails?.AAI_NOC_DETAILS;
+      
+      // Check site elevation
+      if (!aaiDetails?.siteElevation) {
+        return false;
+      }
+
+      // Check plot size type is selected
+      if (!plotSizeType) {
+        return false;
+      }
+
+      // Check coordinates based on plot size
+      if (plotSizeType === "ABOVE_300") {
+        const directions = ["EAST", "WEST", "NORTH", "SOUTH"];
+        for (const dir of directions) {
+          if (!aaiDetails?.[dir]?.latitude || !aaiDetails?.[dir]?.longitude) {
+            return false;
+          }
+        }
+      } else if (plotSizeType === "BELOW_300") {
+        if (!aaiDetails?.CENTER?.latitude || !aaiDetails?.CENTER?.longitude) {
+          return false;
+        }
+      }
+
+      // Check mandatory documents
+      const mandatoryDocs = civilAviationDocList.filter(doc => doc.required);
+      const uploadedDocs = aaiDetails?.documents || [];
+      
+      for (const doc of mandatoryDocs) {
+        const hasDoc = uploadedDocs.some(d => d.documentType === doc.documentType);
+        if (!hasDoc) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+
+  const isFormValid = validateForm();
+
+  useEffect(() => {
+  sessionStorage.setItem(
+    "SITE_REPORT_VALID",
+    JSON.stringify(isFormValid)
+  );
+}, [isFormValid]);
   
 
   const fieldRowStyle = {
@@ -339,12 +411,6 @@ const siteReport = ({submitReport, onChange, data}) => {
     gap: "150px",
   };
 
-//   const labelStyle = {
-//     flex: "0 0 250px", // fixed width for all labels
-//     fontWeight: 500,
-//     textAlign: "left",
-//     marginTop: "8px",
-//   };
 
   const inputStyle = {
     flex: "1",
@@ -359,11 +425,15 @@ const siteReport = ({submitReport, onChange, data}) => {
     lineHeight: "1.4", 
   };
   
-  const renderFieldWithRemarks = (labelKey, fieldKey) => {
-    const isAutoFilled = ['north', 'south', 'east', 'west'].includes(fieldKey) && !!form[fieldKey];
+  // Updated renderFieldWithRemarks to accept question object
+  const renderFieldWithRemarks = (question) => {
+    const { i18nKey, fieldKey, mandatory,dataType } = question;
+    // const isAutoFilled = ['north', 'south', 'east', 'west'].includes(fieldKey) && !!form[fieldKey];
+    const isDirectionField = ["north", "south", "east", "west"].includes(fieldKey);
+    const isAutoFilled = isDirectionField && !!form[fieldKey];
     
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "250px 1fr", rowGap: "8px", columnGap: "150px", marginBottom: "16px" }}>
+      <div key={fieldKey} style={{ display: "grid", gridTemplateColumns: "250px 1fr", rowGap: "8px", columnGap: "150px", marginBottom: "16px" }}>
         <CardLabel style={{
           fontWeight: 500,
           textAlign: "left",
@@ -371,25 +441,33 @@ const siteReport = ({submitReport, onChange, data}) => {
           lineHeight: "1.4",
           alignSelf: "start"
         }}>
-          {t(labelKey)}
+          {t(i18nKey)}
+          {mandatory && <span style={{ color: "red" }}> *</span>}
         </CardLabel>
     
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <TextInput
-            style={{ width: "100%" }}
-            value={form[fieldKey]}
-            onChange={(e) => handleChange(fieldKey, e.target.value)}
-            disable={isAutoFilled}
-          />
-          <TextArea
-            style={{ width: "100%" }}
-            value={form[`${fieldKey}Remarks`]}
-            onChange={(e) => handleChange(`${fieldKey}Remarks`, e.target.value)}
-            maxLength={500}
-            placeholder={t("REMARKS")}
-            rows={3}
-          />
-        </div>
+       <React.Fragment>
+        {dataType === "textInput" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <TextInput
+              style={{ width: "100%" }}
+              value={form[fieldKey] || ""}
+              onChange={(e) => handleChange(fieldKey, e.target.value)}
+              disabled={isDirectionField?false:isAutoFilled}
+            />
+          </div>
+        ) : dataType === "textArea" ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <TextArea
+              style={{ width: "100%" }}
+              value={form[fieldKey] || ""}
+              onChange={(e) => handleChange(fieldKey, e.target.value)}
+              maxLength={500}
+              placeholder={t("REMARKS")}
+              rows={3}
+            />
+          </div>
+        ) : null}
+      </React.Fragment>
       </div>
     );
   };
@@ -410,14 +488,14 @@ const siteReport = ({submitReport, onChange, data}) => {
             />
           </div>
 
-          <div style={fieldRowStyle}>
+          {/* <div style={fieldRowStyle}>
             <CardLabel style={labelStyle}>{t("BPA_SUBMITTED_ON")}</CardLabel>
             <DatePicker
               style={inputStyle}
               date={form.submittedOn}
               onChange={(d) => handleChange("submittedOn", d)}
             />
-          </div>
+          </div> */}
 
           <div style={fieldRowStyle}>
             <CardLabel style={labelStyle}>{t("BPA_APPLICANT_NAME")}</CardLabel>
@@ -450,7 +528,7 @@ const siteReport = ({submitReport, onChange, data}) => {
           </div>
 
           <div style={fieldRowStyle}>
-            <CardLabel style={labelStyle}>{t("BPA_INSPECTOR_NAME")}</CardLabel>
+            <CardLabel style={labelStyle}>{t("BPA_INSPECTOR_NAME")}<span style={{ color: "red" }}> *</span></CardLabel>
             <TextInput
               style={inputStyle}
               value={form.inspectorName}
@@ -535,7 +613,7 @@ const siteReport = ({submitReport, onChange, data}) => {
           </div>
 
           <div style={fieldRowStyle}>
-            <CardLabel style={labelStyle}>{t("BPA_SITE_INSPECTION_DATE")}</CardLabel>
+            <CardLabel style={labelStyle}>{t("BPA_SITE_INSPECTION_DATE")}<span style={{ color: "red" }}> *</span></CardLabel>
             <DatePicker
               style={inputStyle}
               date={form.inspectionDate}
@@ -558,28 +636,15 @@ const siteReport = ({submitReport, onChange, data}) => {
             {t("BPA_SITE_CHECKLIST")}
           </CardSectionHeader>
 
-          {renderFieldWithRemarks("TOPOGRAPHY_OF_LAND", "topographyOfLand")}
-          {renderFieldWithRemarks("EARTH_FILLING_REQUIRED", "earthFillingRequired")}
-          {renderFieldWithRemarks("BPA_PROVISION_OF_EXISTING_ROAD_SIDE_DRAIN", "provisionOfExistingRoadSideDrain")}
-          {renderFieldWithRemarks("PROVISION_OF_PARKING_FOR_HIGH_RISE_BUILDING", "provisionOfParkingForHighRiseBuilding")}
-          {renderFieldWithRemarks("ROAD_WIDTH_INFRONT_PLOT", "roadWidthInFrontPlot")}
-          {renderFieldWithRemarks("ROAD_WIDTH_NEAREST_PLOT", "roadWidthNearestPlot")}
-          {renderFieldWithRemarks("ROAD_WIDTH_NARROWEST_PLOT", "roadWidthNarrowestPlot")}
-          {renderFieldWithRemarks("TOTAL_AVERAGE_ROAD_WIDTH", "totalAverageRoadWidth")}
-          {renderFieldWithRemarks("PROPOSED_ROAD_WIDTH", "proposedRoadWidth")}
-          {renderFieldWithRemarks("DESCRIPTION_OF_ANY_OTHER_ROAD", "descriptionOfAnyOtherRoad")}
-          {renderFieldWithRemarks("EXISTING_NATURE_OF_APPROACH_ROAD", "existingNatureOfApproachRoad")}
-          {renderFieldWithRemarks("APPROXIMATE_LENGTH_DEAD_END_ROAD", "approximateLengthDeadEndRoad")}
-          {renderFieldWithRemarks("ROAD_CONDITION", "roadCondition")}
-          {renderFieldWithRemarks("WHETHER_THE_PROPOSED_USE_IS_IN_CONFORMITY_WITH_MASTER_PLAN", "proposedUseConformityWithMasterPlan")}
-          {renderFieldWithRemarks("WHETHER_ANY_WATER_BODY_EXISTS_IN_PLOT", "anyWaterBodyExistsInPlot")}
-          {renderFieldWithRemarks("DISTANCE_OF_PLOT_FROM_NEAREST_WATER_BODY", "distanceOfPlotFromNearestWaterBody")}
-          {renderFieldWithRemarks("AREA_OF_PLOT_MEASURED", "areaOfPlotMeasured")}
-          {renderFieldWithRemarks("NORTH", "north")}
-          {renderFieldWithRemarks("SOUTH", "south")}
-          {renderFieldWithRemarks("EAST", "east")}
-          {renderFieldWithRemarks("WEST", "west")}
-          {renderFieldWithRemarks("COMMENTS_ON_PROPOSAL", "commentsOnProposal")}
+          {/* Dynamic rendering based on siteQuestions */}
+          {siteQuestions && siteQuestions.length > 0 ? (
+            siteQuestions
+              .filter(question => question.active)
+              .map((question) => renderFieldWithRemarks(question))
+          ) : (
+            <div>{t("MDMS_DATA_LOADING_ERROR")}</div>
+          )}
+
           <CardSectionHeader style={{ marginTop: "20px" }}>
             {t("BPA_NOC_CHECKLIST")}
           </CardSectionHeader>

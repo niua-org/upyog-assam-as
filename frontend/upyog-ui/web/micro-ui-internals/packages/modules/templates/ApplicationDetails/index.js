@@ -49,7 +49,8 @@ const ApplicationDetails = (props) => {
     isInfoLabel = false,
     clearDataDetails,
     isAction=false,
-    nocDetails
+    nocDetails,
+    isSubmitDisabled
   } = props;
   
   useEffect(() => {
@@ -251,6 +252,7 @@ const ApplicationDetails = (props) => {
             ActionBarStyle={ActionBarStyle}
             MenuStyle={MenuStyle}
             applicationDetails={applicationDetails}
+            isSubmitDisabled={isSubmitDisabled}
           />
         </React.Fragment>
       ) : (
