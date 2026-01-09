@@ -1,6 +1,7 @@
 package org.egov.noc.repository.rowmapper;
 
 import com.google.gson.Gson;
+import org.egov.noc.web.model.AuditDetails;
 import org.egov.noc.web.model.Noc;
 import org.egov.noc.web.model.enums.ApplicationType;
 import org.egov.noc.web.model.enums.Status;
@@ -47,6 +48,14 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
                                 || rs.getString("additionalDetails").equals("null") ? null : rs.getString("additionalDetails"),
                         Object.class);
                 noc.setAdditionalDetails(additionalDetails);
+
+                AuditDetails auditdetails = AuditDetails.builder()
+                        .createdBy(rs.getString("noc_createdBy"))
+                        .createdTime(rs.getLong("noc_createdTime"))
+                        .lastModifiedBy(rs.getString("noc_lastModifiedBy"))
+                        .lastModifiedTime(rs.getLong("noc_lastModifiedTime"))
+                        .build();
+                noc.setAuditDetails(auditdetails);
 
                 nocListMap.put(Id, noc);
             }
