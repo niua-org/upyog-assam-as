@@ -192,7 +192,7 @@ public class BPAService {
         landcriteria.setTenantId(criteria.getTenantId());
         landcriteria.setLocality(criteria.getLocality());
         List<String> edcrNos = null;
-        boolean isDetailRequired = criteria.getMobileNumber() != null || criteria.getApplicationNo() != null || (!CollectionUtils.isEmpty(criteria.getIds()));
+        boolean isDetailRequired =  criteria.getApplicationNo() != null || (!CollectionUtils.isEmpty(criteria.getIds()));
         if (criteria.getMobileNumber() != null) {
             bpas = this.getBPAFromMobileNumber(criteria, landcriteria, requestInfo);
         }else if (criteria.getName() != null) {

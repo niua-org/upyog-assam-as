@@ -88,7 +88,7 @@ public class BPAQueryBuilder {
                     "FROM ug_bpa_buildingplans bpa " +
                     "LEFT OUTER JOIN ug_bpa_documents bpadoc ON bpadoc.buildingplan_id = bpa.id " +
                     "LEFT OUTER JOIN ug_bpa_rtp_detail rtp ON rtp.buildingplan_id = bpa.id " +
-                    "LEFT OUTER JOIN ug_bpa_area_mapping_detail area ON area.buildingplan_id = bpa.id";
+                    "INNER JOIN ug_bpa_area_mapping_detail area ON area.buildingplan_id = bpa.id";
 
     //Basic query for limited details - only essential fields without documents, RTP joins, and additionalDetails
     private static final String BASIC_QUERY =
@@ -127,7 +127,7 @@ public class BPAQueryBuilder {
                     "       area.mouza AS area_mouza, " +
                     "       area.ward AS area_ward " +
                     "FROM ug_bpa_buildingplans bpa " +
-                    "LEFT OUTER JOIN ug_bpa_area_mapping_detail area ON area.buildingplan_id = bpa.id";
+                    "INNER JOIN ug_bpa_area_mapping_detail area ON area.buildingplan_id = bpa.id";
 
     private final String paginationWrapper = "SELECT * FROM " +
             "(SELECT *, DENSE_RANK() OVER (ORDER BY bpa_last_modified_time DESC) offset_ FROM ({}) result) result_offset " +
