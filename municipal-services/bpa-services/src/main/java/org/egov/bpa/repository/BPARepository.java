@@ -4,7 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.producer.Producer;
 import org.egov.bpa.repository.querybuilder.BPAQueryBuilder;
-import org.egov.bpa.repository.rowmapper.BPARowMapper;
+import org.egov.bpa.repository.rowmapper.BPADetailRowMapper;
+import org.egov.bpa.repository.rowmapper.BasicBPARowMapper;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.web.model.BPA;
 import org.egov.bpa.web.model.BPARequest;
@@ -37,7 +38,10 @@ public class BPARepository {
 	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
-	private BPARowMapper rowMapper;
+	private BPADetailRowMapper rowMapper;
+
+	@Autowired
+	private BasicBPARowMapper basicRowMapper;
 
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
@@ -72,11 +76,33 @@ public class BPARepository {
 	}
 
 	/**
-	 * BPA search in database
+	 * BPA search in database with full details (documents, RTP, area mapping)
 	 *
 	 * @param criteria
 	 *            The BPA Search criteria
-	 * @return List of BPA from search
+	 * @return List of BPA from search with full details
+	 */
+	public List<BPA> getBPADetailData(BPASearchCriteria criteria, List<String> edcrNos) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		// String query = queryBuilder.getBPASearchQuery(criteria, preparedStmtList, edcrNos, false);
+		String query = queryBuilder.getBPADetailSearchQuery(criteria, preparedStmtList, edcrNos, false);
+		try {
+			query = centralInstanceUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
+			log.info("getBPADetailData query : {} and preparedStmtList : {}", query, preparedStmtList);
+		} catch (InvalidTenantIdException e) {
+			throw new CustomException("EG_PT_TENANTID_ERROR",
+					"TenantId length is not sufficient to replace query schema in a multi state instance");
+		}
+		List<BPA> BPAData = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		return BPAData;
+	}
+
+	/**
+	 * BPA search in database with basic details only (for performance - no documents, no RTP)
+	 *
+	 * @param criteria
+	 *            The BPA Search criteria
+	 * @return List of BPA from search with basic details
 	 */
 	public List<BPA> getBPAData(BPASearchCriteria criteria, List<String> edcrNos) {
 		List<Object> preparedStmtList = new ArrayList<>();
@@ -88,7 +114,7 @@ public class BPARepository {
 			throw new CustomException("EG_PT_TENANTID_ERROR",
 					"TenantId length is not sufficient to replace query schema in a multi state instance");
 		}
-		List<BPA> BPAData = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		List<BPA> BPAData = jdbcTemplate.query(query, preparedStmtList.toArray(), basicRowMapper);
 		return BPAData;
 	}
 	
@@ -101,7 +127,8 @@ public class BPARepository {
          */
         public int getBPACount(BPASearchCriteria criteria, List<String> edcrNos) {
                 List<Object> preparedStmtList = new ArrayList<>();
-                String query = queryBuilder.getBPASearchQuery(criteria, preparedStmtList, edcrNos, true);
+                // String query = queryBuilder.getBPASearchQuery(criteria, preparedStmtList, edcrNos, true);
+                String query = queryBuilder.getBPADetailSearchQuery(criteria, preparedStmtList, edcrNos, true);
 				try {
 					query = centralInstanceUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
 				} catch (InvalidTenantIdException e) {
@@ -114,7 +141,8 @@ public class BPARepository {
 
         public List<BPA> getBPADataForPlainSearch(BPASearchCriteria criteria, List<String> edcrNos) {
     		List<Object> preparedStmtList = new ArrayList<>();
-    		String query = queryBuilder.getBPASearchQueryForPlainSearch(criteria, preparedStmtList, edcrNos, false);
+    		// String query = queryBuilder.getBPASearchQueryForPlainSearch(criteria, preparedStmtList, edcrNos, false);
+    		String query = queryBuilder.getBPADetailSearchQuery(criteria, preparedStmtList, edcrNos, false);
 			try {
 				query = centralInstanceUtil.replaceSchemaPlaceholder(query, criteria.getTenantId());
 			} catch (InvalidTenantIdException e) {

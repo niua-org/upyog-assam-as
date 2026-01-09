@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -190,6 +192,7 @@ public class BPAService {
         landcriteria.setTenantId(criteria.getTenantId());
         landcriteria.setLocality(criteria.getLocality());
         List<String> edcrNos = null;
+        boolean isDetailRequired =  criteria.getApplicationNo() != null || (!CollectionUtils.isEmpty(criteria.getIds()));
         if (criteria.getMobileNumber() != null) {
             bpas = this.getBPAFromMobileNumber(criteria, landcriteria, requestInfo);
         }else if (criteria.getName() != null) {
@@ -204,7 +207,11 @@ public class BPAService {
                 bpas = this.getBPACreatedForByMe(criteria, requestInfo, landcriteria, edcrNos);
                 log.debug("no of bpas retuning by the search query" + bpas.size());
             } else {
-                bpas = getBPAFromCriteria(criteria, requestInfo, edcrNos);
+                if (isDetailRequired) {
+                    bpas = getBPADetailFromCriteria(criteria, requestInfo, edcrNos);
+                } else {
+                    bpas = getBPAFromCriteria(criteria, requestInfo, edcrNos);
+                }
                 ArrayList<String> landIds = new ArrayList<>();
                 if (!bpas.isEmpty()) {
 
@@ -291,27 +298,32 @@ public class BPAService {
      * @param landInfos
      */
     private void populateLandToBPA(List<BPA> bpas, List<LandInfo> landInfos, RequestInfo requestInfo) {
-        for (int i = 0; i < bpas.size(); i++) {
-            for (int j = 0; j < landInfos.size(); j++) {
-                if (landInfos.get(j).getId().equalsIgnoreCase(bpas.get(i).getLandId())) {
-                    bpas.get(i).setLandInfo(landInfos.get(j));
-                }
-            }
-            if (bpas.get(i).getLandId() != null && bpas.get(i).getLandInfo() == null) {
-                LandSearchCriteria missingLandcriteria = new LandSearchCriteria();
-                List<String> missingLandIds = new ArrayList<>();
-                missingLandIds.add(bpas.get(i).getLandId());
-                missingLandcriteria.setTenantId(bpas.get(0).getTenantId());
-                missingLandcriteria.setIds(missingLandIds);
-                log.debug("Call with land ids to Land::" + missingLandcriteria.getTenantId() + missingLandcriteria.getIds());
-                List<LandInfo> newLandInfo = landService.searchLandInfoToBPA(requestInfo, missingLandcriteria);
-                for (int j = 0; j < newLandInfo.size(); j++) {
-                    if (newLandInfo.get(j).getId().equalsIgnoreCase(bpas.get(i).getLandId())) {
-                        bpas.get(i).setLandInfo(newLandInfo.get(j));
-                    }
-                }
-            }
+        if (CollectionUtils.isEmpty(bpas)) return;
+        
+        Map<String, LandInfo> landMap = landInfos.stream()
+                .filter(land -> land.getId() != null)
+                .collect(Collectors.toMap(land -> land.getId().toLowerCase(), Function.identity(), (e, r) -> e));
+        
+        List<String> missingLandIds = bpas.stream()
+                .map(BPA::getLandId)
+                .filter(Objects::nonNull)
+                .filter(landId -> !landMap.containsKey(landId.toLowerCase()))
+                .distinct()
+                .collect(Collectors.toList());
+        
+        if (!missingLandIds.isEmpty()) {
+            LandSearchCriteria criteria = new LandSearchCriteria();
+            criteria.setIds(missingLandIds);
+            criteria.setTenantId(bpas.get(0).getTenantId());
+            log.debug("Batch fetching missing land info for landIds: {} with tenantId: {}", missingLandIds, criteria.getTenantId());
+            landService.searchLandInfoToBPA(requestInfo, criteria).stream()
+                    .filter(land -> land.getId() != null)
+                    .forEach(land -> landMap.put(land.getId().toLowerCase(), land));
         }
+        
+        bpas.stream()
+                .filter(bpa -> bpa.getLandId() != null)
+                .forEach(bpa -> Optional.ofNullable(landMap.get(bpa.getLandId().toLowerCase())).ifPresent(bpa::setLandInfo));
     }
 
     /**
@@ -355,7 +367,7 @@ public class BPAService {
 
     private List<BPA> getBPAFromLandId(BPASearchCriteria criteria, RequestInfo requestInfo, List<String> edcrNos) {
         List<BPA> bpa = new LinkedList<>();
-        bpa = repository.getBPAData(criteria, edcrNos);
+        bpa = repository.getBPADetailData(criteria, edcrNos);
         if (bpa.size() == 0) {
             return Collections.emptyList();
         }
@@ -404,6 +416,13 @@ public class BPAService {
      */
     public List<BPA> getBPAFromCriteria(BPASearchCriteria criteria, RequestInfo requestInfo, List<String> edcrNos) {
         List<BPA> bpa = repository.getBPAData(criteria, edcrNos);
+        if (bpa.isEmpty())
+            return Collections.emptyList();
+        return bpa;
+    }
+
+    public List<BPA> getBPADetailFromCriteria(BPASearchCriteria criteria, RequestInfo requestInfo, List<String> edcrNos) {
+        List<BPA> bpa = repository.getBPADetailData(criteria, edcrNos);
         if (bpa.isEmpty())
             return Collections.emptyList();
         return bpa;
@@ -546,7 +565,7 @@ public class BPAService {
         ids.add(request.getBPA().getId());
         criteria.setTenantId(request.getBPA().getTenantId());
         criteria.setIds(ids);
-        List<BPA> bpa = repository.getBPAData(criteria, null);
+        List<BPA> bpa = repository.getBPADetailData(criteria, null);
         return bpa;
     }
 

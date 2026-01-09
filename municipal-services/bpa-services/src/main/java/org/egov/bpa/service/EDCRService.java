@@ -76,7 +76,9 @@ public class EDCRService {
 		BPASearchCriteria criteria = new BPASearchCriteria();
 		criteria.setEdcrNumber(bpa.getEdcrNumber());
 		criteria.setTenantId(bpa.getTenantId());
-		List<BPA> bpas = bpaRepository.getBPAData(criteria, null);
+		// Use full details for EDCR validation
+		// List<BPA> bpas = bpaRepository.getBPAData(criteria, null);
+		List<BPA> bpas = bpaRepository.getBPADetailData(criteria, null);
 		if(bpas.size()>0){
 			for(int i=0; i<bpas.size(); i++){
 				if(!bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REJECTED) && !bpas.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REVOCATED)){
@@ -147,7 +149,9 @@ public class EDCRService {
                     BPASearchCriteria ocCriteria = new BPASearchCriteria();
                     ocCriteria.setPermitNumber(permitNumber.get(0));
                     ocCriteria.setTenantId(bpa.getTenantId());
-                    List<BPA> ocApplns = bpaRepository.getBPAData(ocCriteria, null);
+                    // Use full details for OC validation
+                    // List<BPA> ocApplns = bpaRepository.getBPAData(ocCriteria, null);
+                    List<BPA> ocApplns = bpaRepository.getBPADetailData(ocCriteria, null);
                     if (!ocApplns.isEmpty()) {
                         for (int i = 0; i < ocApplns.size(); i++) {
                             if (!ocApplns.get(i).getStatus().equalsIgnoreCase(BPAConstants.STATUS_REJECTED)) {

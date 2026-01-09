@@ -60,6 +60,7 @@ public class FloorDTO extends Measurement {
 
     private String name;
     private Integer number;
+    private List<FloorUnitDTO> units = new ArrayList<>();
 
     public void addBuiltUpArea(OccupancyDTO occupancy) {
         if (occupancies == null) {
@@ -182,5 +183,13 @@ public class FloorDTO extends Measurement {
         return "Floor :" + number;
 
     }
+    public List<FloorUnitDTO> getUnits() {
+        return units;
+    }
+
+    public void setUnits(List<FloorUnitDTO> units) {
+        this.units = units;
+    }
+
 
 }
