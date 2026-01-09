@@ -992,7 +992,9 @@ public class EdcrRestService {
      *
      * @param edcrDetail List of EDCR details
      */
-    public void filterOnlyCommonParking(List<EdcrDetailBpa> edcrDetail) {
+    public void extractCommonParking(List<EdcrDetailBpa> edcrDetail) {
+    	
+    	LOG.info("extractCommonParking() called");
 
         if (edcrDetail == null || edcrDetail.isEmpty()) {
             return;
@@ -1016,8 +1018,16 @@ public class EdcrRestService {
                                 .equalsIgnoreCase("Common_Parking"))
                         .limit(1)
                         .collect(Collectors.toList());
+        
+        if (filteredScrutinyDetails.isEmpty()) {
+            LOG.warn("No Common_Parking scrutiny found");
+        } else {
+        	LOG.info("Common_Parking scrutiny extracted successfully");
+        }
 
         planBpa.getReportOutput().setScrutinyDetails(filteredScrutinyDetails);
+        
+        LOG.info("extractCommonParking() completed");
     }
 
 
