@@ -24,8 +24,8 @@ public class BPAQueryBuilder {
 
     private static final String LEFT_OUTER_JOIN = " LEFT OUTER JOIN ";
 
-    //Updated base query with snake_case + new table names
-    private static final String QUERY =
+    //Updated base query with snake_case + new table names - Full details query with all joins
+    private static final String DETAIL_QUERY =
             "SELECT bpa.*, " +
                     "       bpadoc.*, " +
                     "       rtp.*, " +
@@ -90,6 +90,45 @@ public class BPAQueryBuilder {
                     "LEFT OUTER JOIN ug_bpa_rtp_detail rtp ON rtp.buildingplan_id = bpa.id " +
                     "LEFT OUTER JOIN ug_bpa_area_mapping_detail area ON area.buildingplan_id = bpa.id";
 
+    //Basic query for limited details - only essential fields without documents, RTP joins, and additionalDetails
+    private static final String BASIC_QUERY =
+            "SELECT bpa.id, " +
+                    "       bpa.application_no, " +
+                    "       bpa.approval_no, " +
+                    "       bpa.application_type, " +
+                    "       bpa.status, " +
+                    "       bpa.tenant_id, " +
+                    "       bpa.edcr_number, " +
+                    "       bpa.approval_date, " +
+                    "       bpa.account_id, " +
+                    "       bpa.land_id, " +
+                    "       bpa.application_date, " +
+                    "       bpa.business_service, " +
+                    "       bpa.risk_type, " +
+                    "       bpa.created_by, " +
+                    "       bpa.last_modified_by, " +
+                    "       bpa.created_time, " +
+                    "       bpa.last_modified_time, " +
+                    "       bpa.id AS bpa_id, " +
+                    "       bpa.tenant_id AS bpa_tenant_id, " +
+                    "       bpa.last_modified_time AS bpa_last_modified_time, " +
+                    "       bpa.created_by AS bpa_created_by, " +
+                    "       bpa.last_modified_by AS bpa_last_modified_by, " +
+                    "       bpa.created_time AS bpa_created_time, " +
+                    "       bpa.land_id AS bpa_land_id, " +
+                    "       area.id AS area_id, " +
+                    "       area.district AS area_district, " +
+                    "       area.planning_area AS area_planning_area, " +
+                    "       area.planning_permit_authority AS area_planning_permit_authority, " +
+                    "       area.building_permit_authority AS area_building_permit_authority, " +
+                    "       area.revenue_village AS area_revenue_village, " +
+                    "       area.village_name AS area_village_name, " +
+                    "       area.concerned_authority AS area_concerned_authority, " +
+                    "       area.mouza AS area_mouza, " +
+                    "       area.ward AS area_ward " +
+                    "FROM ug_bpa_buildingplans bpa " +
+                    "LEFT OUTER JOIN ug_bpa_area_mapping_detail area ON area.buildingplan_id = bpa.id";
+
     private final String paginationWrapper = "SELECT * FROM " +
             "(SELECT *, DENSE_RANK() OVER (ORDER BY bpa_last_modified_time DESC) offset_ FROM ({}) result) result_offset " +
             "WHERE offset_ > ? AND offset_ <= ?";
@@ -97,12 +136,36 @@ public class BPAQueryBuilder {
     private final String countWrapper = "SELECT COUNT(DISTINCT(bpa_id)) FROM ({INTERNAL_QUERY}) AS bpa_count";
 
     /**
-     * To build the search query based on given criteria
+     * To build the detail search query based on given criteria (with all joins for full details)
+     */
+    public String getBPADetailSearchQuery(BPASearchCriteria criteria, List<Object> preparedStmtList, List<String> edcrNos, boolean isCount) {
+
+        StringBuilder builder = new StringBuilder(DETAIL_QUERY);
+        addCommonFilters(criteria, preparedStmtList, builder);
+
+        if (isCount)
+            return addCountWrapper(builder.toString());
+
+        return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+    }
+    /**
+     * To build the basic search query based on given criteria (limited fields for performance)
      */
     public String getBPASearchQuery(BPASearchCriteria criteria, List<Object> preparedStmtList, List<String> edcrNos, boolean isCount) {
 
-        StringBuilder builder = new StringBuilder(QUERY);
+        StringBuilder builder = new StringBuilder(BASIC_QUERY);
+        addCommonFilters(criteria, preparedStmtList, builder);
 
+        if (isCount)
+            return addCountWrapper(builder.toString());
+
+        return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+    }
+
+    /**
+     * Common filter logic shared between detail and basic search queries
+     */
+    private void addCommonFilters(BPASearchCriteria criteria, List<Object> preparedStmtList, StringBuilder builder) {
         // Tenant ID clause will be implemented when tenantId is present in the search criteria and isInboxSearch is false
         // Skip tenant ID clause if this is an inbox search (isInboxSearch == true)
         if (criteria.getTenantId() != null && !Boolean.TRUE.equals(criteria.getIsInboxSearch())) {
@@ -240,17 +303,12 @@ public class BPAQueryBuilder {
             }
             addToPreparedStatement(preparedStmtList, createdBy);
         }
-
-        if (isCount)
-            return addCountWrapper(builder.toString());
-
-        return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
     }
-
 
     public String getBPASearchQueryForPlainSearch(BPASearchCriteria criteria, List<Object> preparedStmtList, List<String> edcrNos, boolean isCount) {
 
-        StringBuilder builder = new StringBuilder(QUERY);
+        // StringBuilder builder = new StringBuilder(QUERY);
+        StringBuilder builder = new StringBuilder(DETAIL_QUERY);
 
         // Skip tenant ID clause if this is an inbox search (isInboxSearch == true)
         if (criteria.getTenantId() != null && !Boolean.TRUE.equals(criteria.getIsInboxSearch())) {
