@@ -1,5 +1,5 @@
-import { BackButton, CardHeader, CardLabelError,  SearchOnRadioButtons } from "@upyog/digit-ui-react-components";
-import React, { useMemo, useState } from "react";
+import { BackButton, CardHeader, CardLabelError, SearchOnRadioButtons, Loader } from "@upyog/digit-ui-react-components";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import PageBasedInput from "../../../../../../react-components/src/molecules/PageBasedInput";
@@ -10,8 +10,29 @@ const LocationSelection = () => {
   const location = useLocation();
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
 
-  const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
+  const [selectedCity, setSelectedCity] = useState(null);
   const [showError, setShowError] = useState(false);
+
+  // Auto-select State Municipal Board for RTP and redirect
+  useEffect(() => {
+    if (cities && cities.length > 0) {
+      const stateTenant = cities.find(city => city.code === 'as');
+      
+      if (stateTenant) {
+        setSelectedCity(stateTenant);
+        Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", stateTenant);
+        
+        const redirectBackTo = location.state?.redirectBackTo;
+        if (redirectBackTo) {
+          history.replace(redirectBackTo);
+        } else {
+          history.push("/upyog-ui/citizen/rtp-login");
+        }
+      } else {
+        setSelectedCity(cities[0]);
+      }
+    }
+  }, [cities, history, location.state]);
 
   const texts = useMemo(
     () => ({
@@ -49,17 +70,8 @@ const LocationSelection = () => {
   }
 
   return isLoading ? (
-    <loader />
-  ) : (
-    <div className="selection-card-wrapper">
-      <BackButton />
-      <PageBasedInput texts={texts} onSubmit={onSubmit} className="location-selection-container">
-        <CardHeader>{t("CS_COMMON_CHOOSE_LOCATION")}</CardHeader>
-        <SearchOnRadioButtons {...RadioButtonProps} placeholder={t("COMMON_TABLE_SEARCH")} />
-        {showError ? <CardLabelError>{t("CS_COMMON_LOCATION_SELECTION_ERROR")}</CardLabelError> : null}
-      </PageBasedInput>
-    </div>
-  );
+    <Loader />
+  ) : null;
 };
 
 export default LocationSelection;
