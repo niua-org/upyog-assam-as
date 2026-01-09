@@ -145,7 +145,8 @@ const Urls = {
     count: "/egov-hrms/employees/_count",
   },
   obps: {
-    scrutinyDetails: "/edcr/rest/dcr/scrutinydetails",
+    scrutinyDetails:"/edcr/rest/dcr/edcrdetails",
+    // scrutinyDetails: "/edcr/rest/dcr/scrutinydetails",  --- IGNORE, thsi is old endpoint ---
     comparisionReport: "/edcr/rest/dcr/occomparison",
     create: "/bpa-services/v1/bpa/_create",
     nocSearch: "/noc-services/v1/noc/_search",

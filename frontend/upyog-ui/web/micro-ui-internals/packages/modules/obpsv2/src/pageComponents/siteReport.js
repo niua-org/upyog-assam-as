@@ -332,6 +332,76 @@ const siteReport = ({submitReport, onChange, data}) => {
   
     saveSession(nocDetails); 
   };
+
+   // Validation function to check if all mandatory fields are filled
+  const validateForm = () => {
+    // Check mandatory static fields
+    if (!form.inspectorName || !form.inspectionDate) {
+      return false;
+    }
+
+    // Check mandatory dynamic fields from siteQuestions
+    if (siteQuestions && siteQuestions.length > 0) {
+      const mandatoryQuestions = siteQuestions.filter(q => q.active && q.mandatory);
+      for (const question of mandatoryQuestions) {
+        if (!form[question.fieldKey]) {
+          return false;
+        }
+      }
+    }
+
+    // Check Civil Aviation NOC if selected
+    if (nocList.includes("CIVIL_AVIATION")) {
+      const aaiDetails = nocDetails?.AAI_NOC_DETAILS;
+      
+      // Check site elevation
+      if (!aaiDetails?.siteElevation) {
+        return false;
+      }
+
+      // Check plot size type is selected
+      if (!plotSizeType) {
+        return false;
+      }
+
+      // Check coordinates based on plot size
+      if (plotSizeType === "ABOVE_300") {
+        const directions = ["EAST", "WEST", "NORTH", "SOUTH"];
+        for (const dir of directions) {
+          if (!aaiDetails?.[dir]?.latitude || !aaiDetails?.[dir]?.longitude) {
+            return false;
+          }
+        }
+      } else if (plotSizeType === "BELOW_300") {
+        if (!aaiDetails?.CENTER?.latitude || !aaiDetails?.CENTER?.longitude) {
+          return false;
+        }
+      }
+
+      // Check mandatory documents
+      const mandatoryDocs = civilAviationDocList.filter(doc => doc.required);
+      const uploadedDocs = aaiDetails?.documents || [];
+      
+      for (const doc of mandatoryDocs) {
+        const hasDoc = uploadedDocs.some(d => d.documentType === doc.documentType);
+        if (!hasDoc) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+
+  const isFormValid = validateForm();
+
+  useEffect(() => {
+  sessionStorage.setItem(
+    "SITE_REPORT_VALID",
+    JSON.stringify(isFormValid)
+  );
+}, [isFormValid]);
   
 
   const fieldRowStyle = {
@@ -341,12 +411,6 @@ const siteReport = ({submitReport, onChange, data}) => {
     gap: "150px",
   };
 
-//   const labelStyle = {
-//     flex: "0 0 250px", // fixed width for all labels
-//     fontWeight: 500,
-//     textAlign: "left",
-//     marginTop: "8px",
-//   };
 
   const inputStyle = {
     flex: "1",
