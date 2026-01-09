@@ -311,27 +311,12 @@ public class BPAConfiguration {
 	
 	@Value("${egov.noc.search.endpoint}")
 	private String nocSearchEndpoint;
-	
+
 	@Value("${validate.required.nocs}")
 	private Boolean validateRequiredNoc;
 	
 	@Value("${validate.required.nocs.statuses}")
 	private String nocValidationCheckStatuses;
-	
-	@Value("${egov.noc.initiate.action}")
-	private String nocInitiateAction;
-	
-	@Value("${egov.noc.void.action}")
-	private String nocVoidAction;
-	
-	@Value("${egov.noc.autoapprove.action}")
-	private String nocAutoApproveAction;
-	
-	@Value("${egov.noc.autoapproved.state}")
-	private String nocAutoApprovedState;
-	
-	@Value("${egov.noc.approved.state}")
-	private String nocApprovedState;
   
 //	action and status constants
 	@Value("${egov.sendtocitizen.action}")
@@ -410,6 +395,9 @@ public class BPAConfiguration {
 
 	@Value("${gmc.property.cities}")
 	private String GMCPropertyCities;
+
+	@Value("${pending.noc.not.allowed.actions}")
+	private String pendingNocNotAllowedActions;
 
 
 
