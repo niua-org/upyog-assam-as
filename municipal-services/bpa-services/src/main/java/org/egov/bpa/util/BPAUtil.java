@@ -92,7 +92,7 @@ public class BPAUtil {
 		final String filterCode = "$.[?(@.active==true)].code";
 
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.APPLICATION_TYPE).filter(filterCode).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.SERVICE_TYPE).filter(filterCode).build());
+//		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.SERVICE_TYPE).filter(filterCode).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.DOCUMENT_TYPE_MAPPING).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.RISKTYPE_COMPUTATION).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.OCCUPANCY_TYPE).filter(filterCode).build());
@@ -107,7 +107,7 @@ public class BPAUtil {
 		
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.RTP_CATEGORIES).build());
 		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.STATES).build());
-		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.ULB_WARD_DETAILS).build());
+//		bpaMasterDtls.add(MasterDetail.builder().name(BPAConstants.ULB_WARD_DETAILS).build());
 		
 
 		ModuleDetail bpaModuleDtls = ModuleDetail.builder().masterDetails(bpaMasterDtls)
@@ -115,9 +115,8 @@ public class BPAUtil {
 
 		// master details for common-masters module
 		List<MasterDetail> commonMasterDetails = new ArrayList<>();
-		commonMasterDetails
-				.add(MasterDetail.builder().name(BPAConstants.OWNERSHIP_CATEGORY).filter(filterCode).build());
-		commonMasterDetails.add(MasterDetail.builder().name(BPAConstants.OWNER_TYPE).filter(filterCode).build());
+//		commonMasterDetails.add(MasterDetail.builder().name(BPAConstants.OWNERSHIP_CATEGORY).filter(filterCode).build());
+//		commonMasterDetails.add(MasterDetail.builder().name(BPAConstants.OWNER_TYPE).filter(filterCode).build());
 		commonMasterDetails.add(MasterDetail.builder().name(BPAConstants.DOCUMENT_TYPE).filter(filterCode).build());
 		ModuleDetail commonMasterMDtl = ModuleDetail.builder().masterDetails(commonMasterDetails)
 				.moduleName(BPAConstants.COMMON_MASTERS_MODULE).build();

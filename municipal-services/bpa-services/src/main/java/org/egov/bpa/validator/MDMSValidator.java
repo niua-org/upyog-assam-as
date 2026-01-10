@@ -45,11 +45,11 @@ public class MDMSValidator {
 	 * @param bpaRequest
 	 * @param mdmsData
 	 */
-	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData, Map<String, Set<String>> lookup) {
 
 	    Map<String, List<String>> masterData = getAttributeValuesForTenant(mdmsData);
 
-	    Map<String, Set<String>> masterLookup = buildMasterLookup(masterData);
+	    Map<String, Set<String>> masterLookup = buildMasterLookup(masterData, lookup);
 
 	    List<String> masterList = new ArrayList<>();
 
@@ -60,6 +60,10 @@ public class MDMSValidator {
 	    if (masterData.containsKey(BPAConstants.VILLAGES)) {
 	        masterList.add(BPAConstants.VILLAGES);
 	    }
+
+        if (masterData.containsKey(BPAConstants.WARD_DETAILS)) {
+            masterList.add(BPAConstants.WARD_DETAILS);
+        }
 
 	    String[] masterArray = masterList.toArray(new String[0]);
 
@@ -72,17 +76,16 @@ public class MDMSValidator {
 	}
 
 	
-	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData, Map<String, Set<String>> lookup) {
 
 		Map<String, List<String>> masterData = getAttributeValuesForState(mdmsData);
 		
-		Map<String, Set<String>> masterLookup = buildMasterLookup(masterData);
+		Map<String, Set<String>> masterLookup = buildMasterLookup(masterData, lookup);
 		String[] masterArray = { 
-	          	BPAConstants.SERVICE_TYPE, BPAConstants.APPLICATION_TYPE,
-				BPAConstants.OWNERSHIP_CATEGORY, BPAConstants.OWNER_TYPE, BPAConstants.OCCUPANCY_TYPE,
-				BPAConstants.SUB_OCCUPANCY_TYPE, BPAConstants.USAGES, BPAConstants.PERMISSIBLE_ZONE,
-			    BPAConstants.CONSTRUCTION_TYPE, BPAConstants.ULB_WARD_DETAILS, BPAConstants.STATES,			
-				BPAConstants.RTP_CATEGORIES
+                BPAConstants.APPLICATION_TYPE,
+			    BPAConstants.OCCUPANCY_TYPE,
+				BPAConstants.PERMISSIBLE_ZONE,
+			    BPAConstants.CONSTRUCTION_TYPE, BPAConstants.STATES
 				};
 
 		if (log.isInfoEnabled() && bpaRequest != null && bpaRequest.getBPA() != null) {
@@ -90,7 +93,7 @@ public class MDMSValidator {
 		}
 
 		validateIfMasterPresent(masterArray, masterData);
-		validateRequestValues(bpaRequest, masterLookup);
+		validateRequestValues(bpaRequest, masterLookup, masterArray);
 	}
 
 
@@ -255,10 +258,15 @@ public class MDMSValidator {
 
 	    List<String> revenueVillageCodes = extractedCodes.get(BPAConstants.REVENUE_VILLAGE);
 	    List<String> villageNameCodes = extractedCodes.get(BPAConstants.VILLAGES);
+        List<String> wardNameCodes = extractedCodes.get(BPAConstants.WARD_DETAILS);
 
 	    if (revenueVillageCodes.isEmpty() && villageNameCodes.isEmpty()) {
 	        throw new RuntimeException("No revenue village or village codes found");
 	    }
+
+        if (wardNameCodes.isEmpty()){
+            throw new RuntimeException("No ward codes found");
+        }
 
 	    if (!revenueVillageCodes.isEmpty()) {
 	        mdmsResMap.put(BPAConstants.REVENUE_VILLAGE, revenueVillageCodes);
@@ -267,6 +275,10 @@ public class MDMSValidator {
 	    if (!villageNameCodes.isEmpty()) {
 	        mdmsResMap.put(BPAConstants.VILLAGES, villageNameCodes);
 	    }
+
+        if (!wardNameCodes.isEmpty()){
+            mdmsResMap.put(BPAConstants.WARD_DETAILS, wardNameCodes);
+        }
 
 	    return mdmsResMap;
 	}
@@ -323,12 +335,14 @@ public class MDMSValidator {
 
 	    List<String> revenueVillageCodes = new ArrayList<>();
 	    List<String> villageNameCodes = new ArrayList<>();
+        List<String> wardCodes = new ArrayList<>();
 
-	    traverseBoundary(boundaryRoot, revenueVillageCodes, villageNameCodes);
+	    traverseBoundary(boundaryRoot, revenueVillageCodes, villageNameCodes, wardCodes);
 
 	    Map<String, List<String>> result = new HashMap<>();
 	    result.put(BPAConstants.REVENUE_VILLAGE, revenueVillageCodes);
 	    result.put(BPAConstants.VILLAGES, villageNameCodes);
+        result.put(BPAConstants.WARD_DETAILS, wardCodes);
 
 	    return result;
 	}
@@ -337,7 +351,7 @@ public class MDMSValidator {
 	 * Recursively traverse boundary children to collect revenue village and village codes
 	 */
 	@SuppressWarnings("unchecked")
-	private void traverseBoundary(Map<String, Object> node, List<String> revenueVillageCodes, List<String> villageNameCodes) {
+	private void traverseBoundary(Map<String, Object> node, List<String> revenueVillageCodes, List<String> villageNameCodes, List<String> wardCodes) {
 
 	    if (node == null) return;
 
@@ -348,11 +362,13 @@ public class MDMSValidator {
 	        revenueVillageCodes.add(code);
 	    } else if (BPAConstants.VILLAGE_CODE.equalsIgnoreCase(label) && code != null) {
 	        villageNameCodes.add(code);
-	    }
+	    } else if (BPAConstants.WARD_CODE.equalsIgnoreCase(label) && code != null) {
+            wardCodes.add(code);
+        }
 
 	    List<Map<String, Object>> children = normalizeToList(node.get(BPAConstants.CHILDREN));
 	    for (Map<String, Object> child : children) {
-	        traverseBoundary(child, revenueVillageCodes, villageNameCodes);
+	        traverseBoundary(child, revenueVillageCodes, villageNameCodes, wardCodes);
 	    }
 	}
 	/**
@@ -421,8 +437,6 @@ public class MDMSValidator {
 		Map<String, String> errorMap = new HashMap<>();
 		BPA bpa = bpaRequest.getBPA();
 
-		validateFieldAgainstMaster(bpa.getApplicationType(), BPAConstants.CONSTRUCTION_TYPE, "Application type", masterLookup,
-				errorMap);
 		validateAreaMapping(bpa.getAreaMapping(), masterLookup, errorMap);
 		validateRtpDetails(bpa.getRtpDetails(), masterLookup, errorMap);
 		validateLandAddress(bpa.getLandInfo(), masterLookup, errorMap);
@@ -431,6 +445,49 @@ public class MDMSValidator {
 			throw new CustomException(errorMap);
 		}
 	}
+
+
+    private void validateRequestValues(BPARequest bpaRequest, Map<String, Set<String>> masterLookup, String[] masterNames) {
+        if (bpaRequest == null || bpaRequest.getBPA() == null) {
+            return;
+        }
+
+        Map<String, String> errorMap = new HashMap<>();
+        BPA bpa = bpaRequest.getBPA();
+
+        for (String masterName: masterNames){
+            switch (masterName) {
+
+                case BPAConstants.APPLICATION_TYPE:
+                    // logic for APPLICATION_TYPE
+                    break;
+
+                case BPAConstants.PERMISSIBLE_ZONE:
+                    validateFieldAgainstMaster(bpa.getLandInfo().getUnits().get(0).getOccupancyType(), masterName, "occupancyType", masterLookup, errorMap);
+                    break;
+
+                case BPAConstants.CONSTRUCTION_TYPE:
+                    validateFieldAgainstMaster(bpa.getApplicationType(), masterName, "constructionType", masterLookup, errorMap);
+                    break;
+
+                case BPAConstants.STATES:
+                    // logic for STATES
+                    break;
+
+                case BPAConstants.RTP_CATEGORIES:
+                    // logic for RTP_CATEGORIES
+                    break;
+
+                default:
+                    // default handling
+                    break;
+            }
+        }
+
+        if (!errorMap.isEmpty()) {
+            throw new CustomException(errorMap);
+        }
+    }
 
 	/**
 	 * Validates the area mapping details against the master data
@@ -478,6 +535,14 @@ public class MDMSValidator {
 		            masterLookup,
 		            errorMap);
 		}
+
+        if (areaMapping.getWard() != null) {
+            validateFieldAgainstMaster(areaMapping.getWard(),
+                    BPAConstants.WARD_DETAILS,
+                    "Ward Name",
+                    masterLookup,
+                    errorMap);
+        }
 
 	}
 
@@ -545,8 +610,7 @@ public class MDMSValidator {
 	 * @param masterData
 	 * @return Map of master name to set of normalized values
 	 * */
-	private Map<String, Set<String>> buildMasterLookup(Map<String, List<String>> masterData) {
-		Map<String, Set<String>> lookup = new HashMap<>();
+	private Map<String, Set<String>> buildMasterLookup(Map<String, List<String>> masterData, Map<String, Set<String>> lookup) {
 		masterData.forEach((masterName, entries) -> lookup.put(masterName, flattenEntries(entries)));
 		return lookup;
 	}

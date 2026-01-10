@@ -92,8 +92,6 @@ public class BPAConstants {
 
 	// mdms master names
 
-	public static final String SERVICE_TYPE = "ServiceType";
-
 	public static final String APPLICATION_TYPE = "ApplicationType";
 
 	public static final String OCCUPANCY_TYPE = "OccupancyType";
@@ -109,10 +107,6 @@ public class BPAConstants {
 	public static final String RISKTYPE_COMPUTATION = "RiskTypeComputation";
 
 	public static final String DOCUMENT_TYPE = "DocumentType";
-
-	public static final String OWNER_TYPE = "OwnerType";
-
-	public static final String OWNERSHIP_CATEGORY = "OwnerShipCategory";
 
 	public static final String CHECKLIST_NAME = "CheckList";
 
@@ -143,6 +137,8 @@ public class BPAConstants {
 	public static final String REVENUE_VILLAGE_CODE = "RevenueVillage";
 	
 	public static final String VILLAGE_CODE = "Village";
+
+    public static final String WARD_CODE = "WardNo";
 	
 	public static final String CHILDREN = "children";
 	
@@ -160,7 +156,7 @@ public class BPAConstants {
 
 	public static final String STATES = "states";
 
-	public static final String ULB_WARD_DETAILS = "ulbWardDetails";
+	public static final String WARD_DETAILS = "wards";
 
 	public static final String VILLAGES = "villages";
 
