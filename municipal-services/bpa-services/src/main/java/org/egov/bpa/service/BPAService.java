@@ -447,9 +447,8 @@ public class BPAService {
 
         // Validate action for pending NOC applications if not approved then update not allowed
       //  bpaValidator.validateActionForPendingNoc(bpaRequest);
+
         // Validate the update request
-//        bpaValidator.validateStateMdmsData(bpaRequest, mdmsStateData);
-//        bpaValidator.validateMdmsData(bpaRequest, mdmsTenantData);
         bpaValidator.validateUpdate(bpaRequest, mdmsTenantData, mdmsStateData);
 
         BPA bpa = bpaRequest.getBPA();
@@ -522,6 +521,7 @@ public class BPAService {
 
 		case "SUBMIT_REPORT":
 //			Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+            // Validating the checklist in case of submit report
             bpaValidator.validateChecklist(bpaRequest);
 			nocService.createNocRequest(bpaRequest, mdmsStateData);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);

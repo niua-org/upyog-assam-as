@@ -44,6 +44,7 @@ public class MDMSValidator {
 	 * </p>
 	 * @param bpaRequest
 	 * @param mdmsData
+     * @param lookup
 	 */
 	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData, Map<String, Set<String>> lookup) {
 
@@ -61,6 +62,7 @@ public class MDMSValidator {
 	        masterList.add(BPAConstants.VILLAGES);
 	    }
 
+        // key to store ward details
         if (masterData.containsKey(BPAConstants.WARD_DETAILS)) {
             masterList.add(BPAConstants.WARD_DETAILS);
         }
@@ -68,14 +70,26 @@ public class MDMSValidator {
 	    String[] masterArray = masterList.toArray(new String[0]);
 
 	    if (log.isInfoEnabled() && bpaRequest != null && bpaRequest.getBPA() != null) {
-	        log.info("Validating master data from MDMS for : {}", bpaRequest.getBPA().getApplicationNo());
+            if(bpaRequest.getBPA().getApplicationNo() != null) {
+                log.info("Validating master data from MDMS for : {}", bpaRequest.getBPA().getApplicationNo());
+            }else {
+                log.info("Validating master data from MDMS for tenant: {}", bpaRequest.getBPA().getTenantId());
+            }
 	    }
 
 	    validateIfMasterPresent(masterArray, masterData);
 	    validateRequestValues(bpaRequest, masterLookup);
 	}
 
-	
+    /**
+     * Validates state-level MDMS data for BPA request.
+     * Extracts and validates master data like application types, occupancy types,
+     * permissible zones, construction types, and states from MDMS.
+     *
+     * @param bpaRequest The BPA request to validate
+     * @param mdmsData The MDMS data object containing state-level master data
+     * @param lookup Map to store lookup data for efficient validation
+     */
 	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData, Map<String, Set<String>> lookup) {
 
 		Map<String, List<String>> masterData = getAttributeValuesForState(mdmsData);
@@ -264,6 +278,7 @@ public class MDMSValidator {
 	        throw new RuntimeException("No revenue village or village codes found");
 	    }
 
+        // if masters related to ward not found throw error
         if (wardNameCodes.isEmpty()){
             throw new RuntimeException("No ward codes found");
         }
@@ -446,7 +461,15 @@ public class MDMSValidator {
 		}
 	}
 
-
+    /**
+     * Validates specific request values against state-level master data.
+     * This method validates only the masters specified in the masterNames array,
+     * unlike the general validateRequestValues method which validates all tenant-level data.
+     *
+     * @param bpaRequest The BPA request containing values to validate
+     * @param masterLookup Map containing master data lookup sets for validation
+     * @param masterNames Array of master names to validate against
+     */
     private void validateRequestValues(BPARequest bpaRequest, Map<String, Set<String>> masterLookup, String[] masterNames) {
         if (bpaRequest == null || bpaRequest.getBPA() == null) {
             return;
@@ -455,12 +478,9 @@ public class MDMSValidator {
         Map<String, String> errorMap = new HashMap<>();
         BPA bpa = bpaRequest.getBPA();
 
+        // Validate only the specified masters from the array
         for (String masterName: masterNames){
             switch (masterName) {
-
-                case BPAConstants.APPLICATION_TYPE:
-                    // logic for APPLICATION_TYPE
-                    break;
 
                 case BPAConstants.PERMISSIBLE_ZONE:
                     validateFieldAgainstMaster(bpa.getLandInfo().getUnits().get(0).getOccupancyType(), masterName, "occupancyType", masterLookup, errorMap);
@@ -468,14 +488,6 @@ public class MDMSValidator {
 
                 case BPAConstants.CONSTRUCTION_TYPE:
                     validateFieldAgainstMaster(bpa.getApplicationType(), masterName, "constructionType", masterLookup, errorMap);
-                    break;
-
-                case BPAConstants.STATES:
-                    // logic for STATES
-                    break;
-
-                case BPAConstants.RTP_CATEGORIES:
-                    // logic for RTP_CATEGORIES
                     break;
 
                 default:
@@ -536,6 +548,7 @@ public class MDMSValidator {
 		            errorMap);
 		}
 
+        // Validate ward details if present in area mapping
         if (areaMapping.getWard() != null) {
             validateFieldAgainstMaster(areaMapping.getWard(),
                     BPAConstants.WARD_DETAILS,

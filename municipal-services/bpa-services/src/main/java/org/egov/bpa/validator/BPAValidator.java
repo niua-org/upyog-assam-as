@@ -57,9 +57,12 @@ public class BPAValidator {
 		/*Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
                 ? (Map<String, String>) bpaRequest.getBPA().getAdditionalDetails()
                 : new HashMap<String, String>();*/
+
+        // Map to store lookup data for MDMS validation
         Map<String, Set<String>> lookup = new HashMap<>();
 		mdmsValidator.validateMdmsData(bpaRequest, tenantMdmsData, lookup);
 		mdmsValidator.validateStateMdmsData(bpaRequest, stateMdmsData, lookup);
+
 		//TODO: need to check if it can be used
 	//	validateApplicationDocuments(bpaRequest, mdmsData, null, values);
 
@@ -275,17 +278,20 @@ public class BPAValidator {
 	 * @param stateMdmsData
 	 */
 	public void validateUpdate(BPARequest bpaRequest, Object tenantMdmsData, Object stateMdmsData) {
-
 //		BPA bpa = bpaRequest.getBPA();
-//		validateApplicationDocuments(bpaRequest, mdmsData, currentState, edcrResponse);
-//		validateAllIds(searchResult, bpa);
+        // Need to check if it can be used later
+        /*
+		validateApplicationDocuments(bpaRequest, mdmsData, currentState, edcrResponse);
+		validateAllIds(searchResult, bpa);
+ 		setFieldsFromSearch(bpaRequest, searchResult, mdmsData);
+        */
+
+        // Map to store lookup data for MDMS validation
         Map<String, Set<String>> lookup = new HashMap<>();
 		mdmsValidator.validateMdmsData(bpaRequest, tenantMdmsData, lookup);
         mdmsValidator.validateStateMdmsData(bpaRequest, stateMdmsData, lookup);
 		validateDuplicateDocuments(bpaRequest);
-//		setFieldsFromSearch(bpaRequest, searchResult, mdmsData);
-
-	}
+    }
 
 	/**
 	 * Set the fields from search result to the bpaRequest
@@ -590,6 +596,12 @@ public class BPAValidator {
 
 	}
 
+    /**
+     * Validates checklist data against MDMS configuration and inspection data.
+     * Ensures mandatory fields are filled and inspection date is today's date.
+     *
+     * @param request The BPA request containing inspection data
+     */
     public void validateChecklist(BPARequest request) {
         BPA bpa = request.getBPA();
         String tenantId = bpa.getTenantId();
@@ -622,6 +634,13 @@ public class BPAValidator {
         validateMandatoryFields(checklistData, currentInspection);
     }
 
+    /**
+     * Retrieves checklist questions from MDMS data based on application type and workflow state.
+     *
+     * @param mdmsData The MDMS data object
+     * @param bpa The BPA object (currently unused but kept for future extensibility)
+     * @return List of checklist questions from MDMS
+     */
     private List<Object> getChecklistFromMDMS(Object mdmsData, BPA bpa) {
         try {
             String jsonPath = "$.MdmsRes.BPA.CheckList[?(@.applicationType=='BUILDING_PLAN_SCRUTINY' && @.WFState=='PENDING_DA_ENGINEER')].questions[*]";
@@ -632,6 +651,12 @@ public class BPAValidator {
         }
     }
 
+    /**
+     * Extracts inspection data from BPA additional details.
+     *
+     * @param additionalDetails The additional details object from BPA
+     * @return List of inspection data maps
+     */
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> getInspectionData(Object additionalDetails) {
         Object inspectionObj = ((Map<String, Object>) additionalDetails).get("inspectionChecklist");
@@ -641,6 +666,11 @@ public class BPAValidator {
         return Collections.emptyList();
     }
 
+    /**
+     * Validates that the inspection date is today's date.
+     *
+     * @param additionalDetails The additional details object containing inspection data
+     */
     @SuppressWarnings("unchecked")
     private void validateDate(Object additionalDetails) {
         List<Map<String, Object>> inspectionData = (List<Map<String, Object>>) ((Map<String, Object>) additionalDetails).get("submitReportinspection_pending");
@@ -656,6 +686,13 @@ public class BPAValidator {
         }
     }
 
+    /**
+     * Validates mandatory fields from checklist against inspection data.
+     * Also validates that all inspection data keys are valid according to checklist.
+     *
+     * @param checklistData List of checklist questions from MDMS
+     * @param inspectionData Map containing inspection form data
+     */
     private void validateMandatoryFields(List<Object> checklistData, Map<String, Object> inspectionData) {
         Set<String> validFieldKeys = new HashSet<>();
         List<String> missingFields = new ArrayList<>();
