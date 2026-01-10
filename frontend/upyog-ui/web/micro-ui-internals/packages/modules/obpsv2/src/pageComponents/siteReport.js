@@ -72,6 +72,7 @@ const siteReport = ({submitReport, onChange, data}) => {
   const [plotSizeType, setPlotSizeType] = useState("");
   const [nocList, setNocList] = useState([]);
   const [nocDetails, setNocDetails] = useState({});
+  const [inspectionCheckList, setInspectionCheckList]= useState({});
   const plotSizeOptions = [
     { code: "ABOVE_300", name: "Plot size above 300 meters" },
     { code: "BELOW_300", name: "Plot size below 300 meters" }
@@ -97,12 +98,15 @@ const siteReport = ({submitReport, onChange, data}) => {
   useEffect(() => {
   if (siteQuestions && siteQuestions.length > 0) {
     const dynamicFields = {};
+    const onlyChecklistFields={};
     const directionFields = ["north", "south", "east", "west"];
 
     siteQuestions.forEach(question => {
       if (!question.active) return;
       const key = question.fieldKey;
       const isDirection = directionFields.includes(key);
+      onlyChecklistFields[key]="";
+
 
       // Do not touch direction fields at all
       if (!isDirection) {
@@ -112,6 +116,7 @@ const siteReport = ({submitReport, onChange, data}) => {
     });
 
     setForm(prev => ({ ...prev, ...dynamicFields }));
+    setInspectionCheckList({...onlyChecklistFields})
   }
 }, [siteQuestions]);
 
@@ -157,7 +162,8 @@ const siteReport = ({submitReport, onChange, data}) => {
       JSON.stringify({
         submitReport: form,
         nocList: updatedList || nocList,
-        nocDetails: updatedNocDetails
+        nocDetails: updatedNocDetails,
+        siteInspectionQuestions:inspectionCheckList
       })
     );
   };
@@ -328,7 +334,9 @@ const siteReport = ({submitReport, onChange, data}) => {
 
   const handleChange = (key, value) => {
     const updatedForm = { ...form, [key]: value };
+    const newCheckListdata = {...inspectionCheckList, [key]: value}
     setForm(updatedForm);
+    setInspectionCheckList(newCheckListdata);
   
     saveSession(nocDetails); 
   };

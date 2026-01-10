@@ -96,6 +96,15 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     return inspectionOb;
   };
 
+  const getChiecklistQuestions = ()=>{
+    let checklistQuestion = [];
+    const newData = JSON.parse(sessionStorage.getItem("SUBMIT_REPORT_DATA"));
+    if(newData){
+      checklistQuestion.push(newData.siteInspectionQuestions)
+    }
+    return checklistQuestion;
+  }
+
   const getDocuments = (applicationData) => {
     let documentsformdata = JSON.parse(sessionStorage.getItem("OBPS_DOCUMENTS"));
     let documentList = [];
@@ -124,6 +133,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     const submitReport = getSubmitReport(applicationData);
     const nocList = storedData.nocList || [];
     const nocDetails = storedData.nocDetails || {};
+    const getCheckList = getChiecklistQuestions();
 
     if(!nocList.includes("CIVIL_AVIATION")){
       // AAI_NOC_DETAILS contains details related to Civil Aviation NOC and if not selected by the user, it is removed here from nocDetails
@@ -138,6 +148,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       additionalDetails: {
         ...applicationData?.additionalDetails,
         submitReportinspection_pending: submitReport,
+        inspectionChecklist: getCheckList,
         nocDetails: nocDetails,
         pendingapproval: getPendingApprovals(),
          adjoiningOwners: {
