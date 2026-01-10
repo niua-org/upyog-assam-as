@@ -16,6 +16,9 @@ const BPAEmployeeDetails = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [showToast, setShowToast] = useState(null);
   //const [workflowDetails, setWorkflowDetails] = useState(null);
+  const [isSiteFormValid, setIsSiteFormValid] = useState(false);
+
+  
   const [displayMenu, setDisplayMenu] = useState(false);
   const { roles } = Digit.UserService.getUser().info;
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -181,6 +184,23 @@ const BPAEmployeeDetails = () => {
     });
     window.open(fileStore[fileStoreId], "_blank");
   }
+
+  useEffect(() => {
+  const interval = setInterval(() => {
+    const stored = sessionStorage.getItem("SITE_REPORT_VALID");
+    if (stored !== null) {
+      const value = JSON.parse(stored);
+      setIsSiteFormValid(value);
+    }
+  }, 300); // 300ms
+
+  return () => clearInterval(interval);
+}, []);
+
+  const applicationStatus = workflowDetails?.data?.actionState?.state || "";
+
+  const isSubmitDisabled = applicationStatus === "PENDING_DA_ENGINEER" && !isSiteFormValid;
+
 
   let downloadOptions = [];
   if (data?.collectionBillDetails?.[0]) {
@@ -372,6 +392,7 @@ const BPAEmployeeDetails = () => {
           statusAttribute={"state"}
           timelineStatusPrefix={`WF_${workflowDetails?.data?.applicationBusinessService ? workflowDetails?.data?.applicationBusinessService : data?.applicationData?.businessService}_`}
           nocDetails={mappedNocData}
+          isSubmitDisabled={isSubmitDisabled}
         />
       </div>
       </div>

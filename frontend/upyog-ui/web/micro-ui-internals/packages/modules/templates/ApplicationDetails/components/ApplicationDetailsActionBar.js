@@ -2,7 +2,7 @@ import React, {useEffect, useRef} from "react";
 import { useTranslation } from "react-i18next";
 import { SubmitBar, ActionBar, Menu, CardLabel } from "@upyog/digit-ui-react-components";
 
-function ApplicationDetailsActionBar({ workflowDetails, displayMenu, onActionSelect, setDisplayMenu, businessService, forcedActionPrefix,ActionBarStyle={},MenuStyle={},isAction,applicationDetails }) {
+function ApplicationDetailsActionBar({ workflowDetails, displayMenu, onActionSelect, setDisplayMenu, businessService, forcedActionPrefix,ActionBarStyle={},MenuStyle={},isAction,applicationDetails,isSubmitDisabled }) {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
@@ -35,6 +35,7 @@ function ApplicationDetailsActionBar({ workflowDetails, displayMenu, onActionSel
   const Session = Digit.SessionStorage.get("User");
   const uuid = Session?.info?.uuid;
   const modified = applicationDetails?.applicationData?.auditDetails?.lastModifiedBy;
+  const isDisabled = isSubmitDisabled;
 
   return (
     <React.Fragment>
@@ -57,7 +58,7 @@ function ApplicationDetailsActionBar({ workflowDetails, displayMenu, onActionSel
               <CardLabel style={{ color: "red", font: "30px", fontWeight: "bold" }}>{`${t("EW_ALERT_ANOTHER_VENDOR")}`}</CardLabel>
             )
           ) : (
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} disabled={isDisabled} onSubmit={() => setDisplayMenu(!displayMenu)} />
           )}
           {/* <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} /> */}
         </ActionBar>

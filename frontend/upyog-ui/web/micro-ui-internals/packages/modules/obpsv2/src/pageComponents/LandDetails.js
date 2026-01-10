@@ -349,7 +349,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_OLD_PATTA_NUMBER")}`}</CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="oldPattaNumber"
             placeholder={t("BPA_ENTER_OLD_PATTA_NUMBER")}
             value={oldPattaNumber}
@@ -369,7 +369,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
           <CardLabel>{`${t("BPA_NEW_PATTA_NUMBER")}`} <span className="check-page-link-button">*</span></CardLabel>
           <TextInput
             t={t}
-            type="text"
+            type="number"
             name="newPattaNumber"
             placeholder={t("BPA_ENTER_NEW_PATTA_NUMBER")}
             value={newPattaNumber}
