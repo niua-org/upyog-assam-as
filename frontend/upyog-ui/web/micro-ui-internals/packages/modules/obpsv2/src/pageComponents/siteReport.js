@@ -334,9 +334,14 @@ const siteReport = ({submitReport, onChange, data}) => {
 
   const handleChange = (key, value) => {
     const updatedForm = { ...form, [key]: value };
-    const newCheckListdata = {...inspectionCheckList, [key]: value}
     setForm(updatedForm);
-    setInspectionCheckList(newCheckListdata);
+
+    // it will only add the check list question and its filled value only, not all the value
+    const isSiteQuestion = siteQuestions.some(q => q.fieldKey === key);
+    if (isSiteQuestion) {
+        const newCheckListdata = {...inspectionCheckList, [key]: value};
+        setInspectionCheckList(newCheckListdata);
+    }
   
     saveSession(nocDetails); 
   };
