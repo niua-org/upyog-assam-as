@@ -26,6 +26,8 @@ import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 
+import static org.egov.bpa.util.BPAConstants.*;
+
 @Component
 @Slf4j
 public class BPAValidator {
@@ -50,13 +52,15 @@ public class BPAValidator {
 	 * Ensures that MDMS data, application documents, and risk type are valid.
 	 *
 	 * @param bpaRequest The BPA request object.
-	 * @param mdmsData The MDMS data for validation.
-	 * @param values Additional values for validation.
+	 * @param tenantMdmsData The MDMS data for validation.
+	 * @param stateMdmsData Additional values for validation.
 	 */
 	public void validateCreate(BPARequest bpaRequest, Object tenantMdmsData, Object stateMdmsData) {
 		/*Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
                 ? (Map<String, String>) bpaRequest.getBPA().getAdditionalDetails()
                 : new HashMap<String, String>();*/
+
+        log.info("validateCreate method running...");
 
         // Map to store lookup data for MDMS validation
         Map<String, Set<String>> lookup = new HashMap<>();
@@ -285,6 +289,8 @@ public class BPAValidator {
 		validateAllIds(searchResult, bpa);
  		setFieldsFromSearch(bpaRequest, searchResult, mdmsData);
         */
+
+        log.info("Validating BPA Update data...");
 
         // Map to store lookup data for MDMS validation
         Map<String, Set<String>> lookup = new HashMap<>();
@@ -603,6 +609,7 @@ public class BPAValidator {
      * @param request The BPA request containing inspection data
      */
     public void validateChecklist(BPARequest request) {
+        log.info("Validating checklist data for BPA application: {}", request.getBPA().getApplicationNo());
         BPA bpa = request.getBPA();
         String tenantId = bpa.getTenantId();
         String state = bpaUtil.extractState(tenantId);
@@ -616,6 +623,7 @@ public class BPAValidator {
         if (CollectionUtils.isEmpty(checklistData)) {
             throw new CustomException("CHECKLIST_VALIDATION_ERROR", "Checklist data fetch failed from mdms");
         }
+        log.info("Checklist data to be validated: {}", checklistData);
 
         // Get inspection data from BPA additional details
         Object additionalDetails = bpa.getAdditionalDetails();
@@ -627,7 +635,9 @@ public class BPAValidator {
         if (CollectionUtils.isEmpty(inspectionData)) {
             throw new CustomException("CHECKLIST_VALIDATION_ERROR", "Inspection data not found for checklist validation");
         }
+        log.info("Inspection Data: {}", inspectionData);
 
+        // Validating the date
         validateDate(additionalDetails);
 
         Map<String, Object> currentInspection = inspectionData.get(0);
@@ -643,7 +653,7 @@ public class BPAValidator {
      */
     private List<Object> getChecklistFromMDMS(Object mdmsData, BPA bpa) {
         try {
-            String jsonPath = "$.MdmsRes.BPA.CheckList[?(@.applicationType=='BUILDING_PLAN_SCRUTINY' && @.WFState=='PENDING_DA_ENGINEER')].questions[*]";
+            String jsonPath = CHECKLIST_JSONPATH;
             return JsonPath.read(mdmsData, jsonPath);
         } catch (Exception e) {
             log.error("Error reading checklist from MDMS: {}", e.getMessage());
@@ -659,7 +669,8 @@ public class BPAValidator {
      */
     @SuppressWarnings("unchecked")
     private List<Map<String, Object>> getInspectionData(Object additionalDetails) {
-        Object inspectionObj = ((Map<String, Object>) additionalDetails).get("inspectionChecklist");
+        Object inspectionObj = ((Map<String, Object>) additionalDetails).get(INSPECTION_CHECKLIST);
+        log.info("Inspection data from additional details: {}", inspectionObj);
         if (inspectionObj instanceof List) {
             return (List<Map<String, Object>>) inspectionObj;
         }
@@ -673,12 +684,14 @@ public class BPAValidator {
      */
     @SuppressWarnings("unchecked")
     private void validateDate(Object additionalDetails) {
-        List<Map<String, Object>> inspectionData = (List<Map<String, Object>>) ((Map<String, Object>) additionalDetails).get("submitReportinspection_pending");
+        List<Map<String, Object>> inspectionData = (List<Map<String, Object>>) ((Map<String, Object>) additionalDetails).get(SUBMIT_REPORT_KEY);
 
         if (!CollectionUtils.isEmpty(inspectionData)) {
-            String inspectionDate = (String) inspectionData.get(0).get("inspectionDate");
+            String inspectionDate = (String) inspectionData.get(0).get(INSPECTION_DATE_KEY);
+            log.info("Date to be validated: {}", inspectionDate);
             if (inspectionDate != null) {
                 String today = LocalDate.now().toString();
+                log.info("Today's date: {}", today);
                 if (!today.equals(inspectionDate)) {
                     throw new CustomException("INVALID_INSPECTION_DATE", "Inspection date must be today's date");
                 }
@@ -694,6 +707,8 @@ public class BPAValidator {
      * @param inspectionData Map containing inspection form data
      */
     private void validateMandatoryFields(List<Object> checklistData, Map<String, Object> inspectionData) {
+        log.info("Starting mandatory fields validation for {} checklist questions", checklistData.size());
+
         Set<String> validFieldKeys = new HashSet<>();
         List<String> missingFields = new ArrayList<>();
 
@@ -705,6 +720,7 @@ public class BPAValidator {
                 validFieldKeys.add(fieldKey);
             }
         }
+        log.info("Valid field keys from checklist: {}", validFieldKeys);
 
         // Validate inspection data keys
         for (String inspectionKey : inspectionData.keySet()) {
@@ -712,7 +728,9 @@ public class BPAValidator {
                 throw new CustomException("INVALID_FIELD_KEY", "Invalid field key in inspection data: " + inspectionKey);
             }
         }
+        log.info("All inspection data keys are valid");
 
+        log.info("Checking mandatory fields...");
         for (Object questionObj : checklistData) {
             Map<String, Object> question = (Map<String, Object>) questionObj;
             Boolean mandatory = (Boolean) question.get("mandatory");
@@ -723,15 +741,22 @@ public class BPAValidator {
                 if (fieldKey != null) {
                     Object fieldValue = inspectionData.get(fieldKey);
                     if (fieldValue == null || (fieldValue instanceof String && ((String) fieldValue).trim().isEmpty())) {
+                        log.warn("Mandatory field '{}' (key: {}) is missing or empty", questionName, fieldKey);
                         missingFields.add(questionName);
+                    } else {
+                        log.debug("Mandatory field '{}' (key: {}) has value: {}", questionName, fieldKey, fieldValue);
                     }
+
                 }
             }
         }
 
         if (!missingFields.isEmpty()) {
+            log.error("Validation failed - Missing mandatory fields: {}", missingFields);
             String errorMessage = "Mandatory fields are missing: " + String.join(", ", missingFields);
             throw new CustomException("MANDATORY_FIELDS_MISSING", errorMessage);
         }
+        log.info("Mandatory fields validation completed successfully");
+
     }
 }
