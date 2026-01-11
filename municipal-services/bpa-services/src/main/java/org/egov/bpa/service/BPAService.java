@@ -161,7 +161,6 @@ public class BPAService {
        // this.validateCreateOC(applicationType, values, requestInfo, bpaRequest);
 
 		bpaValidator.validateCreate(bpaRequest, mdmsTenantData, mdmsStateData);
-       
 
         landService.addLandInfoToBPA(bpaRequest);
         enrichmentService.enrichBPACreateRequest(bpaRequest, null);
@@ -442,16 +441,15 @@ public class BPAService {
         String tenantId = bpaRequest.getBPA().getAreaMapping().getConcernedAuthority();
 
         // Get MDMS Data for request validation
-        // Get MDMS Data for request validation
         Object mdmsTenantData = mdmsCacheService.getMdmsData(requestInfo, tenantId);
         
         Object mdmsStateData = mdmsCacheService.getMdmsData(requestInfo, stateTenantId);
 
         // Validate action for pending NOC applications if not approved then update not allowed
       //  bpaValidator.validateActionForPendingNoc(bpaRequest);
+
         // Validate the update request
-        //bpaValidator.validateStateMdmsData(bpaRequest, mdmsStateData);
-        //bpaValidator.validateMdmsData(bpaRequest, mdmsTenantData);
+        bpaValidator.validateUpdate(bpaRequest, mdmsTenantData, mdmsStateData);
 
         BPA bpa = bpaRequest.getBPA();
 
@@ -523,6 +521,8 @@ public class BPAService {
 
 		case "SUBMIT_REPORT":
 //			Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+            // Validating the checklist in case of submit report
+            bpaValidator.validateChecklist(bpaRequest);
 			nocService.createNocRequest(bpaRequest, mdmsStateData);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
             calculationService.addCalculation(bpaRequest, "PLANNING_PERMIT_FEE");

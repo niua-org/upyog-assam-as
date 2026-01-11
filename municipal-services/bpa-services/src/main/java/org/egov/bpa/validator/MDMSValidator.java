@@ -44,54 +44,91 @@ public class MDMSValidator {
 	 * </p>
 	 * @param bpaRequest
 	 * @param mdmsData
+     * @param lookup
 	 */
-	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData, Map<String, Set<String>> lookup) {
+        log.info("Starting MDMS data validation for tenant-level masters");
 
 	    Map<String, List<String>> masterData = getAttributeValuesForTenant(mdmsData);
+        log.info("Extracted master data keys: {}", masterData.keySet());
 
-	    Map<String, Set<String>> masterLookup = buildMasterLookup(masterData);
+	    Map<String, Set<String>> masterLookup = buildMasterLookup(masterData, lookup);
+        log.info("Built master lookup with {} entries", masterLookup.size());
 
 	    List<String> masterList = new ArrayList<>();
 
 	    if (masterData.containsKey(BPAConstants.REVENUE_VILLAGE)) {
 	        masterList.add(BPAConstants.REVENUE_VILLAGE);
-	    }
+            log.info("Added REVENUE_VILLAGE to validation list");
+        }
 
 	    if (masterData.containsKey(BPAConstants.VILLAGES)) {
 	        masterList.add(BPAConstants.VILLAGES);
-	    }
+            log.info("Added VILLAGES to validation list");
+        }
+
+        // key to store ward details
+        if (masterData.containsKey(BPAConstants.WARD_DETAILS)) {
+            masterList.add(BPAConstants.WARD_DETAILS);
+            log.info("Added WARD_DETAILS to validation list");
+        }
 
 	    String[] masterArray = masterList.toArray(new String[0]);
+        log.info("Masters to validate: {}", Arrays.toString(masterArray));
 
-	    if (log.isInfoEnabled() && bpaRequest != null && bpaRequest.getBPA() != null) {
-	        log.info("Validating master data from MDMS for : {}", bpaRequest.getBPA().getApplicationNo());
+        if (log.isInfoEnabled() && bpaRequest != null && bpaRequest.getBPA() != null) {
+            if(bpaRequest.getBPA().getApplicationNo() != null) {
+                log.info("Validating master data from MDMS for applicaton: {}", bpaRequest.getBPA().getApplicationNo());
+            }else {
+                log.info("Validating master data from MDMS for tenant: {}", bpaRequest.getBPA().getTenantId());
+            }
 	    }
-
+        log.info("Validating if all required masters are present in MDMS");
 	    validateIfMasterPresent(masterArray, masterData);
-	    validateRequestValues(bpaRequest, masterLookup);
-	}
+        log.info("Validating request values against master data");
+        validateRequestValues(bpaRequest, masterLookup);
 
-	
-	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData) {
+        log.info("MDMS data validation completed successfully");
+    }
+
+    /**
+     * Validates state-level MDMS data for BPA request.
+     * Extracts and validates master data like application types, occupancy types,
+     * permissible zones, construction types, and states from MDMS.
+     *
+     * @param bpaRequest The BPA request to validate
+     * @param mdmsData The MDMS data object containing state-level master data
+     * @param lookup Map to store lookup data for efficient validation
+     */
+	public void validateStateMdmsData(BPARequest bpaRequest, Object mdmsData, Map<String, Set<String>> lookup) {
+        log.info("Starting state-level MDMS data validation");
 
 		Map<String, List<String>> masterData = getAttributeValuesForState(mdmsData);
-		
-		Map<String, Set<String>> masterLookup = buildMasterLookup(masterData);
-		String[] masterArray = { 
-	          	BPAConstants.SERVICE_TYPE, BPAConstants.APPLICATION_TYPE,
-				BPAConstants.OWNERSHIP_CATEGORY, BPAConstants.OWNER_TYPE, BPAConstants.OCCUPANCY_TYPE,
-				BPAConstants.SUB_OCCUPANCY_TYPE, BPAConstants.USAGES, BPAConstants.PERMISSIBLE_ZONE,
-			    BPAConstants.CONSTRUCTION_TYPE, BPAConstants.ULB_WARD_DETAILS, BPAConstants.STATES,			
-				BPAConstants.RTP_CATEGORIES
-				};
+        log.debug("Extracted state master data keys: {}", masterData.keySet());
 
-		if (log.isInfoEnabled() && bpaRequest != null && bpaRequest.getBPA() != null) {
+        Map<String, Set<String>> masterLookup = buildMasterLookup(masterData, lookup);
+        log.debug("Built state master lookup with {} entries", masterLookup.size());
+
+        String[] masterArray = {
+                BPAConstants.APPLICATION_TYPE,
+			    BPAConstants.OCCUPANCY_TYPE,
+				BPAConstants.PERMISSIBLE_ZONE,
+			    BPAConstants.CONSTRUCTION_TYPE, BPAConstants.STATES
+				};
+        log.info("State masters to validate: {}", Arrays.toString(masterArray));
+
+        if (log.isInfoEnabled() && bpaRequest != null && bpaRequest.getBPA() != null) {
 			log.info("Validating master data from MDMS for : {}", bpaRequest.getBPA().getApplicationNo());
 		}
 
-		validateIfMasterPresent(masterArray, masterData);
-		validateRequestValues(bpaRequest, masterLookup);
-	}
+        log.info("Validating if all required state masters are present in MDMS");
+        validateIfMasterPresent(masterArray, masterData);
+
+        log.info("Validating request values against state master data");
+        validateRequestValues(bpaRequest, masterLookup, masterArray);
+
+        log.info("State-level MDMS data validation completed successfully");
+    }
 
 
 	
@@ -244,21 +281,34 @@ public class MDMSValidator {
 	 */
 
 	public Map<String, List<String>> getAttributeValuesForTenant(Object mdmsData) {
+        log.info("Starting extraction of tenant-level attribute values from MDMS");
 
 	    final Map<String, List<String>> mdmsResMap = new HashMap<>();
 
 	    // Step 1: Extract boundary root from MDMS
-	    Map<String, Object> boundaryRoot = extractBoundaryRoot(mdmsData);
+        log.debug("Extracting boundary root from MDMS");
+        Map<String, Object> boundaryRoot = extractBoundaryRoot(mdmsData);
+        log.debug("Successfully extracted boundary root");
 
-	    // Step 2: Extract codes (ward, revenue village, village)
-	    Map<String, List<String>> extractedCodes = extractCodes(boundaryRoot);
+        // Step 2: Extract codes (ward, revenue village, village)
+        log.debug("Extracting codes from boundary hierarchy");
+        Map<String, List<String>> extractedCodes = extractCodes(boundaryRoot);
 
 	    List<String> revenueVillageCodes = extractedCodes.get(BPAConstants.REVENUE_VILLAGE);
 	    List<String> villageNameCodes = extractedCodes.get(BPAConstants.VILLAGES);
+        List<String> wardNameCodes = extractedCodes.get(BPAConstants.WARD_DETAILS);
 
-	    if (revenueVillageCodes.isEmpty() && villageNameCodes.isEmpty()) {
+        log.info("Extracted {} revenue village codes, {} village codes, {} ward codes",
+                revenueVillageCodes.size(), villageNameCodes.size(), wardNameCodes.size());
+
+        if (revenueVillageCodes.isEmpty() && villageNameCodes.isEmpty()) {
 	        throw new RuntimeException("No revenue village or village codes found");
 	    }
+
+        // if masters related to ward not found throw error
+        if (wardNameCodes.isEmpty()){
+            throw new RuntimeException("No ward codes found");
+        }
 
 	    if (!revenueVillageCodes.isEmpty()) {
 	        mdmsResMap.put(BPAConstants.REVENUE_VILLAGE, revenueVillageCodes);
@@ -268,6 +318,11 @@ public class MDMSValidator {
 	        mdmsResMap.put(BPAConstants.VILLAGES, villageNameCodes);
 	    }
 
+        if (!wardNameCodes.isEmpty()){
+            mdmsResMap.put(BPAConstants.WARD_DETAILS, wardNameCodes);
+        }
+
+        log.info("Successfully extracted tenant attribute values with {} master types", mdmsResMap.size());
 	    return mdmsResMap;
 	}
 	
@@ -323,12 +378,14 @@ public class MDMSValidator {
 
 	    List<String> revenueVillageCodes = new ArrayList<>();
 	    List<String> villageNameCodes = new ArrayList<>();
+        List<String> wardCodes = new ArrayList<>();
 
-	    traverseBoundary(boundaryRoot, revenueVillageCodes, villageNameCodes);
+	    traverseBoundary(boundaryRoot, revenueVillageCodes, villageNameCodes, wardCodes);
 
 	    Map<String, List<String>> result = new HashMap<>();
 	    result.put(BPAConstants.REVENUE_VILLAGE, revenueVillageCodes);
 	    result.put(BPAConstants.VILLAGES, villageNameCodes);
+        result.put(BPAConstants.WARD_DETAILS, wardCodes);
 
 	    return result;
 	}
@@ -337,7 +394,7 @@ public class MDMSValidator {
 	 * Recursively traverse boundary children to collect revenue village and village codes
 	 */
 	@SuppressWarnings("unchecked")
-	private void traverseBoundary(Map<String, Object> node, List<String> revenueVillageCodes, List<String> villageNameCodes) {
+	private void traverseBoundary(Map<String, Object> node, List<String> revenueVillageCodes, List<String> villageNameCodes, List<String> wardCodes) {
 
 	    if (node == null) return;
 
@@ -348,11 +405,13 @@ public class MDMSValidator {
 	        revenueVillageCodes.add(code);
 	    } else if (BPAConstants.VILLAGE_CODE.equalsIgnoreCase(label) && code != null) {
 	        villageNameCodes.add(code);
-	    }
+	    } else if (BPAConstants.WARD_CODE.equalsIgnoreCase(label) && code != null) {
+            wardCodes.add(code);
+        }
 
 	    List<Map<String, Object>> children = normalizeToList(node.get(BPAConstants.CHILDREN));
 	    for (Map<String, Object> child : children) {
-	        traverseBoundary(child, revenueVillageCodes, villageNameCodes);
+	        traverseBoundary(child, revenueVillageCodes, villageNameCodes, wardCodes);
 	    }
 	}
 	/**
@@ -414,23 +473,82 @@ public class MDMSValidator {
 	 *  */
 	@SuppressWarnings("unchecked")
 	private void validateRequestValues(BPARequest bpaRequest, Map<String, Set<String>> masterLookup) {
-		if (bpaRequest == null || bpaRequest.getBPA() == null) {
-			return;
+        log.info("Starting validation of request values against tenant-level master data");
+
+        if (bpaRequest == null || bpaRequest.getBPA() == null) {
+            log.warn("BPA request or BPA object is null, skipping validation");
+            return;
 		}
 
 		Map<String, String> errorMap = new HashMap<>();
 		BPA bpa = bpaRequest.getBPA();
+        log.debug("Validating BPA application: {}", bpa.getApplicationNo());
 
-		validateFieldAgainstMaster(bpa.getApplicationType(), BPAConstants.CONSTRUCTION_TYPE, "Application type", masterLookup,
-				errorMap);
-		validateAreaMapping(bpa.getAreaMapping(), masterLookup, errorMap);
-		validateRtpDetails(bpa.getRtpDetails(), masterLookup, errorMap);
-		validateLandAddress(bpa.getLandInfo(), masterLookup, errorMap);
+        log.debug("Validating area mapping details");
+        validateAreaMapping(bpa.getAreaMapping(), masterLookup, errorMap);
+
+        log.debug("Validating RTP details");
+        validateRtpDetails(bpa.getRtpDetails(), masterLookup, errorMap);
+
+        log.debug("Validating land address details");
+        validateLandAddress(bpa.getLandInfo(), masterLookup, errorMap);
 
 		if (!errorMap.isEmpty()) {
-			throw new CustomException(errorMap);
+            log.error("Request validation failed with {} errors: {}", errorMap.size(), errorMap);
+            throw new CustomException(errorMap);
 		}
-	}
+        log.info("Request values validation completed successfully");
+    }
+
+    /**
+     * Validates specific request values against state-level master data.
+     * This method validates only the masters specified in the masterNames array,
+     * unlike the general validateRequestValues method which validates all tenant-level data.
+     *
+     * @param bpaRequest The BPA request containing values to validate
+     * @param masterLookup Map containing master data lookup sets for validation
+     * @param masterNames Array of master names to validate against
+     */
+    private void validateRequestValues(BPARequest bpaRequest, Map<String, Set<String>> masterLookup, String[] masterNames) {
+        log.info("Starting validation of request values against state-level master data");
+
+        if (bpaRequest == null || bpaRequest.getBPA() == null) {
+            log.warn("BPA request or BPA object is null, skipping state-level validation");
+            return;
+        }
+
+        Map<String, String> errorMap = new HashMap<>();
+        BPA bpa = bpaRequest.getBPA();
+
+        log.debug("Validating BPA application: {} against {} state masters",
+                bpa.getApplicationNo(), masterNames.length);
+
+        // Validate only the specified masters from the array
+        for (String masterName: masterNames){
+            log.debug("Validating master: {}", masterName);
+
+            switch (masterName) {
+
+                case BPAConstants.PERMISSIBLE_ZONE:
+                    validateFieldAgainstMaster(bpa.getLandInfo().getUnits().get(0).getOccupancyType(), masterName, "occupancyType", masterLookup, errorMap);
+                    break;
+
+                case BPAConstants.CONSTRUCTION_TYPE:
+                    validateFieldAgainstMaster(bpa.getApplicationType(), masterName, "constructionType", masterLookup, errorMap);
+                    break;
+
+                default:
+                    // default handling
+                    break;
+            }
+        }
+
+        if (!errorMap.isEmpty()) {
+            throw new CustomException(errorMap);
+        }
+
+        log.info("State-level request values validation completed successfully");
+    }
 
 	/**
 	 * Validates the area mapping details against the master data
@@ -478,6 +596,15 @@ public class MDMSValidator {
 		            masterLookup,
 		            errorMap);
 		}
+
+        // Validate ward details if present in area mapping
+        if (areaMapping.getWard() != null) {
+            validateFieldAgainstMaster(areaMapping.getWard(),
+                    BPAConstants.WARD_DETAILS,
+                    "Ward Name",
+                    masterLookup,
+                    errorMap);
+        }
 
 	}
 
@@ -545,8 +672,7 @@ public class MDMSValidator {
 	 * @param masterData
 	 * @return Map of master name to set of normalized values
 	 * */
-	private Map<String, Set<String>> buildMasterLookup(Map<String, List<String>> masterData) {
-		Map<String, Set<String>> lookup = new HashMap<>();
+	private Map<String, Set<String>> buildMasterLookup(Map<String, List<String>> masterData, Map<String, Set<String>> lookup) {
 		masterData.forEach((masterName, entries) -> lookup.put(masterName, flattenEntries(entries)));
 		return lookup;
 	}

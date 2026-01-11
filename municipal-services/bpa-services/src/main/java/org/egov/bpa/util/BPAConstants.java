@@ -1,5 +1,6 @@
 package org.egov.bpa.util;
 
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -92,8 +93,6 @@ public class BPAConstants {
 
 	// mdms master names
 
-	public static final String SERVICE_TYPE = "ServiceType";
-
 	public static final String APPLICATION_TYPE = "ApplicationType";
 
 	public static final String OCCUPANCY_TYPE = "OccupancyType";
@@ -109,10 +108,6 @@ public class BPAConstants {
 	public static final String RISKTYPE_COMPUTATION = "RiskTypeComputation";
 
 	public static final String DOCUMENT_TYPE = "DocumentType";
-
-	public static final String OWNER_TYPE = "OwnerType";
-
-	public static final String OWNERSHIP_CATEGORY = "OwnerShipCategory";
 
 	public static final String CHECKLIST_NAME = "CheckList";
 
@@ -143,6 +138,8 @@ public class BPAConstants {
 	public static final String REVENUE_VILLAGE_CODE = "RevenueVillage";
 	
 	public static final String VILLAGE_CODE = "Village";
+
+    public static final String WARD_CODE = "WardNo";
 	
 	public static final String CHILDREN = "children";
 	
@@ -160,7 +157,7 @@ public class BPAConstants {
 
 	public static final String STATES = "states";
 
-	public static final String ULB_WARD_DETAILS = "ulbWardDetails";
+	public static final String WARD_DETAILS = "wards";
 
 	public static final String VILLAGES = "villages";
 
@@ -339,6 +336,9 @@ public class BPAConstants {
 	public static final String INSPECTION_TIME= "time";
 	public static final String DOCS = "docs";
 	public static final String CODE = "documentType";
+    public static final String SUBMIT_REPORT_KEY = "submitReportinspection_pending";
+    public static final String INSPECTION_DATE_KEY = "inspectionDate";
+    public static final String INSPECTION_CHECKLIST = "inspectionChecklist";
 	public static final String QUESTIONS_PATH = "$.[?(@.active==true)].question";
 	public static final String DOCTYPESS_PATH = "$.[?(@.required==true)].code";
 	public static final String NOCTYPE_MAP = "$.MdmsRes.NOC.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\" && @.nocTriggerState==\"{4}\")].nocTypes";
@@ -346,6 +346,7 @@ public class BPAConstants {
 	public static final String NOCTYPE_OFFLINE_MAP = "$.MdmsRes.NOC.NocType[?(@.mode==\"offline\")].code";	
 	public static final String NOC_TRIGGER_STATE_MAP = "$.MdmsRes.NOC.NocTypeMapping[?(@.applicationType==\"{1}\" && @.serviceType==\"{2}\" && @.riskType==\"{3}\")].nocTriggerState";
 	public static final String NOC_TYPE_MAPPING_PATH = "$.MdmsRes.NOC.NocTypeMapping[?(@.permitType=='{1}')].nocs[*]";
+    public static final String CHECKLIST_JSONPATH = "$.MdmsRes.BPA.CheckList[?(@.applicationType=='BUILDING_PLAN_SCRUTINY' && @.WFState=='PENDING_DA_ENGINEER')].questions[*]";
 
 	// SMS Notification messages
 	public static final String APP_CREATE = "APPLICATION_CREATE_MSG";
