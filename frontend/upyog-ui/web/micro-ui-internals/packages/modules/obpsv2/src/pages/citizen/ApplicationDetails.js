@@ -1280,7 +1280,7 @@ import {
             <StatusTable>
              <Row
                 label={t("BPA_CONSTRUCTION_TYPE")}
-                text={t(additionalDetails?.constructionType) || t("CS_NA")}
+                text={t(bpa_details?.applicationType) || t("CS_NA")}
               />
               <Row
                 label={t("BPA_OLD_DAG_NUMBER")}
