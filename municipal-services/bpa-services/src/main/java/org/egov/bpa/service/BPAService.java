@@ -539,13 +539,11 @@ public class BPAService {
             String status = bpaRequest.getBPA().getStatus();
 
             List<String> planningPermitCalculateFeeStatuses = Arrays.asList(
-                    BPAConstants.PENDING_CHAIRMAN_DA,
-                    BPAConstants.PENDING_CEO
+                   BPAConstants.PAYMENT_PENDING
             );
             List<String> buildingPermitCalculateFeeStatuses = Arrays.asList(
-                    BPAConstants.PENDING_CHAIRMAN_PRESIDENT_MB,
-                    BPAConstants.PENDING_CHAIRMAN_PRESIDENT_GP,
-                    BPAConstants.PENDING_COMMISSIONER
+                    BPAConstants.CITIZEN_FINAL_PAYMENT,
+                    BPAConstants.PENDING_FINAL_DSC
             );
 
             if (planningPermitCalculateFeeStatuses.contains(status)) {
