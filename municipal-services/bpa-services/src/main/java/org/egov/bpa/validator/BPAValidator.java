@@ -690,10 +690,11 @@ public class BPAValidator {
             String inspectionDate = (String) inspectionData.get(0).get(INSPECTION_DATE_KEY);
             log.info("Date to be validated: {}", inspectionDate);
             if (inspectionDate != null) {
-                String today = LocalDate.now().toString();
-                log.info("Today's date: {}", today);
-                if (!today.equals(inspectionDate)) {
-                    throw new CustomException("INVALID_INSPECTION_DATE", "Inspection date must be today's date");
+                LocalDate today = LocalDate.now();
+                LocalDate inspection = LocalDate.parse(inspectionDate);
+                log.info("Today's date: {}, Inspection date: {}", today, inspection);
+                if (inspection.isAfter(today)) {
+                    throw new CustomException("INVALID_INSPECTION_DATE", "Inspection date cannot be a future date");
                 }
             }
         }
