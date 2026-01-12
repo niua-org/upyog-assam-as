@@ -93,6 +93,16 @@ public class BPAConstants {
 
 	// mdms master names
 
+	public static final String PENDING_CHAIRMAN_DA = "PENDING_CHAIRMAN_DA";
+
+	public static final String PENDING_CEO = "PENDING_CEO";
+
+	public static final String PENDING_CHAIRMAN_PRESIDENT_MB = "PENDING_CHAIRMAN_PRESIDENT_MB";
+
+	public static final String PENDING_CHAIRMAN_PRESIDENT_GP = "PENDING_CHAIRMAN_PRESIDENT_GP";
+
+	public static final String PENDING_COMMISSIONER = "PENDING_COMMISSIONER";
+
 	public static final String APPLICATION_TYPE = "ApplicationType";
 
 	public static final String OCCUPANCY_TYPE = "OccupancyType";
