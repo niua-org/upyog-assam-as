@@ -174,9 +174,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
        workflow:{
         action: action?.action,
         comment: data?.comments?.length > 0 ? data?.comments : null,
-        comments: data?.comments?.length > 0 ? data?.comments : null,
-        assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
-        assignes: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
+        assignes: (["REJECT"].includes(action?.action) && applicationData?.status === "PENDING_DA_ENGINEER") ? [applicationData?.rtpDetails?.rtpUUID] : null,
         varificationDocuments: uploadedFile
         ? [
           {
@@ -185,20 +183,8 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
             fileStoreId: uploadedFile,
           },
         ]
-        : null,
-      },
-      action: action?.action,
-      comment: data?.comments,
-      assignee: !selectedApprover?.uuid ? null : [selectedApprover?.uuid],
-      wfDocuments: uploadedFile
-        ? [
-          {
-            documentType: action?.action + " DOC",
-            fileName: file?.name,
-            fileStoreId: uploadedFile,
-          },
-        ]
-        : null,
+        : null
+      }
     };
     submitAction({
       BPA:applicationData
