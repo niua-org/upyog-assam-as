@@ -7,15 +7,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -525,7 +517,6 @@ public class BPAService {
             bpaValidator.validateChecklist(bpaRequest);
 			nocService.createNocRequest(bpaRequest, mdmsStateData);
 			enrichmentService.enrichBPAUpdateRequest(bpaRequest, businessService);
-            calculationService.addCalculation(bpaRequest, "PLANNING_PERMIT_FEE");
 			wfIntegrator.callWorkFlow(bpaRequest);
 			repository.update(bpaRequest, BPAConstants.UPDATE);
 			break;
@@ -544,10 +535,26 @@ public class BPAService {
 			break;
 		}
 
-        if ("PENDING_CHAIRMAN_PRESIDENT_MB".equalsIgnoreCase(bpaRequest.getBPA().getStatus())
-                || "PENDING_CHAIRMAN_PRESIDENT_GP".equalsIgnoreCase(bpaRequest.getBPA().getStatus())) {
-        	calculationService.addCalculation(bpaRequest, "BUILDING_PERMIT_FEE");
+        if ("APPROVE".equalsIgnoreCase(action)) {
+            String status = bpaRequest.getBPA().getStatus();
+
+            List<String> planningPermitCalculateFeeStatuses = Arrays.asList(
+                    BPAConstants.PENDING_CHAIRMAN_DA,
+                    BPAConstants.PENDING_CEO
+            );
+            List<String> buildingPermitCalculateFeeStatuses = Arrays.asList(
+                    BPAConstants.PENDING_CHAIRMAN_PRESIDENT_MB,
+                    BPAConstants.PENDING_CHAIRMAN_PRESIDENT_GP,
+                    BPAConstants.PENDING_COMMISSIONER
+            );
+
+            if (planningPermitCalculateFeeStatuses.contains(status)) {
+                calculationService.addCalculation(bpaRequest, "PLANNING_PERMIT_FEE");
+            } else if (buildingPermitCalculateFeeStatuses.contains(status)) {
+                calculationService.addCalculation(bpaRequest, "BUILDING_PERMIT_FEE");
+            }
         }
+        
 		return bpaRequest.getBPA();
 
 
