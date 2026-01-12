@@ -49,7 +49,7 @@ public class MDMSValidator {
 	public void validateMdmsData(BPARequest bpaRequest, Object mdmsData, Map<String, Set<String>> lookup) {
         log.info("Starting MDMS data validation for tenant-level masters");
 
-	    Map<String, List<String>> masterData = getAttributeValuesForTenant(mdmsData);
+	    Map<String, List<String>> masterData = getAttributeValuesForTenant(mdmsData, bpaRequest);
         log.info("Extracted master data keys: {}", masterData.keySet());
 
 	    Map<String, Set<String>> masterLookup = buildMasterLookup(masterData, lookup);
@@ -280,10 +280,11 @@ public class MDMSValidator {
 	 * @throws RuntimeException if boundary data is missing or no codes are found
 	 */
 
-	public Map<String, List<String>> getAttributeValuesForTenant(Object mdmsData) {
+	public Map<String, List<String>> getAttributeValuesForTenant(Object mdmsData, BPARequest bpaRequest) {
         log.info("Starting extraction of tenant-level attribute values from MDMS");
 
 	    final Map<String, List<String>> mdmsResMap = new HashMap<>();
+        AreaMappingDetail areaMapping = bpaRequest.getBPA().getAreaMapping();
 
 	    // Step 1: Extract boundary root from MDMS
         log.debug("Extracting boundary root from MDMS");
@@ -305,12 +306,18 @@ public class MDMSValidator {
 	        throw new RuntimeException("No revenue village or village codes found");
 	    }
 
-        // if masters related to ward not found throw error
-        if (wardNameCodes.isEmpty()){
-            throw new RuntimeException("No ward codes found");
+        String authority = areaMapping.getBuildingPermitAuthority().toString();
+        log.info("Authority value: '{}'", authority);
+//         if masters related to ward not found throw error
+        if ("MUNICIPAL_BOARD".equals(authority) && wardNameCodes.size() == 0) {
+            throw new RuntimeException("No ward codes found for Municipal Board");
+        }
+        if ("GRAM_PANCHAYAT".equals(authority) && villageNameCodes.size() == 0){
+            throw new RuntimeException("No Village found for Gram Panchayat");
         }
 
-	    if (!revenueVillageCodes.isEmpty()) {
+
+        if (!revenueVillageCodes.isEmpty()) {
 	        mdmsResMap.put(BPAConstants.REVENUE_VILLAGE, revenueVillageCodes);
 	    }
 
