@@ -75,9 +75,9 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
   // Construction Type
   const [constructionType, setConstructionType] = useState(
     landData?.constructionType || 
-    (searchResult?.additionalDetails?.constructionType ? {
-      "code": searchResult?.additionalDetails?.constructionType,
-      "i18nKey": searchResult?.additionalDetails?.constructionType
+    (searchResult?.applicationType ? {
+      "code": searchResult?.applicationType,
+      "i18nKey": searchResult?.applicationType
     } : "") || 
     ""
   );  

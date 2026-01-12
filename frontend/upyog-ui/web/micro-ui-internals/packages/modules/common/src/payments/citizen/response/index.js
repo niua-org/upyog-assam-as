@@ -362,7 +362,7 @@ export const convertEpochToDate = (dateEpoch) => {
   };
 
   const getPlanningPermitOrder = async () => {
-    let applicationNo =  data?.[0]?.applicationNo;
+    const applicationNo =consumerCode;
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];
@@ -397,7 +397,7 @@ export const convertEpochToDate = (dateEpoch) => {
 
   // Occupancy Certificate Download
   const getBuildingOccupancy = async () => {
-    let applicationNo =  data?.[0]?.applicationNo;
+    const applicationNo =consumerCode;
     let bpaResponse=await Digit.OBPSV2Services.search({tenantId,
       filters: { applicationNo }});
     const application = bpaResponse?.bpa?.[0];

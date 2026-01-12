@@ -123,7 +123,6 @@ export const bpaPayload = async(data) => {
       businessService: "bpa-services",
       status: "INITIATED",
       additionalDetails: {
-        constructionType: data?.land?.constructionType?.code,
         adjoiningOwners: data?.land?.adjoiningOwners,
         futureProvisions: data?.land?.futureProvisions,
         todBenefits: data?.land?.todBenefits?.code,
