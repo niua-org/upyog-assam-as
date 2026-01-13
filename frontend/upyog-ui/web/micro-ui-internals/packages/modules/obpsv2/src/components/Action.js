@@ -509,15 +509,6 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
                   </div>
                 </div>
               )}
-
-
-              {selectedAction === "REJECT" && (
-                <div>
-                  <CardLabel>{t("COMMENTS")}</CardLabel>
-                  <TextArea name="reason" onChange={addComment} value={comments} maxLength={500} />
-                  <div style={{ textAlign: "right", fontSize: "12px", color: "#666" }}>{comments.length}/500</div>
-                </div>
-              )}
             </React.Fragment>
           </Card>
         </Modal>
