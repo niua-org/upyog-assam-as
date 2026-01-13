@@ -165,6 +165,7 @@ public class NocService {
 		for (String nocType : nocTypes) {
 			List<Document> documents = docMap.get(nocType);
 
+			// Sets additionalDetails only in case of Civil Aviation
 			if(nocType.equals("CIVIL_AVIATION")) {
 				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
 						.nocType(nocType).source(source).workflow(workflow).documents(documents)
