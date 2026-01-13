@@ -25,7 +25,8 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
       let res = {
         id: jurisdiction?.id,
         hierarchy: jurisdiction?.hierarchy?.code,
-        boundaryType: jurisdiction?.boundaryType?.label,
+        boundaryType: jurisdiction?.boundary?.code === 'as' ? 'WardNo' : jurisdiction?.boundaryType?.code || jurisdiction?.boundaryType?.label, //Added special handling for Assam tenant where boundary code is as, to map boundaryType correctly to Ward level without impacting other states.
+        //boundaryType: jurisdiction?.boundaryType?.label, 
         boundary: jurisdiction?.boundary?.code,
         tenantId: jurisdiction?.boundary?.code,
         auditDetails: jurisdiction?.auditDetails,
@@ -158,12 +159,14 @@ function Jurisdiction({
         .filter((ele) => {
           return ele?.hierarchyType?.code == jurisdiction?.hierarchy?.code;
         })
-        .map((item) => { return { ...item.boundary, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, 'EGOV_LOCATION_BOUNDARYTYPE') } })
-    );
+        //.map((item) => { return { ...item.boundary, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, 'EGOV_LOCATION_BOUNDARYTYPE') } }) );
+        .map((item) => { return { ...item.boundary, code: item.boundary.label, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, 'EGOV_LOCATION_BOUNDARYTYPE') } })    ); //Added code field to boundary objects to ensure consistent dropdown behavior and avoid dependency on label-only mapping.
+
   }, [jurisdiction?.hierarchy, data?.MdmsRes]);
   const tenant = Digit.ULBService.getCurrentTenantId();
   useEffect(() => {
-    selectboundary(data?.MdmsRes?.tenant?.tenants.filter(city => city.code != Digit.ULBService.getStateId()).map(city => { return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) } }));
+    //selectboundary(data?.MdmsRes?.tenant?.tenants.filter(city => city.code != Digit.ULBService.getStateId()).map(city => { return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) } }));
+    selectboundary(data?.MdmsRes?.tenant?.tenants.map(city => { return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) } })); //Removed state-level filtering to support Assam single-tenant configuration and prevent empty tenant selection.
   }, [jurisdiction?.boundaryType, data?.MdmsRes]);
 
   useEffect(() => {
