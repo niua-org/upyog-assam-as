@@ -18,7 +18,7 @@ const PropertyValidation = ({ t, config, onSelect, formData, searchResult }) => 
   const [propertyDetails, setPropertyDetails] = useState(formData?.propertyValidation?.propertyDetails||searchResult?.additionalDetails?.propertyDetails);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
+  const tenantId =searchResult?.tenantId || Digit.ULBService.getCitizenCurrentTenant(true);
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => {

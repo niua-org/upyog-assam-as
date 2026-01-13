@@ -93,6 +93,12 @@ public class BPAConstants {
 
 	// mdms master names
 
+	public static final String PAYMENT_PENDING= "PAYMENT_PENDING";
+
+	public static final String CITIZEN_FINAL_PAYMENT = "CITIZEN_FINAL_PAYMENT";
+
+	public static final String PENDING_FINAL_DSC = "PENDING_FINAL_DSC";
+
 	public static final String PENDING_CHAIRMAN_DA = "PENDING_CHAIRMAN_DA";
 
 	public static final String PENDING_CEO = "PENDING_CEO";
