@@ -163,12 +163,19 @@ public class NocService {
 		log.info("Applicable NOCs are, " + nocTypes);
 
 		for (String nocType : nocTypes) {
-
 			List<Document> documents = docMap.get(nocType);
-			Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
-					.nocType(nocType).source(source).workflow(workflow).documents(documents)
-					.additionalDetails(nocAdditionalDetails).build();
-			nocs.add(noc);
+
+			if(nocType.equals("CIVIL_AVIATION")) {
+				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
+						.nocType(nocType).source(source).workflow(workflow).documents(documents)
+						.additionalDetails(nocAdditionalDetails).build();
+				nocs.add(noc);
+			} else {
+				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
+						.nocType(nocType).source(source).workflow(workflow).documents(documents)
+						.build();
+				nocs.add(noc);
+			}
 		}
 
 		//TODO: Added this FIRE NOC for testing will remove once testing is done
