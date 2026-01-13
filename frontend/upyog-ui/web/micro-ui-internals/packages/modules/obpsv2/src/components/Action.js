@@ -31,7 +31,9 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
     "SEND_BACK_TO_GMDA",
     "RECOMMEND_TO_CHAIRMAN_DA",
     "SEND_BACK_TO_DA",
-    "FORWARD"
+    "FORWARD",
+    "SEND_BACK_TO_TECHNICAL_ENGINEER_GP",
+    "SEND_BACK_TO_TECHNICAL_ENGINEER_MB"
   ];
 
   const [assignResponse, setAssignResponse] = useState(null);
@@ -143,6 +145,12 @@ const Action = ({ selectedAction, applicationNo, closeModal, setSelectedAction, 
           setPopup(true);
           break;
         case "SEND_BACK_TO_DA":
+          setPopup(true);
+          break;
+        case "SEND_BACK_TO_TECHNICAL_ENGINEER_GP":
+          setPopup(true);
+          break;
+        case "SEND_BACK_TO_TECHNICAL_ENGINEER_MB":
           setPopup(true);
           break;
         case "FORWARD":
