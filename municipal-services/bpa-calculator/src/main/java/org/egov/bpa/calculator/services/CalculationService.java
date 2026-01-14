@@ -366,7 +366,7 @@ public class CalculationService {
 			 * - Rate and multiplier are picked from upper floor calculation type
 			 */
 			
-		    if (!premiumApplied
+		    if (floor.getLevel() > 0 && !premiumApplied
 		            && BPACalculatorConstants.PLANNING_PERMIT_FEE.equals(calulationCriteria.getFeeType())
 		            && calulationCriteria.getPremiumBuiltUpArea() != null
 		            && calulationCriteria.getPremiumBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
@@ -381,9 +381,8 @@ public class CalculationService {
 		                        .setScale(0, RoundingMode.HALF_UP);
 
 		        totalTax = totalTax.add(premiumAmount);
-		        premiumApplied = true;
-
-		        log.info("Premium FAR Fee applied once: {}", premiumAmount);
+		      
+		        log.info("Premium FAR Fee applied: {}", premiumAmount);
 		    }
 
 			TaxHeadEstimate estimate = new TaxHeadEstimate();
