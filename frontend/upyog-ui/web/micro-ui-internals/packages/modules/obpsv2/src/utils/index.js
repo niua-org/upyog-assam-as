@@ -233,6 +233,29 @@ export const bpaEditPayload = async (formData) => {
   const existingBPA = searchRes?.bpa?.[0];
   if (!existingBPA) throw new Error("BPA not found for update");
   const updated = cloneDeep(existingBPA);
+  
+  // Update applicationType
+  if (formData?.land?.constructionType?.code) {
+    updated.applicationType = formData.land.constructionType.code;
+  }
+  
+  // Update additionalDetails with all fields from bpaPayload
+  if (formData?.land || formData?.propertyValidation) {
+    updated.additionalDetails = {
+      ...updated.additionalDetails,
+      ...(formData?.land?.adjoiningOwners && { adjoiningOwners: formData.land.adjoiningOwners }),
+      ...(formData?.land?.futureProvisions && { futureProvisions: formData.land.futureProvisions }),
+      ...(formData?.land?.todBenefits?.code && { todBenefits: formData.land.todBenefits.code }),
+      ...(formData?.land?.todWithTdr && { todWithTdr: formData.land.todWithTdr }),
+      ...(formData?.land?.todZone && { todZone: formData.land.todZone }),
+      ...(formData?.land?.tdrUsed?.code && { tdrUsed: formData.land.tdrUsed.code }),
+      ...(formData?.land?.todAcknowledgement && { todAcknowledgement: formData.land.todAcknowledgement }),
+      ...(formData?.propertyValidation?.propertyID && { propertyID: formData.propertyValidation.propertyID }),
+      ...(formData?.propertyValidation?.propertyDetails && { propertyDetails: formData.propertyValidation.propertyDetails }),
+      ...(formData?.areaMapping?.planningArea?.gisCode && { gisCode: formData.areaMapping.planningArea.gisCode }),
+    };
+  }
+  
   if (formData?.land) {
     updated.landInfo = {
       ...updated.landInfo,
@@ -241,13 +264,69 @@ export const bpaEditPayload = async (formData) => {
       oldPattaNumber: formData.land.oldPattaNumber ?? updated.landInfo.oldPattaNumber,
       newPattaNumber: formData.land.newPattaNumber ?? updated.landInfo.newPattaNumber,
       totalPlotArea: formData.land.totalPlotArea ?? updated.landInfo.totalPlotArea,
-      units: formData.land.units ?? updated.landInfo.units,
-      documents: formData.land.documents ?? updated.landInfo.documents,
-      address: formData.land.address ?? updated.landInfo.address,
-      ownerAddresses:[]
+      documents: formData.land.documents?.map((doc) => ({
+        documentType: doc?.documentType || "",
+        documentUid: doc?.documentUid || "",
+        fileStoreId: doc?.fileStoreId || "",
+        id: doc?.id || "",
+      })) ?? updated.landInfo.documents,
+      ownerAddresses: [],
+      // Update units with occupancyType
+      units: formData.land.occupancyType?.code ? [
+        {
+          ...updated.landInfo.units?.[0],
+          occupancyType: formData.land.occupancyType.code,
+        }
+      ] : updated.landInfo.units,
+      // Update address if provided
+      address: formData?.address?.permanent ? {
+        addressLine1: formData.address.permanent.addressLine1,
+        addressLine2: formData.address.permanent.addressLine2,
+        city: formData.address.permanent.city?.code,
+        locality: { code: formData.address.permanent.city?.code },
+        country: "INDIA",
+        district: formData.address.permanent.district?.code,
+        houseNo: formData.address.permanent.houseNo,
+        pincode: formData.address.permanent.pincode,
+        state: formData.address.permanent.state?.code,
+        tenantId: formData.tenantId
+      } : updated.landInfo.address,
     };
   }
   if (formData?.applicant && updated.landInfo?.owners?.length > 0) {
+    // Create address objects if address data is provided
+    const permanentAddress = formData?.address?.permanent ? {
+      addressLine1: formData.address.permanent.addressLine1,
+      addressLine2: formData.address.permanent.addressLine2,
+      city: formData.address.permanent.city?.code,
+      addressCategory: "PERMANENT",
+      addressType: "PERMANENT_ADDRESS",
+      country: "INDIA",
+      localityCode: formData.address.permanent.city?.code,
+      district: formData.address.permanent.district?.code,
+      houseNo: formData.address.permanent.houseNo,
+      pincode: formData.address.permanent.pincode,
+      state: formData.address.permanent.state?.code,
+      tenantId: formData.tenantId,
+    } : updated.landInfo.owners[0].permanentAddress;
+    
+    const correspondenceAddress = formData?.address?.sameAsPermanent
+      ? { ...permanentAddress, addressCategory: "CORRESPONDENCE", addressType: "CORRESPONDENCE_ADDRESS" }
+      : formData?.address?.correspondence ? {
+          addressLine1: formData.address.correspondence.addressLine1,
+          addressLine2: formData.address.correspondence.addressLine2,
+          addressCategory: "CORRESPONDENCE",
+          addressType: "CORRESPONDENCE_ADDRESS",
+          city: formData.address.correspondence.city?.code,
+          country: "INDIA",
+          localityCode: formData.address.correspondence.city?.code,
+          district: formData.address.correspondence.district?.code,
+          houseNo: formData.address.correspondence.houseNo,
+          pincode: formData.address.correspondence.pincode,
+          state: formData.address.correspondence.state?.code,
+          tenantId: formData.tenantId,
+        } : updated.landInfo.owners[0].correspondenceAddress;
+    
     updated.landInfo.owners[0] = {
       ...updated.landInfo.owners[0],
       name: formData.applicant.applicantName ?? updated.landInfo.owners[0].name,
@@ -260,9 +339,8 @@ export const bpaEditPayload = async (formData) => {
       emailId: formData.applicant.emailId ?? updated.landInfo.owners[0].emailId,
       fatherOrHusbandName: formData.applicant.fatherName ?? updated.landInfo.owners[0].fatherOrHusbandName,
       motherName: formData.applicant.motherName ?? updated.landInfo.owners[0].motherName,
-      permanentAddress: formData.applicant.permanentAddress ?? updated.landInfo.owners[0].permanentAddress,
-      correspondenceAddress: formData.applicant.correspondenceAddress ?? updated.landInfo.owners[0].correspondenceAddress,
-      //documents: searchRes?.landInfo?.owners[0]?.documents
+      permanentAddress,
+      correspondenceAddress,
     };
   }
   if (formData?.areaMapping) {
@@ -286,9 +364,9 @@ export const bpaEditPayload = async (formData) => {
   if (formData?.land?.rtpCategory || formData?.land?.registeredTechnicalPerson) {
     updated.rtpDetails = {
       ...updated.rtpDetails,
-      rtpCategory: formData.land.rtpCategory?.code,
-      rtpName: formData.land.registeredTechnicalPerson?.code,
-      rtpUUID: formData.land.registeredTechnicalPerson?.uuid,
+      rtpCategory: formData.land.rtpCategory?.code ?? updated.rtpDetails?.rtpCategory,
+      rtpName: formData.land.registeredTechnicalPerson?.code ?? updated.rtpDetails?.rtpName,
+      rtpUUID: formData.land.registeredTechnicalPerson?.uuid ?? updated.rtpDetails?.rtpUUID,
     };
   }
   if (formData?.additionalDetails) {

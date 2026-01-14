@@ -516,6 +516,7 @@ const LandDetails = ({ t, config, onSelect, formData, searchResult }) => {
             optionKey="i18nKey"
             select={setRtpCategory}
             placeholder={t("BPA_SELECT_RTP_CATEGORY")}
+            disable={searchResult?.rtpDetails?.rtpCategory ? true : false}
           />
 
           {/* Registered Technical Person */}
