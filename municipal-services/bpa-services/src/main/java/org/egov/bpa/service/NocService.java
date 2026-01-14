@@ -174,7 +174,7 @@ public class NocService {
 			} else {
 				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
 						.nocType(nocType).source(source).workflow(workflow).documents(documents)
-						.additionalDetails(new HashMap<>()).build();
+						.additionalDetails(new HashMap<>()).build(); // AdditionalDetails is set as empty hashmap, because noc service needs an additionaldetails object
 				nocs.add(noc);
 			}
 		}
