@@ -163,12 +163,20 @@ public class NocService {
 		log.info("Applicable NOCs are, " + nocTypes);
 
 		for (String nocType : nocTypes) {
-
 			List<Document> documents = docMap.get(nocType);
-			Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
-					.nocType(nocType).source(source).workflow(workflow).documents(documents)
-					.additionalDetails(nocAdditionalDetails).build();
-			nocs.add(noc);
+
+			// Sets additionalDetails only in case of Civil Aviation
+			if(nocType.equals("CIVIL_AVIATION")) {
+				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
+						.nocType(nocType).source(source).workflow(workflow).documents(documents)
+						.additionalDetails(nocAdditionalDetails).build();
+				nocs.add(noc);
+			} else {
+				Noc noc = Noc.builder().tenantId(tenantId).applicationType(applicationType).sourceRefId(applicationNo)
+						.nocType(nocType).source(source).workflow(workflow).documents(documents)
+						.additionalDetails(new HashMap<>()).build(); // AdditionalDetails is set as empty hashmap, because noc service needs an additionaldetails object
+				nocs.add(noc);
+			}
 		}
 
 		//TODO: Added this FIRE NOC for testing will remove once testing is done
