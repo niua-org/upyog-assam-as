@@ -434,16 +434,16 @@ public class EDCRService {
 			materialType.add("");
 		}
 
-		List<BigDecimal> premiumFarArea =
+		List<Double> premiumFarArea =
 		        context.read("edcrDetail.*.planDetail.farDetails.buitUpAreaUnderPremiumFar");
 		
 		List<String> subOccupancy =
 	            context.read("edcrDetail.*.planDetail.virtualBuilding.occupancyTypes.*.subtype.name");
 
-		    BigDecimal premiumBuiltUpArea =
+		BigDecimal premiumBuiltUpArea =
 		        (premiumFarArea != null && !premiumFarArea.isEmpty())
-		            ? premiumFarArea.get(0)
-		            : BigDecimal.ZERO;
+		                ? BigDecimal.valueOf(premiumFarArea.get(0).doubleValue())
+		                : BigDecimal.ZERO;
 		    
 		    String subOccupancyType =
 		            (subOccupancy != null && !subOccupancy.isEmpty())
