@@ -180,6 +180,7 @@ public class BPAService {
         List<BPA> bpas = new LinkedList<>();
         bpaValidator.validateSearch(requestInfo, criteria);
         LandSearchCriteria landcriteria = new LandSearchCriteria();
+//        if(!Boolean.TRUE.equals(criteria.getIsInboxSearch()))
         landcriteria.setTenantId(criteria.getTenantId());
         landcriteria.setLocality(criteria.getLocality());
         List<String> edcrNos = null;
@@ -194,11 +195,21 @@ public class BPAService {
                 roles.add(role.getCode());
             }
             if ((criteria.tenantIdOnly() || criteria.isEmpty()) && roles.contains(BPAConstants.CITIZEN)) {
-                log.debug("loading data of created and by me");
+                log.debug("loading data of created by me");
                 bpas = this.getBPACreatedForByMe(criteria, requestInfo, landcriteria, edcrNos);
                 log.debug("no of bpas retuning by the search query" + bpas.size());
             } else {
+                // Check if user has ONLY CITIZEN role and apply createdBy filter for detail search
                 if (isDetailRequired) {
+                    // If user has ONLY CITIZEN role, filter by createdBy to ensure citizens can only view their own applications
+                    if (roles.size() == 1 && roles.contains(BPAConstants.CITIZEN)) {
+                        if (requestInfo.getUserInfo() != null && !StringUtils.isEmpty(requestInfo.getUserInfo().getUuid())) {
+                            List<String> uuids = new ArrayList<>();
+                            uuids.add(requestInfo.getUserInfo().getUuid());
+                            criteria.setCreatedBy(uuids);
+                            log.debug("Applying createdBy filter for CITIZEN detail search with uuid: {}", requestInfo.getUserInfo().getUuid());
+                        }
+                    }
                     bpas = getBPADetailFromCriteria(criteria, requestInfo, edcrNos);
                 } else {
                     bpas = getBPAFromCriteria(criteria, requestInfo, edcrNos);
@@ -371,6 +382,7 @@ public class BPAService {
         List<BPA> bpas = new LinkedList<>();
         log.info("Call with name to Land::" + criteria.getName());
         landcriteria.setName(criteria.getName());
+        landcriteria.setIsInboxSearch(criteria.getIsInboxSearch());
         ArrayList<LandInfo> landInfo = landService.searchLandInfoToBPA(requestInfo, landcriteria);
         ArrayList<String> landId = new ArrayList<>();
         if (!landInfo.isEmpty()) {
