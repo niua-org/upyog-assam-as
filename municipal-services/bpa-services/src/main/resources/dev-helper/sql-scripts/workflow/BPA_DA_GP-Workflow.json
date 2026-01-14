@@ -182,7 +182,7 @@
               "roles": [
                 "BPA_ENGINEER_DA"
               ],
-              "action": "REJECT",
+              "action": "SEND_BACK_TO_RTP",
               "active": true,
               "nextState": "PENDING_RTP_APPROVAL"
             }
@@ -306,7 +306,7 @@
               "roles": [
                 "BPA_CHAIRMAN_PRESIDENT_GP"
               ],
-              "action": "REJECT",
+              "action": "SEND_BACK_TO_TECHNICAL_ENGINEER_GP",
               "active": true,
               "nextState": "FORWARDED_TO_TECHNICAL_ENGINEER_GP"
             }

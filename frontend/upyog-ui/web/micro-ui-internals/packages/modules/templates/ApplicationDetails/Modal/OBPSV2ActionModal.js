@@ -174,7 +174,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
        workflow:{
         action: action?.action,
         comment: data?.comments?.length > 0 ? data?.comments : null,
-        assignes: (["REJECT"].includes(action?.action) && applicationData?.status === "PENDING_DA_ENGINEER") ? [applicationData?.rtpDetails?.rtpUUID] : null,
+        assignes: (["SEND_BACK_TO_RTP"].includes(action?.action) && applicationData?.status === "PENDING_DA_ENGINEER") ? [applicationData?.rtpDetails?.rtpUUID] : null,
         varificationDocuments: uploadedFile
         ? [
           {
