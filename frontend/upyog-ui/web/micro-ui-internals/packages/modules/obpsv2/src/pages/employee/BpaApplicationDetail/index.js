@@ -386,7 +386,7 @@ const BPAEmployeeDetails = () => {
           moduleCode="OBPSV2"
           showToast={showToast}
           ActionBarStyle={isMobile?{}:{paddingRight:"50px"}}
-          MenuStyle={isMobile?{}:{width:"12%",right:"50px"}}
+          MenuStyle={isMobile?{}:{right:"50px"}}
           setShowToast={setShowToast}
           closeToast={() => setShowToast(null)}
           statusAttribute={"state"}
