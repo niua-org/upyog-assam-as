@@ -352,21 +352,26 @@ public class CalculationService {
 				totalTax = totalTax.add(calculateEstimate(totalBuiltupArea, constructionCost, calcTypeUpper, calulationCriteria.getPremiumBuiltUpArea()));
 			}
 
-			
 			/**
 			 * Premium FAR fee calculation
 			 *
 			 * Premium FAR charges are applicable only for PLANNING_PERMIT_FEE.
-			 * The premium amount is calculated once on the total premium built-up area,
+			 * The premium amount is calculated once based on the total premium built-up area,
 			 * irrespective of the number of floors.
 			 *
+			 * The calculated premium amount is applied on each upper floor estimate
+			 * for reporting purposes, as Premium FAR is applicable only beyond the
+			 * ground floor and should not be associated with the ground floor charges.
+			 *
 			 * Conditions:
-			 * - Should be applied only once (controlled using premiumApplied flag)
-			 * - Applicable only when premium built-up area is greater than zero
+			 * - Applicable only for PLANNING_PERMIT_FEE
+			 * - Applied only when premium built-up area is greater than zero
+			 * - Applied only for upper floors (floor level > 0)
 			 * - Rate and multiplier are picked from upper floor calculation type
 			 */
+
 			
-		    if (!premiumApplied
+		    if (floor.getLevel() > 0 && !premiumApplied
 		            && BPACalculatorConstants.PLANNING_PERMIT_FEE.equals(calulationCriteria.getFeeType())
 		            && calulationCriteria.getPremiumBuiltUpArea() != null
 		            && calulationCriteria.getPremiumBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
@@ -381,9 +386,8 @@ public class CalculationService {
 		                        .setScale(0, RoundingMode.HALF_UP);
 
 		        totalTax = totalTax.add(premiumAmount);
-		        premiumApplied = true;
-
-		        log.info("Premium FAR Fee applied once: {}", premiumAmount);
+		      
+		        log.info("Premium FAR Fee applied: {}", premiumAmount);
 		    }
 
 			TaxHeadEstimate estimate = new TaxHeadEstimate();
