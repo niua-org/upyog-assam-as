@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.egov.bpa.config.BPAConfiguration;
@@ -582,27 +583,66 @@ public class BPAValidator {
 		}
 	}
 
-	public void validateActionForPendingNoc(BPARequest bpaRequest){
+	public void validateActionForPendingNoc(BPARequest bpaRequest) {
+
+		if (!config.getValidateRequiredNoc()) {
+			log.info("Skipping pending NOC validation as per configuration");
+			return;
+		}
+
 		String action = Optional.ofNullable(bpaRequest.getBPA().getWorkflow()).map(Workflow::getAction).orElse("");
-		List<String> pendingNocNotAllowedActions = Arrays.asList(config.getPendingNocNotAllowedActions().split(","));
-		if(pendingNocNotAllowedActions.contains(action)) {
-			List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);
-			if (!CollectionUtils.isEmpty(nocs)) {
-				for (Noc noc : nocs) {
-						List<String> statuses = Arrays.asList(config.getNocValidationCheckStatuses().split(","));
-						if(!statuses.contains(noc.getApplicationStatus())) {
-							log.error("Noc is not approved having applicationNo :" + noc.getApplicationNo());
-							throw new CustomException(BPAErrorConstants.NOC_SERVICE_EXCEPTION,
-									" Application can't be forwarded without NOC "
-											+ StringUtils.join(statuses, " or "));
-						}
-				}
+
+		List<String> pendingNocNotAllowedActions =
+				Arrays.stream(config.getPendingNocNotAllowedActions().split(","))
+						.map(String::trim)
+						.map(s -> s.replace("\"", "")) // safety for quoted configs
+						.collect(Collectors.toList());
+
+		log.debug("pendingNocNotAllowedActions: {} ", pendingNocNotAllowedActions);
+
+		if (!pendingNocNotAllowedActions.contains(action)) {
+			return;
+		}
+
+		log.info("Validating pending NOC for action: {}", action);
+
+		List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);
+		if (CollectionUtils.isEmpty(nocs)) {
+			return;
+		}
+
+		List<String> validStatuses =
+				Arrays.stream(config.getNocValidationCheckStatuses().split(","))
+						.map(String::trim)
+						.collect(Collectors.toList());
+
+		List<Noc> invalidNocs = new ArrayList<>();
+
+		for (Noc noc : nocs) {
+			if (!validStatuses.contains(noc.getApplicationStatus())) {
+				invalidNocs.add(noc);
 			}
 		}
 
+		if (!invalidNocs.isEmpty()) {
+
+			String errorMessage = invalidNocs.stream()
+					.map(noc -> String.format(
+							"NOC applicationNo=%s is in %s status",
+							noc.getApplicationNo(),
+							noc.getApplicationStatus()))
+					.collect(Collectors.joining(" | "));
+
+			log.error("Invalid NOCs found: {}", errorMessage);
+
+			throw new CustomException(
+					BPAErrorConstants.NOC_SERVICE_EXCEPTION,
+					"Application can't be forwarded without NOC approval. " + errorMessage
+			);
+		}
 	}
 
-    /**
+	/**
      * Validates checklist data against MDMS configuration and inspection data.
      * Ensures mandatory fields are filled and inspection date is today's date.
      *

@@ -126,10 +126,16 @@ public class ActionValidator {
 		String actions = config.getRtpReassignAction();
 		List<String> rtpActions = Arrays.asList(actions.split(","));
 
-		if(rtpActions.contains(action)) {
+		if(!rtpActions.contains(action)) {
 			throw new CustomException("INVALID_RTP_REASSIGN","RTP can not be changed at this state");
 		}
 	}
 
 
+	public boolean isCitizenUpdateAllowed(BPARequest bpaRequest, BPA existingBPA) {
+		if(bpaRequest.getRequestInfo() == null || bpaRequest.getRequestInfo().getUserInfo() == null) {
+			return false;
+		}
+        return existingBPA.getAuditDetails().getCreatedBy().equals(bpaRequest.getRequestInfo().getUserInfo().getUuid());
+    }
 }

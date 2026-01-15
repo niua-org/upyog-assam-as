@@ -8,7 +8,6 @@ const GisDetails = ({ acknowledgementIds, tenantId, t }) => {
   useEffect(() => {
     const fetchGisData = async () => {
       try {
-        const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
         const response = await Digit.OBPSV2Services.gisSearch({
           GisSearchCriteria: {
             applicationNo: acknowledgementIds,
