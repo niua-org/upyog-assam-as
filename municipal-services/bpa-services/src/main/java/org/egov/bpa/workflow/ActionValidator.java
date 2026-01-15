@@ -136,6 +136,6 @@ public class ActionValidator {
 		if(bpaRequest.getRequestInfo() == null || bpaRequest.getRequestInfo().getUserInfo() == null) {
 			return false;
 		}
-        return existingBPA.getCreatedBy().equals(bpaRequest.getRequestInfo().getUserInfo().getUuid());
+        return existingBPA.getAuditDetails().getCreatedBy().equals(bpaRequest.getRequestInfo().getUserInfo().getUuid());
     }
 }
