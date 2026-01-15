@@ -12,7 +12,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
   const currentUserPhoneNumber = userInformation?.mobileNumber;
   const applicationType = useWatch({ control, name: "applicationType" });
   // 
-    control.setValue("status", "");
+    // control.setValue("status", "");
   sessionStorage.setItem("search_application", JSON.stringify(applicationType));
   const { applicationTypes, ServiceTypes } = Digit.Hooks.obps.useServiceTypeFromApplicationType({
     Applicationtype: applicationType?.code || (userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_") ).length>0 &&  userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN") ).length<=0 ?"BPA_STAKEHOLDER_REGISTRATION" :"BUILDING_PLAN_SCRUTINY"),
