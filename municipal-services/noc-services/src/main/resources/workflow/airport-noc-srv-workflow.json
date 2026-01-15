@@ -44,7 +44,8 @@
                 "action": "APPROVE",
                 "nextState": "APPROVED",
                 "roles": [
-                  "AIRPORT_AUTHORITY_APPROVER"
+                  "AIRPORT_AUTHORITY_APPROVER",
+                  "AAI_INTERNAL_MICROSERVICE_ROLE"
                 ],
                 "active": true
               },
@@ -54,7 +55,8 @@
                 "action": "REJECT",
                 "nextState": "REJECTED",
                 "roles": [
-                  "AIRPORT_AUTHORITY_APPROVER"
+                  "AIRPORT_AUTHORITY_APPROVER",
+                  "AAI_INTERNAL_MICROSERVICE_ROLE"
                 ],
                 "active": true
               }
