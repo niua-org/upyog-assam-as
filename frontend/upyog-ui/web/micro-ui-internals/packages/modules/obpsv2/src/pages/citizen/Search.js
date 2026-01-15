@@ -5,11 +5,27 @@ import { useLocation } from "react-router-dom";
 const Search = ({ path }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+  const stateId = Digit.ULBService.getStateId();
   const location = useLocation();
   const [selectedType, setSelectedType] = useState("");
   const [payload, setPayload] = useState({});
   const [searchData, setSearchData] = useState({});
   const [paramerror, setparamerror] = useState("");
+  const user = Digit.UserService.getUser();
+  
+  const { data:tenantData } = Digit.Hooks.useEnabledMDMS(
+    stateId,
+    "tenant",
+    [{ name: "tenants" }],
+    {
+      select: (data) => {
+        const tenants = data?.tenant?.tenants || [];
+        return tenants.filter(
+          (tenant) => tenant?.code === tenantId
+        );
+      },
+    }
+  );
 
   useEffect(() => {
     if (location.pathname === "/upyog-ui/citizen/obpsv2/rtp/search/application" || location.pathname === "/upyog-ui/employee/obpsv2/search/application") {
@@ -20,6 +36,10 @@ const Search = ({ path }) => {
   useEffect(() => {
     if (Object.keys(payload).length === 0) {
       const initialPayload = {
+        ...(tenantId.endsWith("da") && user.info.roles.some((role) => role.code.endsWith("_DA")) && user.info.type==="EMPLOYEE" && tenantData?.[0]?.city?.planningAreaCode && {
+          masterPlanningArea: tenantData[0].city.planningAreaCode,
+          isInboxSearch: true
+        }),
         ...(window.location.href.includes("/search/obps-application") && {
           mobileNumber: Digit.UserService.getUser()?.info?.mobileNumber,
         }),
@@ -28,7 +48,7 @@ const Search = ({ path }) => {
         setPayload(initialPayload);
       }
     }
-  }, []);
+  }, [tenantData]);
 
   const SearchComponent = Digit.ComponentRegistryService.getComponent("RTASearchApplication");
 
@@ -46,11 +66,17 @@ const Search = ({ path }) => {
       ...(_data.fromDate ? { fromDate: fromDate?.getTime() } : {}),
     };
 
-    setPayload(
-      Object.keys(data)
-        .filter((k) => data[k] && k !== "businessServices")
-        .reduce((acc, key) => ({ ...acc, [key]: typeof data[key] === "object" ? data[key].code : data[key] }), {})
-    );
+    const searchPayload = Object.keys(data)
+      .filter((k) => data[k] && k !== "businessServices")
+      .reduce((acc, key) => ({ ...acc, [key]: typeof data[key] === "object" ? data[key].code : data[key] }), {});
+    
+    // Add masterPlanningArea for DA users
+    if (tenantId.endsWith("da") && user.info.roles.some((role) => role.code.endsWith("_DA")) && user.info.type==="EMPLOYEE" && tenantData?.[0]?.city?.planningAreaCode) {
+      searchPayload.masterPlanningArea = tenantData[0].city.planningAreaCode;
+      searchPayload.isInboxSearch = true;
+    }
+
+    setPayload(searchPayload);
   }
 
   const { isLoading: isBpaSearchLoading, isError, error: bpaerror, data: bpaData } = Digit.Hooks.obpsv2.useBPASearchApi({
