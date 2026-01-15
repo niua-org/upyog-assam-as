@@ -337,6 +337,8 @@ public class BPAService {
 
         log.info("Call with mobile number to Land::" + criteria.getMobileNumber());
         landcriteria.setMobileNumber(criteria.getMobileNumber());
+//        Below is to set isInboxSearch flag to land search criteria which will bypass the tenant filter at land service
+        landcriteria.setIsInboxSearch(criteria.getIsInboxSearch());
         ArrayList<LandInfo> landInfo = landService.searchLandInfoToBPA(requestInfo, landcriteria);
         ArrayList<String> landId = new ArrayList<>();
         if (!landInfo.isEmpty()) {
@@ -378,6 +380,7 @@ public class BPAService {
         List<BPA> bpas = new LinkedList<>();
         log.info("Call with name to Land::" + criteria.getName());
         landcriteria.setName(criteria.getName());
+//       Below is to set isInboxSearch flag to land search criteria which will bypass the tenant filter at land service
         landcriteria.setIsInboxSearch(criteria.getIsInboxSearch());
         ArrayList<LandInfo> landInfo = landService.searchLandInfoToBPA(requestInfo, landcriteria);
         ArrayList<String> landId = new ArrayList<>();
