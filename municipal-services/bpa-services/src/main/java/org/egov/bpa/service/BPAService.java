@@ -453,7 +453,7 @@ public class BPAService {
         Object mdmsStateData = mdmsCacheService.getMdmsData(requestInfo, stateTenantId);
 
         // Validate action for pending NOC applications if not approved then update not allowed
-      //  bpaValidator.validateActionForPendingNoc(bpaRequest);
+        bpaValidator.validateActionForPendingNoc(bpaRequest);
 
         // Validate the update request
         bpaValidator.validateUpdate(bpaRequest, mdmsTenantData, mdmsStateData);
@@ -496,7 +496,7 @@ public class BPAService {
          * 2. The incoming application should not have RTP details as null
          * 3. The RTP UUID of existing and incoming application should be different
          * 4. The action in workflow should be null or empty
-         * 5. The role of the logged in user should be CITIZEN
+         * 5. The role of the logged in user should be CITIZEN and created by should be same as user id
          */
 
 		bpaRequest.getBPA().setAuditDetails(searchResult.get(0).getAuditDetails());
@@ -512,6 +512,10 @@ public class BPAService {
 		switch (action.toUpperCase()) {
 
 		case "RTP_IS_CHANGED":
+            if(!actionValidator.isCitizenUpdateAllowed(bpaRequest, existingBPA)) {
+                throw new CustomException(BPAErrorConstants.UNAUTHORIZED_UPDATE,
+                        "RTP details can be updated by the citizen who created the application");
+            }
             actionValidator.validateActionForRTPUpdateWithoutWorkflowUpdate(bpaRequest, action);
 
 			reassignRTP(bpaRequest);

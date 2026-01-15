@@ -87,4 +87,5 @@ public class BPAErrorConstants {
 
 	public static final String INVALID_ASSIGNEE = "INVALID ASSIGNEE";
 
+	public static final String UNAUTHORIZED_UPDATE = "UNAUTHORIZED UPDATE";
 }

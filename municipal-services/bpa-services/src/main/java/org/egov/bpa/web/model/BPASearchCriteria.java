@@ -31,6 +31,8 @@ public class BPASearchCriteria {
 
     private String mobileNumber;
 
+    private String masterPlanningArea;
+
     @JsonIgnore
     private List<String> landId;
 
