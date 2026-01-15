@@ -364,7 +364,7 @@ public class InboxService {
 			}
 
 			List<ProcessInstance> processInstances = processInstanceResponse.getProcessInstances();
-
+			log.info("Process Instances ::::: " + processInstances);
 			Map<String, ProcessInstance> processInstanceMap = new HashMap<>();
 			if (!CollectionUtils.isEmpty(processInstances)) {
 				for (ProcessInstance processInstance : processInstances) {
@@ -402,7 +402,7 @@ public class InboxService {
 				}
 			}
 			// This is to handle the case when Bpa applications are fetched without process instances for Development Authoritiy users for all tenants under a single planning area
-			else if(processInstances.isEmpty() && moduleName.equals(BPA) && businessObjects.length() > 0 &&  criteria.getPlanningAreaCode() != null && !criteria.getPlanningAreaCode().isEmpty()) {
+			else if(processInstances != null && processInstances.isEmpty() && BPA.equals(moduleName) && businessObjects.length() > 0 && StringUtils.hasText(criteria.getPlanningAreaCode())) {
 				businessMap.keySet().forEach(businessKey -> {
 					Inbox inbox = new Inbox();
 					inbox.setBusinessObject(toMap((JSONObject) finalBusinessMap.get(businessKey)));
