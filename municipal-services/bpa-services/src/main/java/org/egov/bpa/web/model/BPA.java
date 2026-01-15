@@ -117,18 +117,6 @@ public class BPA {
   @Size(min = 1, max = 64)
   private String landId;
 
-  @JsonProperty("createdBy")
-  private String createdBy = null;
-
-  @JsonProperty("lastModifiedBy")
-  private String lastModifiedBy = null;
-
-  @JsonProperty("createdTime")
-  private Long createdTime = null;
-
-  @JsonProperty("lastModifiedTime")
-  private Long lastModifiedTime = null;
-
   /** List of documents attached by the owner for exemption. */
   @Valid
   private List<Document> documents = new ArrayList<>();
