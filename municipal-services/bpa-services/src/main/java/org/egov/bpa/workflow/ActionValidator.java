@@ -132,4 +132,10 @@ public class ActionValidator {
 	}
 
 
+	public boolean isCitizenUpdateAllowed(BPARequest bpaRequest, BPA existingBPA) {
+		if(bpaRequest.getRequestInfo() == null || bpaRequest.getRequestInfo().getUserInfo() == null) {
+			return false;
+		}
+        return existingBPA.getCreatedBy().equals(bpaRequest.getRequestInfo().getUserInfo().getUuid());
+    }
 }

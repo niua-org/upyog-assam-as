@@ -221,6 +221,14 @@ public class BPAQueryBuilder {
             addToPreparedStatement(preparedStmtList, districts);
         }
 
+        String masterPlanningArea = criteria.getMasterPlanningArea();
+        if (masterPlanningArea != null) {
+            List<String> masterPlanningAreas = Arrays.asList(masterPlanningArea.split(","));
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" area.planning_area IN (").append(createQuery(masterPlanningAreas)).append(")");
+            addToPreparedStatement(preparedStmtList, masterPlanningAreas);
+        }
+
         String status = criteria.getStatus();
         if (status != null) {
             List<String> statuses = Arrays.asList(status.split(","));

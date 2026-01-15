@@ -583,9 +583,14 @@ public class BPAValidator {
 	}
 
 	public void validateActionForPendingNoc(BPARequest bpaRequest){
+		if(!config.getValidateRequiredNoc()){
+			log.info("Skipping pending NOC validation as per configuration");
+			return;
+		}
 		String action = Optional.ofNullable(bpaRequest.getBPA().getWorkflow()).map(Workflow::getAction).orElse("");
 		List<String> pendingNocNotAllowedActions = Arrays.asList(config.getPendingNocNotAllowedActions().split(","));
 		if(pendingNocNotAllowedActions.contains(action)) {
+			log.info("Validating pending NOC for action: " + action);
 			List<Noc> nocs = nocService.fetchNocRecords(bpaRequest);
 			if (!CollectionUtils.isEmpty(nocs)) {
 				for (Noc noc : nocs) {
@@ -593,8 +598,9 @@ public class BPAValidator {
 						if(!statuses.contains(noc.getApplicationStatus())) {
 							log.error("Noc is not approved having applicationNo :" + noc.getApplicationNo());
 							throw new CustomException(BPAErrorConstants.NOC_SERVICE_EXCEPTION,
-									" Application can't be forwarded without NOC "
-											+ StringUtils.join(statuses, " or "));
+									" Application can't be forwarded without NOC "+
+											"approval. NOC with applicationNo :" + noc.getApplicationNo() +
+											" is in " + noc.getApplicationStatus() + " status.");
 						}
 				}
 			}
