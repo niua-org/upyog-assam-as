@@ -1,5 +1,5 @@
 import React, {Fragment, useCallback, useMemo, useReducer} from "react"
-import { InboxComposer, ComplaintIcon, Header } from "@upyog/digit-ui-react-components";
+import { InboxComposer, ComplaintIcon, Header, Loader } from "@upyog/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
@@ -11,6 +11,17 @@ const Inbox = ({parentRoute}) => {
     const { t } = useTranslation()
 const { businessServices, isLoading: isBusinessServiceLoading } = Digit.Hooks.noc.useBusinessServiceList(true);
     const tenantId = Digit.ULBService.getCurrentTenantId();
+    const { data: nocTypeRoleMapping, isLoading: isMDMSLoading } = Digit.Hooks.useCustomMDMS(
+        Digit.ULBService.getStateId(),
+        "NOC",
+        [{ name: "NOCBusinessServiceRoleMaping" }],
+        {
+            select: (data) => {
+                const formattedData = data?.["NOC"]?.["NOCBusinessServiceRoleMaping"];
+                return formattedData?.filter(item => item.active === true);
+            },
+        }
+    );
 
     const searchFormDefaultValues = {
       // mobileNumber: "",
@@ -62,7 +73,8 @@ const { businessServices, isLoading: isBusinessServiceLoading } = Digit.Hooks.no
       setFilterFormValue("locality", []);
       setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
       setFilterFormValue("applicationType", []);
-      dispatch({action: "mutateFilterForm", data: filterFormDefaultValues});
+      dispatch({action: "mutateFilterForm", data: { ...filterFormDefaultValues, businessServiceArray: businessServices }});
+
     }
 
     const onSortFormReset = (setSortFormValue) => {
@@ -103,7 +115,9 @@ const { businessServices, isLoading: isBusinessServiceLoading } = Digit.Hooks.no
 
     const { isLoading: isInboxLoading, data: {table , statuses, totalCount} = {} } = Digit.Hooks.noc.useInbox({
         tenantId,
-        filters: { ...formState }
+        filters: { ...formState },
+        workflowCode: nocTypeRoleMapping
+
     });
 
     const newName = formInitValue?.filterForm?.businessServiceArray.map(item=>item);
@@ -133,7 +147,7 @@ const { businessServices, isLoading: isBusinessServiceLoading } = Digit.Hooks.no
     const onFilterFormSubmit = (data) => {
       data.hasOwnProperty("") && delete data?.[""] ;
       dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-      dispatch({action: "mutateFilterForm", data})
+      dispatch({action: "mutateFilterForm", data: { ...data, businessServiceArray: businessServices }})
     }
 
     const propsForSearchForm = { SearchFormFields, onSearchFormSubmit, searchFormDefaultValues: formState?.searchForm, resetSearchFormDefaultValues: searchFormDefaultValues, onSearchFormReset }
