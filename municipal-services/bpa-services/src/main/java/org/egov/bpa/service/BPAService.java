@@ -561,7 +561,8 @@ public class BPAService {
             String status = bpaRequest.getBPA().getStatus();
 
             List<String> planningPermitCalculateFeeStatuses = Arrays.asList(
-                   BPAConstants.PAYMENT_PENDING
+                   BPAConstants.PAYMENT_PENDING,
+                    BPAConstants.PENDING_DSC
             );
             List<String> buildingPermitCalculateFeeStatuses = Arrays.asList(
                     BPAConstants.CITIZEN_FINAL_PAYMENT,
