@@ -198,8 +198,8 @@ const BPAEmployeeDetails = () => {
 }, []);
 
   const applicationStatus = workflowDetails?.data?.actionState?.state || "";
-
-  const isSubmitDisabled = applicationStatus === "PENDING_DA_ENGINEER" && !isSiteFormValid;
+  const isSubmitReportAction = workflowDetails?.data?.nextActions?.some((action) => action.action === "SUBMIT_REPORT");
+  const isSubmitDisabled = (applicationStatus === "PENDING_DA_ENGINEER" || applicationStatus === "PENDING_GMDA_ENGINEER") && !isSiteFormValid;
 
 
   let downloadOptions = [];
@@ -348,8 +348,8 @@ const BPAEmployeeDetails = () => {
           
       <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         </div>
-        {(data?.applicationData?.status === "PENDING_DA_ENGINEER") && 
-        (userInfo?.info?.roles.some(role => ["BPA_ENGINEER", "BPA_ENGINEER_DA"].includes(role.code)) && 
+        {(data?.applicationData?.status === "PENDING_DA_ENGINEER" || data?.applicationData?.status === "PENDING_GMDA_ENGINEER") && 
+        (isSubmitReportAction && 
         <FormComposer
         heading={t("")}
         isDisabled={!canSubmit}
