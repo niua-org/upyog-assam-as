@@ -97,6 +97,8 @@ public class BPAConstants {
 
 	public static final String CITIZEN_FINAL_PAYMENT = "CITIZEN_FINAL_PAYMENT";
 
+	public static final String PENDING_DSC="PENDING_DSC";
+
 	public static final String PENDING_FINAL_DSC = "PENDING_FINAL_DSC";
 
 	public static final String PENDING_CHAIRMAN_DA = "PENDING_CHAIRMAN_DA";
