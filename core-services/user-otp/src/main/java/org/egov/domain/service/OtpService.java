@@ -58,7 +58,9 @@ public class OtpService {
         }
 
         if(Boolean.TRUE.equals(otpRequest.getRtpLogin()) && otpRequest.isLoginRequestType() && matchingUser != null){
-            List<String> roles = Arrays.asList("BPA_ARCHITECT", "BPA_RTP");
+            List<String> roles = Arrays.asList("BPA_ARCHITECT","BPA_BUILDER","BPA_ENGINEER","BPA_STRUCTURALENGINEER",
+            "BPA_TOWNPLANNER","BPA_SUPERVISOR","BPA_GEO_TECH_ENGINEER","BPA_CIVIL_ENGINEER","BPA_UTILITY_ENGINEER",
+            "BPA_LANDSCAPE_ARCHITECT","BPA_GROUP_AGENCY","BPA_URBAN_DESIGNER","BPA_RTP");
 
             if(CollectionUtils.isEmpty(matchingUser.getRoles()) || (matchingUser.getRoles().stream().noneMatch(role -> roles.contains(role.getCode())))){
                 log.info("RTP Login Failed as user does not have required role for mobile number: " + otpRequest.getMobileNumber());
